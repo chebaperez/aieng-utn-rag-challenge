@@ -10,14 +10,31 @@ Construir un sistema **Agentic RAG** expuesto como microservicio HTTP (`POST /so
 
 ---
 
-## 📦 Contenido del Kit Inicial
+## 📦 Estructura y Contenido del Kit Inicial
 
-* **`schemas.py`**: Contrato formal Pydantic v2 (`CaseInput`, `CaseOutput`, `ExecutionStep`, `TokenUsage`).
-* **`evaluator.py`**: Arnés de evaluación local offline (idéntico al motor del servidor central).
-* **`run_local_eval.py`**: Cliente HTTP que envía `dev_set.json` a tu `POST /solve` local y ejecuta `evaluator.py`.
-* **`dev_set.json`**: Dataset Público de Desarrollo (**150 casos**: 135 resolubles `SOLVED` + 15 incompletos `ABSTAIN`).
-* **`server.py`**: Plantilla base del microservicio FastAPI (`GET /health` y `POST /solve`).
-* **`Colab_Starter_Template.ipynb`**: Plantilla para levantar `server.py` y el túnel `cloudflared` en Google Colab.
+```text
+aieng-utn-rag-challenge/
+├── data/
+│   └── dev_set.json                   # Dataset Público de Desarrollo (150 casos)
+├── notebooks/
+│   └── Colab_Starter_Template.ipynb   # Plantilla para Google Colab + cloudflared
+├── scripts/
+│   └── run_local_eval.py              # Cliente HTTP para evaluación local
+├── src/
+│   ├── __init__.py
+│   ├── schemas.py                     # Contrato formal Pydantic v2
+│   ├── evaluator.py                   # Arnés de evaluación local offline
+│   └── server.py                      # Plantilla base FastAPI (GET /health, POST /solve)
+├── README.md
+└── requirements.txt
+```
+
+* **`src/schemas.py`**: Contrato formal Pydantic v2 (`CaseInput`, `CaseOutput`, `ExecutionStep`, `TokenUsage`).
+* **`src/evaluator.py`**: Arnés de evaluación local offline (idéntico al motor del servidor central).
+* **`src/server.py`**: Plantilla base del microservicio FastAPI (`GET /health` y `POST /solve`).
+* **`scripts/run_local_eval.py`**: Cliente HTTP que envía `data/dev_set.json` a tu `POST /solve` local y ejecuta `src/evaluator.py`.
+* **`data/dev_set.json`**: Dataset Público de Desarrollo (**150 casos**: 135 resolubles `SOLVED` + 15 incompletos `ABSTAIN`).
+* **`notebooks/Colab_Starter_Template.ipynb`**: Plantilla para levantar `src/server.py` y el túnel `cloudflared` en Google Colab.
 
 ---
 
@@ -31,10 +48,10 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
 # 2. Levantar el servidor de caja negra (Terminal 1)
-uvicorn server:app --host 0.0.0.0 --port 8000
+uvicorn src.server:app --host 0.0.0.0 --port 8000
 
-# 3. Evaluar tu servidor HTTP localmente contra dev_set.json (Terminal 2)
-python run_local_eval.py --limit 20 --verbose
+# 3. Evaluar tu servidor HTTP localmente contra data/dev_set.json (Terminal 2)
+python scripts/run_local_eval.py --limit 20 --verbose
 ```
 
 ---
