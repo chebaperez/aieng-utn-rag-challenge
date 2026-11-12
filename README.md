@@ -14,8 +14,10 @@ Construir un sistema **Agentic RAG** expuesto como microservicio HTTP (`POST /so
 
 * **`schemas.py`**: Contrato formal Pydantic v2 (`CaseInput`, `CaseOutput`, `ExecutionStep`, `TokenUsage`).
 * **`evaluator.py`**: Arnés de evaluación local offline (idéntico al motor del servidor central).
+* **`run_local_eval.py`**: Cliente HTTP que envía `dev_set.json` a tu `POST /solve` local y ejecuta `evaluator.py`.
 * **`dev_set.json`**: Dataset Público de Desarrollo (**150 casos**: 135 resolubles `SOLVED` + 15 incompletos `ABSTAIN`).
 * **`server.py`**: Plantilla base del microservicio FastAPI (`GET /health` y `POST /solve`).
+* **`Colab_Starter_Template.ipynb`**: Plantilla para levantar `server.py` y el túnel `cloudflared` en Google Colab.
 
 ---
 
@@ -28,11 +30,55 @@ cd aieng-utn-rag-challenge
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# 2. Levantar el servidor de caja negra
+# 2. Levantar el servidor de caja negra (Terminal 1)
 uvicorn server:app --host 0.0.0.0 --port 8000
 
-# 3. Evaluar predicciones localmente contra dev_set.json
-python evaluator.py --dataset dev_set.json --predictions tus_predicciones.json --verbose
+# 3. Evaluar tu servidor HTTP localmente contra dev_set.json (Terminal 2)
+python run_local_eval.py --limit 20 --verbose
+```
+
+---
+
+## 🔌 Ejemplo del Contrato JSON (`POST /solve`)
+
+### Entrada (`CaseInput`)
+```json
+{
+  "case_id": "dev_001",
+  "question": "What was the percentage change in total emissions?",
+  "table": [
+    ["", "2019", "2018"],
+    ["Total emissions", "4,785.7", "5,087.6"]
+  ],
+  "paragraphs": [
+    {"index": 1, "text": "Greenhouse gas emissions (Tonnes of CO2e)."}
+  ]
+}
+```
+
+### Salida (`CaseOutput`)
+```json
+{
+  "case_id": "dev_001",
+  "verdict": "SOLVED",
+  "primary_value": -5.934,
+  "scale": "percent",
+  "derivation": "(4785.7 - 5087.6) / 5087.6 * 100",
+  "execution_trace": [
+    {
+      "step_index": 1,
+      "tool_name": "safe_calculate",
+      "tool_input": {"expression": "(4785.7 - 5087.6) / 5087.6 * 100"},
+      "tool_output": "-5.934036"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 350,
+    "completion_tokens": 80,
+    "total_tokens": 430,
+    "llm_calls": 1
+  }
+}
 ```
 
 ---
@@ -57,3 +103,4 @@ python evaluator.py --dataset dev_set.json --predictions tus_predicciones.json -
    1. Mayor Puntaje Neto acumulado.
    2. Menor consumo total de tokens (`total_tokens`).
    3. Menor latencia promedio por caso.
+
