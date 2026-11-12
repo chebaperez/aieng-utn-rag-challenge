@@ -1,7 +1,7 @@
 """
-Cliente de Evaluación Local (run_local_eval.py).
-Envía los casos de `dev_set.json` hacia tu microservicio HTTP local (`POST /solve`),
-guarda las predicciones y ejecuta el evaluador oficial (`evaluator.py`).
+Cliente de Evaluación Local (scripts/run_local_eval.py).
+Envía los casos de `data/dev_set.json` hacia tu microservicio HTTP local (`POST /solve`),
+guarda las predicciones y ejecuta el evaluador oficial (`src/evaluator.py`).
 """
 
 from __future__ import annotations
@@ -11,14 +11,18 @@ import json
 import sys
 from pathlib import Path
 
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 import httpx
 
-from evaluator import evaluate_dataset, load_dataset, print_summary_table
+from src.evaluator import evaluate_dataset, load_dataset, print_summary_table
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Evalúa tu microservicio POST /solve localmente contra dev_set.json."
+        description="Evalúa tu microservicio POST /solve localmente contra data/dev_set.json."
     )
     parser.add_argument(
         "--url",
@@ -29,13 +33,13 @@ def main() -> int:
     parser.add_argument(
         "--dataset",
         type=Path,
-        default=Path(__file__).parent / "dev_set.json",
-        help="Ruta al archivo de dataset (por defecto: dev_set.json).",
+        default=ROOT_DIR / "data" / "dev_set.json",
+        help="Ruta al archivo de dataset (por defecto: data/dev_set.json).",
     )
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path(__file__).parent / "predictions_local.json",
+        default=ROOT_DIR / "predictions_local.json",
         help="Archivo donde guardar las predicciones.",
     )
     parser.add_argument(
@@ -88,6 +92,7 @@ def main() -> int:
             if idx % 10 == 0 or idx == len(cases):
                 print(f"  Procesados {idx}/{len(cases)} casos...")
 
+    args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(
         json.dumps(predictions, indent=2, ensure_ascii=False), encoding="utf-8"
     )
@@ -98,3 +103,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

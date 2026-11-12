@@ -1,5 +1,5 @@
 """
-Plantilla Oficial de Microservicio Caja Negra (starter_kit/server.py).
+Plantilla Oficial de Microservicio Caja Negra (src/server.py).
 Expone el contrato estándar exigido por el Evaluador Remoto Cloud:
   - GET  /health -> Verificación de disponibilidad de pre-vuelo (sin descontar cuota).
   - POST /solve  -> Recibe `CaseInput` y retorna `CaseOutput` validado con Pydantic.

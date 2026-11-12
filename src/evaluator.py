@@ -408,8 +408,8 @@ def main() -> int:
     parser.add_argument(
         "--dataset",
         type=Path,
-        default=Path(__file__).parent / "dev_set.json",
-        help="Ruta al archivo de dataset con Ground Truth (por defecto: dev_set.json).",
+        default=Path(__file__).resolve().parent.parent / "data" / "dev_set.json",
+        help="Ruta al archivo de dataset con Ground Truth (por defecto: data/dev_set.json).",
     )
     parser.add_argument(
         "--predictions",
