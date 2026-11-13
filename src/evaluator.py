@@ -403,6 +403,21 @@ def print_summary_table(summary: BenchmarkSummary, verbose: bool = False) -> Non
             print(f"  ... y {len(failures) - 30} casos adicionales.")
 
 
+PATTERN_DESCRIPTIONS: dict[str, str] = {
+    "percent_decimal": "Porcentajes devueltos en base 0-1 en lugar de puntos porcentuales 0-100.",
+    "sign_error": "Signo invertido en variaciones/diferencias (orden de resta invertido).",
+    "magnitude_10x": "Desfase de magnitud (~1000x / ~1e6x) entre valor numérico y `scale`.",
+    "near_miss_rounding": "Diferencias menores al 5% respecto al valor esperado (posible redondeo prematuro).",
+    "scale_mismatch": "Incompatibilidad de escala (ej. `percent` vs escala monetaria/None).",
+    "hallucination_on_abstain": "El agente respondió SOLVED en casos con evidencia insuficiente/amputada.",
+    "abstain_cautious": "Abstención excesiva en casos resolubles (se dejó +1.0 pt por caso).",
+    "wrong_arithmetic_or_extraction": "Error en extracción de operandos o fórmula aritmética.",
+    "schema_error": "Violación del esquema `CaseOutput` o respuesta HTTP no válida (-1.5 pts).",
+    "http_error": "Timeouts (>60s) o errores HTTP 5xx/conexión en el endpoint.",
+    "http_or_timeout_error": "Timeouts (>60s) o errores HTTP 5xx/conexión en el endpoint.",
+}
+
+
 def _percentile(sorted_vals: list[float], q: float) -> float:
     if not sorted_vals:
         return 0.0
@@ -446,30 +461,114 @@ def classify_failure_hint(
     return "wrong_arithmetic_or_extraction", "Valor incorrecto (error de extracción de operandos o fórmula)."
 
 
-def build_diagnostic_report(
+def build_actionable_recommendations(
+    patterns: Counter[str],
+    by_answer_from: dict[str, dict[str, Any]],
+    slow_over_45s: int,
+    http_errors: int,
+    telemetry_anomalies: int,
+) -> list[str]:
+    """Genera recomendaciones accionables a partir de los patrones de fallo agregados."""
+    recs: list[str] = []
+
+    if patterns["percent_decimal"] > 0:
+        recs.append(
+            f"[{patterns['percent_decimal']} casos] Normalizá los porcentajes a base 0-100: "
+            "cuando `scale == 'percent'`, devolvé `15.4` y nunca `0.154` (multiplicá por 100 en la derivación)."
+        )
+    if patterns["magnitude_10x"] > 0 or patterns["scale_mismatch"] > 0:
+        n = patterns["magnitude_10x"] + patterns["scale_mismatch"]
+        recs.append(
+            f"[{n} casos] Revisá la detección de `scale` (`None`, `'thousand'`, `'million'`, `'billion'`, `'percent'`): "
+            "asegurate de que el valor numérico y la escala declarada correspondan a la misma unidad de tabla/texto."
+        )
+    if patterns["sign_error"] > 0:
+        recs.append(
+            f"[{patterns['sign_error']} casos] Se detectaron errores de signo: verificá el orden de los períodos en "
+            "variaciones/diferencias (`valor_actual - valor_anterior`)."
+        )
+    if patterns["near_miss_rounding"] > 0:
+        recs.append(
+            f"[{patterns['near_miss_rounding']} casos] Hay diferencias <5% cerca de la tolerancia: evitá redondear "
+            "valores intermedios antes de completar la operación final en `safe_calculate`."
+        )
+    if patterns["hallucination_on_abstain"] > 0:
+        recs.append(
+            f"[{patterns['hallucination_on_abstain']} casos] Alucinación en casos `ABSTAIN`: reforzá la verificación de "
+            "evidencia faltante (columnas de años ausentes o notas requeridas inexistentes) para abstenerte a tiempo."
+        )
+    if patterns["abstain_cautious"] > 0:
+        recs.append(
+            f"[{patterns['abstain_cautious']} casos] Abstenciones cautelosas excesivas: tu agente se abstuvo en casos "
+            "resolubles; revisá los criterios del auditor o la recuperación de evidencia para no perder +1.0 pt por caso."
+        )
+    if patterns["wrong_arithmetic_or_extraction"] > 0:
+        recs.append(
+            f"[{patterns['wrong_arithmetic_or_extraction']} casos] Errores de extracción o fórmula: verificá que el agente "
+            "seleccione la columna/año correcto de la tabla y cruce correctamente los párrafos narrativos."
+        )
+    if patterns["schema_error"] > 0 or patterns["http_error"] > 0 or http_errors > 0:
+        recs.append(
+            f"[{patterns['schema_error']} esquema / {http_errors} HTTP] Errores graves (-1.5 pts): validá la salida con "
+            "`CaseOutput.model_validate(...)` antes de responder y controlá que el servidor no caiga ni exceda 60s."
+        )
+    if slow_over_45s > 0:
+        recs.append(
+            f"[{slow_over_45s} casos >45s] Latencia cerca del límite de 60s: reducí llamadas al LLM o tokens de contexto "
+            "para evitar timeouts bajo carga."
+        )
+    if telemetry_anomalies > 0:
+        recs.append(
+            f"[{telemetry_anomalies} casos] Anomalías de telemetría: verificá que `usage` reporte `prompt_tokens`, "
+            "`completion_tokens`, `total_tokens` y `llm_calls >= 1` reales."
+        )
+
+    weakest = min(
+        ((k, v) for k, v in by_answer_from.items() if v["total"] > 0),
+        key=lambda item: item[1]["accuracy_pct"],
+        default=None,
+    )
+    if weakest and weakest[1]["accuracy_pct"] < 60.0:
+        recs.append(
+            f"Modalidad más débil: `{weakest[0]}` ({weakest[1]['ok']}/{weakest[1]['total']} OK, "
+            f"{weakest[1]['accuracy_pct']:.1f}%). Priorizá mejorar la lectura/búsqueda en esa fuente."
+        )
+
+    if not recs:
+        recs.append(
+            "Desempeño sólido sin patrones de falla dominantes. Podés optimizar tokens y latencia para desempates."
+        )
+    return recs
+
+
+def aggregate_diagnostics(
     cases: list[DatasetCase],
     summary: BenchmarkSummary,
+    slow_over_45s: int,
+    http_errors_count: int,
     latencies_by_id: dict[str, float] | None = None,
     http_errors_by_id: dict[str, str] | None = None,
     raw_preds_by_id: dict[str, dict[str, Any]] | None = None,
+    include_case_details: bool = False,
 ) -> dict[str, Any]:
-    """Construye un reporte diagnóstico detallado para corridas locales (dev_set.json)."""
+    """Agrega veredictos, rendimiento por fuente, patrones de fallo y recomendaciones."""
     cases_by_id = {c.case_id: c for c in cases}
     lat_map = latencies_by_id or {}
     err_map = http_errors_by_id or {}
     pred_map = raw_preds_by_id or {}
-    latencies = sorted(lat_map.values())
 
-    by_answer_from: dict[str, dict[str, int]] = defaultdict(
-        lambda: {"total": 0, "ok": 0, "abstain_cautious": 0, "wrong": 0, "schema_or_http": 0}
+    by_answer_from: dict[str, dict[str, Any]] = defaultdict(
+        lambda: {"total": 0, "ok": 0, "wrong": 0, "abstain_cautious": 0, "schema_or_http": 0, "accuracy_pct": 0.0}
     )
-    taxonomy_counts: Counter[str] = Counter()
-    taxonomy_points_impact: Counter[str] = Counter()
+    verdict_breakdown: Counter[str] = Counter()
+    patterns: Counter[str] = Counter()
+    pattern_impact_tenths: Counter[str] = Counter()
     non_optimal_cases: list[dict[str, Any]] = []
 
     for res in summary.results:
-        case = cases_by_id[res.case_id]
-        src = case.ground_truth.answer_from
+        verdict_breakdown[res.status] += 1
+        case = cases_by_id.get(res.case_id)
+        src = case.ground_truth.answer_from if case else "unknown"
         bucket = by_answer_from[src]
         bucket["total"] += 1
 
@@ -484,41 +583,98 @@ def build_diagnostic_report(
         else:
             bucket["wrong"] += 1
 
-        http_err = err_map.get(res.case_id)
+        http_err = err_map.get(res.case_id) if include_case_details else None
         hint_cat, hint_detail = classify_failure_hint(res, http_err)
-        taxonomy_counts[hint_cat] += 1
+        patterns[hint_cat] += 1
         ideal = 1.0 if res.expected_verdict == "SOLVED" else 0.0
-        taxonomy_points_impact[hint_cat] += int(round((res.score - ideal) * 10))
+        pattern_impact_tenths[hint_cat] += int(round((ideal - res.score) * 10))
 
-        raw_pred = pred_map.get(res.case_id) or {}
-        non_optimal_cases.append(
-            {
-                "case_id": res.case_id,
-                "question": case.question,
-                "answer_from": src,
-                "status": res.status,
-                "score": res.score,
-                "hint_category": hint_cat,
-                "hint_detail": hint_detail,
-                "latency_s": round(lat_map.get(res.case_id, 0.0), 3),
-                "http_error": http_err,
-                "expected": {
-                    "verdict": case.ground_truth.verdict.value,
-                    "primary_value": case.ground_truth.primary_value,
-                    "scale": case.ground_truth.scale,
-                    "derivation": case.ground_truth.derivation,
-                },
-                "predicted": {
-                    "verdict": raw_pred.get("verdict"),
-                    "primary_value": raw_pred.get("primary_value"),
-                    "normalized_value": res.normalized_predicted_value,
-                    "scale": raw_pred.get("scale"),
-                    "derivation": raw_pred.get("derivation"),
-                    "execution_trace": raw_pred.get("execution_trace", []),
-                    "usage": raw_pred.get("usage"),
-                },
-            }
-        )
+        if include_case_details and case is not None:
+            raw_pred = pred_map.get(res.case_id) or {}
+            non_optimal_cases.append(
+                {
+                    "case_id": res.case_id,
+                    "question": case.question,
+                    "answer_from": src,
+                    "status": res.status,
+                    "score": res.score,
+                    "hint_category": hint_cat,
+                    "hint_detail": hint_detail,
+                    "latency_s": round(lat_map.get(res.case_id, 0.0), 3),
+                    "http_error": http_err,
+                    "expected": {
+                        "verdict": case.ground_truth.verdict.value,
+                        "primary_value": case.ground_truth.primary_value,
+                        "scale": case.ground_truth.scale,
+                        "derivation": case.ground_truth.derivation,
+                    },
+                    "predicted": {
+                        "verdict": raw_pred.get("verdict"),
+                        "primary_value": raw_pred.get("primary_value"),
+                        "normalized_value": res.normalized_predicted_value,
+                        "scale": raw_pred.get("scale"),
+                        "derivation": raw_pred.get("derivation"),
+                        "execution_trace": raw_pred.get("execution_trace", []),
+                        "usage": raw_pred.get("usage"),
+                    },
+                }
+            )
+
+    for bucket in by_answer_from.values():
+        total = bucket["total"]
+        bucket["accuracy_pct"] = round((bucket["ok"] / total * 100.0) if total else 0.0, 1)
+
+    failure_patterns = {
+        cat: {
+            "count": count,
+            "missed_or_lost_pts": round(pattern_impact_tenths[cat] / 10.0, 2),
+            "description": PATTERN_DESCRIPTIONS.get(cat, ""),
+        }
+        for cat, count in patterns.most_common()
+    }
+    recommendations = build_actionable_recommendations(
+        patterns=patterns,
+        by_answer_from=by_answer_from,
+        slow_over_45s=slow_over_45s,
+        http_errors=http_errors_count,
+        telemetry_anomalies=summary.telemetry_anomaly_count,
+    )
+
+    out: dict[str, Any] = {
+        "by_answer_from": dict(sorted(by_answer_from.items())),
+        "verdict_breakdown": dict(verdict_breakdown),
+        "failure_patterns": failure_patterns,
+        "actionable_recommendations": recommendations,
+    }
+    if include_case_details:
+        out["non_optimal_cases"] = non_optimal_cases
+    return out
+
+
+def build_diagnostic_report(
+    cases: list[DatasetCase],
+    summary: BenchmarkSummary,
+    latencies_by_id: dict[str, float] | None = None,
+    http_errors_by_id: dict[str, str] | None = None,
+    raw_preds_by_id: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Construye un reporte diagnóstico ejecutivo + detalle por caso para corridas locales (dev_set.json)."""
+    lat_map = latencies_by_id or {}
+    err_map = http_errors_by_id or {}
+    latencies = sorted(lat_map.values())
+    slow_over_45s = sum(1 for x in latencies if x > 45.0)
+    http_errors_count = len(err_map)
+
+    agg = aggregate_diagnostics(
+        cases=cases,
+        summary=summary,
+        slow_over_45s=slow_over_45s,
+        http_errors_count=http_errors_count,
+        latencies_by_id=lat_map,
+        http_errors_by_id=err_map,
+        raw_preds_by_id=raw_preds_by_id,
+        include_case_details=True,
+    )
 
     return {
         "summary": {
@@ -535,23 +691,31 @@ def build_diagnostic_report(
             "p50_s": round(_percentile(latencies, 0.50), 3),
             "p95_s": round(_percentile(latencies, 0.95), 3),
             "max_s": round(latencies[-1], 3) if latencies else 0.0,
-            "slow_over_45s": sum(1 for x in latencies if x > 45.0),
-            "http_errors": len(err_map),
+            "slow_over_45s": slow_over_45s,
+            "http_errors": http_errors_count,
         },
-        "by_answer_from": dict(by_answer_from),
-        "failure_taxonomy": {
-            cat: {
-                "count": count,
-                "missed_or_lost_pts": round(abs(taxonomy_points_impact[cat]) / 10.0, 2),
-            }
-            for cat, count in taxonomy_counts.most_common()
-        },
-        "non_optimal_cases": non_optimal_cases,
+        "by_answer_from": agg["by_answer_from"],
+        "verdict_breakdown": agg["verdict_breakdown"],
+        "failure_patterns": agg["failure_patterns"],
+        "actionable_recommendations": agg["actionable_recommendations"],
+        "non_optimal_cases": agg["non_optimal_cases"],
     }
 
 
+def _format_trace_summary(trace: Any) -> str:
+    if not isinstance(trace, list) or not trace:
+        return "sin trazas"
+    tools = [str(step.get("tool_name", "?")) for step in trace if isinstance(step, dict)]
+    if not tools:
+        return f"{len(trace)} pasos"
+    preview = " -> ".join(tools[:5])
+    if len(tools) > 5:
+        preview += f" -> ... (+{len(tools) - 5})"
+    return f"{len(tools)} pasos: {preview}"
+
+
 def print_diagnostics(report: dict[str, Any], verbose: bool = False) -> None:
-    """Imprime en consola la taxonomía de fallos, latencias y ejemplos representativos."""
+    """Imprime en consola el resumen ejecutivo, patrones de fallo, recomendaciones y ejemplos por caso."""
     lat = report["latency"]
     print("\n" + "-" * 78)
     print("  DIAGNÓSTICO DE CORRIDA LOCAL")
@@ -562,31 +726,63 @@ def print_diagnostics(report: dict[str, Any], verbose: bool = False) -> None:
         f"| >45s={lat['slow_over_45s']} | HTTP err={lat['http_errors']}"
     )
 
+    verdicts = report.get("verdict_breakdown", {})
+    if verdicts:
+        ordered_keys = [
+            "CORRECT",
+            "ABSTAIN_ON_UNSOLVABLE",
+            "ABSTAIN_CAUTIOUS",
+            "WRONG_VALUE",
+            "SCALE_MISMATCH",
+            "HALLUCINATION_ON_ABSTAIN",
+            "SCHEMA_ERROR",
+        ]
+        parts = [f"{k}={verdicts[k]}" for k in ordered_keys if verdicts.get(k)]
+        for k, v in verdicts.items():
+            if k not in ordered_keys and v:
+                parts.append(f"{k}={v}")
+        print(f"  Veredictos        : {' | '.join(parts)}")
+
     print("  Rendimiento por origen de evidencia (answer_from):")
     for src, b in sorted(report["by_answer_from"].items()):
-        pct = (b["ok"] / b["total"] * 100.0) if b["total"] else 0.0
+        pct = b.get("accuracy_pct")
+        if pct is None:
+            pct = (b["ok"] / b["total"] * 100.0) if b["total"] else 0.0
         print(
             f"    - {src:<10}: {b['ok']:>3}/{b['total']:<3} OK ({pct:5.1f}%) "
             f"| wrong={b['wrong']} | abstain_cautious={b['abstain_cautious']} | schema/http={b['schema_or_http']}"
         )
 
-    taxonomy = report["failure_taxonomy"]
-    if not taxonomy:
+    patterns = report.get("failure_patterns", {})
+    recs = report.get("actionable_recommendations", [])
+    if not patterns:
         print("  ¡Sin fallos ni abstenciones cautelosas! 100% óptimo.")
+    else:
+        print("\n  Patrones de fallo (impacto en puntos):")
+        for cat, info in patterns.items():
+            desc = info.get("description", "")
+            desc_suffix = f" — {desc}" if desc else ""
+            print(
+                f"    - {cat:<30}: {info['count']:>3} casos "
+                f"(impacto: -{info['missed_or_lost_pts']:.1f} pts){desc_suffix}"
+            )
+
+    if recs:
+        print("\n  Recomendaciones accionables:")
+        for idx, rec in enumerate(recs, start=1):
+            print(f"    {idx}. {rec}")
+
+    if not patterns:
         print("-" * 78)
         return
 
-    print("  Taxonomía de causas de fallo / puntaje perdido:")
-    for cat, info in taxonomy.items():
-        print(f"    - {cat:<30}: {info['count']:>3} casos (impacto: -{info['missed_or_lost_pts']:.1f} pts)")
-
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for item in report["non_optimal_cases"]:
+    for item in report.get("non_optimal_cases", []):
         grouped[item["hint_category"]].append(item)
 
     max_examples = None if verbose else 3
     print("\n  Ejemplos representativos por categoría:")
-    for cat in taxonomy:
+    for cat in patterns:
         items = grouped[cat]
         shown = items if max_examples is None else items[:max_examples]
         print(f"\n  [{cat}] ({len(items)} casos):")
@@ -598,9 +794,12 @@ def print_diagnostics(report: dict[str, Any], verbose: bool = False) -> None:
                 f"      gt={exp['verdict']} {exp['primary_value']} ({exp['scale']}) "
                 f"| pred={pred['verdict']} {pred['primary_value']} ({pred['scale']})"
             )
-            print(f"      pista: {ex['hint_detail']}")
+            if exp.get("derivation"):
+                print(f"      gt.derivation  : {str(exp['derivation'])[:140]}")
             if pred.get("derivation"):
                 print(f"      pred.derivation: {str(pred['derivation'])[:140]}")
+            print(f"      trace          : {_format_trace_summary(pred.get('execution_trace'))}")
+            print(f"      pista          : {ex['hint_detail']}")
         if max_examples is not None and len(items) > max_examples:
             print(f"    ... y {len(items) - max_examples} más en el reporte JSON.")
     print("-" * 78)
