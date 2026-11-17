@@ -330,7 +330,7 @@
       color: var(--cobalt);
     }
 
-    @media (max-width: 1120px) {
+    @media (max-width: 1340px) {
       .notes-drawer.open {
         position: fixed;
         right: 14px;
@@ -348,7 +348,7 @@
       display: none;
       flex-direction: column;
       height: 100%;
-      padding: 28px 34px 24px;
+      padding: clamp(16px, 2.2vh, 28px) clamp(18px, 2.4vw, 34px) clamp(14px, 2vh, 24px);
       overflow-y: auto;
       animation: slideFadeIn 0.24s ease-out;
     }
@@ -368,8 +368,8 @@
       align-items: flex-start;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 18px;
-      padding-bottom: 14px;
+      margin-bottom: clamp(10px, 1.6vh, 18px);
+      padding-bottom: clamp(8px, 1.2vh, 14px);
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
@@ -378,13 +378,13 @@
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      padding: 4px 12px;
+      padding: 3px 11px;
       border-radius: 999px;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .eyebrow-cobalt { background: var(--cobalt-soft); color: var(--cobalt); border: 1px solid var(--cobalt-border); }
@@ -396,7 +396,7 @@
 
     .slide-title {
       margin: 0;
-      font-size: 27px;
+      font-size: clamp(20px, 2.1vw, 27px);
       font-weight: 800;
       letter-spacing: -0.02em;
       color: var(--navy);
@@ -404,8 +404,8 @@
     }
 
     .slide-subtitle {
-      margin: 6px 0 0;
-      font-size: 15.2px;
+      margin: 5px 0 0;
+      font-size: clamp(13px, 1.15vw, 15.2px);
       color: var(--text-muted);
       max-width: 960px;
       line-height: 1.45;
@@ -416,7 +416,7 @@
       min-height: 0;
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: clamp(10px, 1.6vh, 18px);
     }
 
     /* Footer Navigation */
@@ -710,12 +710,13 @@
       background: #fbfcfe;
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 10px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       position: relative;
       overflow: hidden;
+      min-height: 220px;
     }
 
     .diagram-hint {
@@ -880,11 +881,13 @@
 
     .pill {
       display: inline-block;
-      padding: 3px 8px;
+      padding: 3px 9px;
       border-radius: 999px;
       font-size: 12px;
       font-weight: 700;
       font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .pill-ok { background: var(--emerald-soft); color: var(--emerald); }
@@ -995,11 +998,11 @@
       display: flex;
       align-items: flex-start;
       gap: 10px;
-      padding: 11px 13px;
+      padding: clamp(7px, 1vh, 11px) clamp(9px, 1vw, 13px);
       border-radius: 9px;
       background: var(--surface);
       border: 1px solid var(--border);
-      font-size: 13.8px;
+      font-size: clamp(12.2px, 1vw, 13.8px);
       cursor: pointer;
       transition: background 0.12s ease;
     }
@@ -1077,6 +1080,17 @@
     .outline-item .oi-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-top: 2px; }
 
     /* Responsive adjustments */
+    @media (max-height: 780px) {
+      .slide-body, .grid-2, .grid-asymmetric {
+        flex: 0 0 auto;
+        min-height: auto;
+      }
+      .diagram-box {
+        min-height: 230px;
+        flex: 0 0 auto;
+      }
+    }
+
     @media (max-width: 1040px) {
       .grid-2, .grid-asymmetric, .grid-4, .grid-3, .quick-nav-grid, .modal-list {
         grid-template-columns: 1fr;
@@ -1971,7 +1985,7 @@
               </svg>
             </div>
 
-            <div class="inspector" id="remoteInspector" style="max-height:190px;">
+            <div class="inspector" id="remoteInspector" style="flex-shrink:0;">
               <!-- Populated by JS -->
             </div>
           </div>
@@ -3167,7 +3181,7 @@
           <div class="notes-section-lbl">Explicación detallada</div>
           <p style="margin:0;">${n.detail}</p>
         </div>
-        <div class="callout callout-ok" style="margin-top:auto;padding:9px 11px;font-size:12.2px;">
+        <div class="callout callout-ok" style="padding:9px 11px;font-size:12.2px;">
           <span>🛠️</span>
           <div><strong>Qué hacer ahora:</strong> ${n.action}</div>
         </div>

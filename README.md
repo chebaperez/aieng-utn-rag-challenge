@@ -6,7 +6,7 @@ Repositorio oficial del **Desafío Competitivo Integrador** de la materia electi
 
 ## 🎯 Misión del Desafío
 
-Construir un sistema **Agentic RAG** expuesto como microservicio HTTP (`POST /solve`) capaz de responder consultas cuantitativas sobre reportes financieros híbridos (**Formularios 10-K / TAT-QA**), combinando tablas contables y notas narrativas, delegando el cálculo exacto a herramientas deterministas y absteniéndose (`ABSTAIN`) cuando falte evidencia indispensable.
+Construir un sistema de **Agent-Based Financial QA** expuesto como microservicio HTTP (`POST /solve`) capaz de responder consultas cuantitativas sobre reportes financieros híbridos (**Formularios 10-K / TAT-QA**), combinando tablas contables y notas narrativas, delegando el cálculo exacto a herramientas deterministas y absteniéndose (`ABSTAIN`) cuando falte evidencia indispensable.
 
 ---
 
@@ -16,6 +16,9 @@ Construir un sistema **Agentic RAG** expuesto como microservicio HTTP (`POST /so
 aieng-utn-rag-challenge/
 ├── data/
 │   └── dev_set.json                   # Dataset Público de Desarrollo (150 casos)
+├── docs/
+│   ├── GUIA_DIDACTICA.md              # Guía de buenas prácticas, tools, RAG y referencia
+│   └── guia_didactica.html            # Presentación interactiva con notas de estudio
 ├── notebooks/
 │   └── Colab_Starter_Template.ipynb   # Plantilla para Google Colab + cloudflared
 ├── scripts/
@@ -27,6 +30,8 @@ aieng-utn-rag-challenge/
 │   ├── schemas.py                     # Contrato formal Pydantic v2
 │   ├── evaluator.py                   # Arnés de evaluación local offline
 │   └── server.py                      # Plantilla base FastAPI (GET /health, POST /solve)
+├── AGENTS.md                          # Guía operativa para desarrolladores y agentes
+├── ARCHITECTURE.md                    # Mapa técnico y flujo de evaluación local/remota
 ├── README.md
 └── requirements.txt
 ```
@@ -131,7 +136,8 @@ python scripts/viewer.py --open
 
 ## 📚 Documentación Complementaria
 
-* [**Guía Didáctica y de Buenas Prácticas (`docs/GUIA_DIDACTICA.md`)**](./docs/GUIA_DIDACTICA.md): Catálogo conceptual de tools recomendadas, progresión didáctica de referencia en 3 niveles con resultados medidos por la cátedra, patrones de falla reales y guía de uso del Evaluador Remoto.
+* [**Presentación Interactiva (`docs/guia_didactica.html`)**](./docs/guia_didactica.html): Versión web interactiva (abrir en el navegador) con diagramas clicables, simuladores de escala/puntaje y panel sincronizado de notas de estudio (`N`).
+* [**Guía Didáctica y de Buenas Prácticas (`docs/GUIA_DIDACTICA.md`)**](./docs/GUIA_DIDACTICA.md): Catálogo conceptual de tools recomendadas, estrategia efectiva de RAG (*Retrieval Adaptativo* vs. *Pattern RAG*), progresión didáctica de referencia en 3 niveles con resultados medidos, patrones de falla y uso del Evaluador Remoto.
 * [**Arquitectura del Starter Kit (`ARCHITECTURE.md`)**](./ARCHITECTURE.md): Mapa de componentes, contrato HTTP de caja negra, flujo de evaluación local/remota y topologías por Track.
 * [**Guía Operativa para Agentes y Desarrolladores (`AGENTS.md`)**](./AGENTS.md): Invariantes del contrato, flujo de verificación offline y checklist de diagnóstico.
 
