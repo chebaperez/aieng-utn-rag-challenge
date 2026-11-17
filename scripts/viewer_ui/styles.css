@@ -223,21 +223,63 @@ body {
 /* Workspace */
 .workspace {
   display: grid;
-  grid-template-columns: 330px 1fr;
+  grid-template-columns: var(--sidebar-width, 330px) 6px 1fr;
   flex: 1;
   min-height: 0;
   transition: grid-template-columns 0.18s ease;
 }
 
-.workspace.sidebar-collapsed {
-  grid-template-columns: 0 1fr;
+body.is-resizing {
+  cursor: col-resize;
+  user-select: none;
 }
 
-.workspace.sidebar-collapsed .sidebar {
+body.is-resizing .workspace {
+  transition: none;
+}
+
+.workspace.sidebar-collapsed {
+  grid-template-columns: 0 0 1fr;
+}
+
+.workspace.sidebar-collapsed .sidebar,
+.workspace.sidebar-collapsed .sidebar-resizer {
   overflow: hidden;
   border-right: none;
   opacity: 0;
   pointer-events: none;
+}
+
+.sidebar-resizer {
+  cursor: col-resize;
+  background: transparent;
+  position: relative;
+  transition: background 0.15s ease;
+}
+
+.sidebar-resizer::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 36px;
+  border-radius: 2px;
+  background: var(--border-strong);
+  opacity: 0.6;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.sidebar-resizer:hover,
+body.is-resizing .sidebar-resizer {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.sidebar-resizer:hover::after,
+body.is-resizing .sidebar-resizer::after {
+  background: var(--accent);
+  opacity: 1;
 }
 
 /* Sidebar */
@@ -895,6 +937,9 @@ mark.hl {
   }
   .workspace {
     grid-template-columns: 1fr;
+  }
+  .sidebar-resizer {
+    display: none;
   }
   .sidebar {
     max-height: 360px;

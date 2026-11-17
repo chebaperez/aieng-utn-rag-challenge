@@ -882,6 +882,60 @@
       if (e.target.closest?.(".help-tip")) hideFloatingTip();
     });
     window.addEventListener("scroll", hideFloatingTip, true);
+
+    const resizerEl = document.getElementById("sidebar-resizer");
+    const clampSidebarWidth = (px) => {
+      const maxW = Math.max(220, Math.floor(window.innerWidth * 0.3));
+      return Math.max(220, Math.min(maxW, Math.round(px)));
+    };
+
+    const applySidebarWidth = (px) => {
+      const clamped = clampSidebarWidth(px);
+      els.workspace.style.setProperty("--sidebar-width", `${clamped}px`);
+      try {
+        localStorage.setItem("viewer_sidebar_width", String(clamped));
+      } catch {
+        // ignorar si localStorage no está disponible
+      }
+    };
+
+    try {
+      const savedW = Number(localStorage.getItem("viewer_sidebar_width"));
+      if (savedW >= 220) applySidebarWidth(savedW);
+    } catch {
+      // ignorar
+    }
+
+    if (resizerEl) {
+      resizerEl.addEventListener("mousedown", (e) => {
+        if (state.sidebarCollapsed) return;
+        e.preventDefault();
+        document.body.classList.add("is-resizing");
+
+        const onMove = (moveEvent) => {
+          applySidebarWidth(moveEvent.clientX);
+        };
+
+        const onUp = () => {
+          document.body.classList.remove("is-resizing");
+          window.removeEventListener("mousemove", onMove);
+          window.removeEventListener("mouseup", onUp);
+        };
+
+        window.addEventListener("mousemove", onMove);
+        window.addEventListener("mouseup", onUp);
+      });
+    }
+
+    window.addEventListener("resize", () => {
+      const current = parseInt(
+        getComputedStyle(els.workspace).getPropertyValue("--sidebar-width") || "330",
+        10
+      );
+      if (current > Math.floor(window.innerWidth * 0.3)) {
+        applySidebarWidth(current);
+      }
+    });
   }
 
   async function init() {
