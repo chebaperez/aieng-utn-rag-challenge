@@ -603,8 +603,19 @@ mark.hl {
 .fin-table td {
   padding: 7px 10px;
   border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
   text-align: left;
-  vertical-align: top;
+  vertical-align: middle;
+}
+
+.fin-table th:last-child,
+.fin-table td:last-child {
+  border-right: none;
+}
+
+.fin-table th:not(:first-child),
+.fin-table td:not(:first-child) {
+  text-align: center;
 }
 
 .fin-table thead th {
@@ -625,7 +636,6 @@ mark.hl {
 
 .fin-table td.num,
 .fin-table th.num {
-  text-align: right;
   font-variant-numeric: tabular-nums;
   font-family: var(--font-mono);
   font-size: 12.5px;
