@@ -109,7 +109,7 @@
 
   function helpTip(text) {
     const safe = escapeHtml(text);
-    return `<span class="help-tip" tabindex="0" data-tip="${safe}" title="${safe}">?</span>`;
+    return `<span class="help-tip" tabindex="0" data-tip="${safe}">?</span>`;
   }
 
   function renderSummaryBar() {
@@ -837,6 +837,51 @@
       const file = e.dataTransfer?.files?.[0];
       if (file) evaluatePredictionsFile(file);
     });
+
+    const tooltipEl = document.getElementById("floating-tooltip");
+    const showFloatingTip = (target) => {
+      const tipText = target?.getAttribute("data-tip");
+      if (!tipText || !tooltipEl) return;
+      tooltipEl.textContent = tipText;
+      tooltipEl.style.left = "0px";
+      tooltipEl.style.top = "0px";
+      tooltipEl.classList.add("visible");
+
+      const rect = target.getBoundingClientRect();
+      const ttRect = tooltipEl.getBoundingClientRect();
+      const margin = 8;
+
+      let left = rect.left + rect.width / 2 - ttRect.width / 2;
+      left = Math.max(margin, Math.min(window.innerWidth - ttRect.width - margin, left));
+
+      let top = rect.top - ttRect.height - 8;
+      if (top < margin) {
+        top = Math.min(window.innerHeight - ttRect.height - margin, rect.bottom + 8);
+      }
+
+      tooltipEl.style.left = `${Math.round(left)}px`;
+      tooltipEl.style.top = `${Math.round(top)}px`;
+    };
+
+    const hideFloatingTip = () => {
+      tooltipEl?.classList.remove("visible");
+    };
+
+    document.addEventListener("mouseover", (e) => {
+      const tip = e.target.closest?.(".help-tip");
+      if (tip) showFloatingTip(tip);
+    });
+    document.addEventListener("mouseout", (e) => {
+      if (e.target.closest?.(".help-tip")) hideFloatingTip();
+    });
+    document.addEventListener("focusin", (e) => {
+      const tip = e.target.closest?.(".help-tip");
+      if (tip) showFloatingTip(tip);
+    });
+    document.addEventListener("focusout", (e) => {
+      if (e.target.closest?.(".help-tip")) hideFloatingTip();
+    });
+    window.addEventListener("scroll", hideFloatingTip, true);
   }
 
   async function init() {
