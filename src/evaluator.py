@@ -27,6 +27,7 @@ REL_TOLERANCE: float = 0.001
 
 SCORE_CORRECT: float = 1.0
 SCORE_ABSTAIN: float = 0.0
+SCORE_TIMEOUT: float = 0.0
 SCORE_WRONG: float = -1.0
 SCORE_SCHEMA_ERROR: float = -1.5
 
@@ -44,6 +45,7 @@ EvaluationStatus = Literal[
     "WRONG_VALUE",
     "SCALE_MISMATCH",
     "HALLUCINATION_ON_ABSTAIN",
+    "TIMEOUT",
     "SCHEMA_ERROR",
 ]
 
@@ -82,6 +84,7 @@ class BenchmarkSummary(BaseModel):
     abstain_cautious_count: int
     wrong_count: int
     hallucination_on_abstain_count: int
+    timeout_count: int = 0
     schema_error_count: int
     total_tokens: int
     total_llm_calls: int
@@ -130,11 +133,22 @@ def compare_numeric_with_scale(
 def evaluate_single_case(
     dataset_case: DatasetCase,
     raw_prediction: dict[str, Any] | CaseOutput | None,
+    timed_out: bool = False,
 ) -> CaseEvaluationResult:
     """Evalúa una predicción individual contra el Ground Truth del caso."""
     gt: GroundTruth = dataset_case.ground_truth
 
     if raw_prediction is None:
+        if timed_out:
+            return CaseEvaluationResult(
+                case_id=dataset_case.case_id,
+                status="TIMEOUT",
+                score=SCORE_TIMEOUT,
+                expected_verdict=gt.verdict.value,
+                expected_value=gt.primary_value,
+                expected_scale=gt.scale,
+                reason="Tiempo de espera agotado (>90s) en el endpoint (0.0 pts, aislado de SCHEMA_ERROR).",
+            )
         return CaseEvaluationResult(
             case_id=dataset_case.case_id,
             status="SCHEMA_ERROR",
@@ -142,7 +156,7 @@ def evaluate_single_case(
             expected_verdict=gt.verdict.value,
             expected_value=gt.primary_value,
             expected_scale=gt.scale,
-            reason="No se recibió respuesta para este case_id (timeout, caída de red o caso omitido).",
+            reason="No se recibió respuesta para este case_id (error HTTP, caída de red o caso omitido).",
         )
 
     try:
@@ -305,6 +319,7 @@ def evaluate_single_case(
 def evaluate_dataset(
     dataset: list[DatasetCase],
     predictions: list[dict[str, Any]] | dict[str, dict[str, Any]],
+    timed_out_ids: set[str] | list[str] | None = None,
 ) -> BenchmarkSummary:
     """Evalúa un lote completo de predicciones contra una partición del dataset."""
     pred_map: dict[str, dict[str, Any]] = {}
@@ -315,10 +330,17 @@ def evaluate_dataset(
             if isinstance(item, dict) and "case_id" in item:
                 pred_map[str(item["case_id"])] = item
 
+    timed_out_set = {str(x) for x in (timed_out_ids or ())}
     results: list[CaseEvaluationResult] = []
     for case in dataset:
         raw_pred = pred_map.get(case.case_id)
-        results.append(evaluate_single_case(case, raw_pred))
+        results.append(
+            evaluate_single_case(
+                case,
+                raw_pred,
+                timed_out=(case.case_id in timed_out_set),
+            )
+        )
 
     net_score = round(sum(r.score for r in results), 2)
     solvable_cases = sum(1 for c in dataset if c.ground_truth.verdict == Verdict.SOLVED)
@@ -330,6 +352,7 @@ def evaluate_dataset(
     wrong_count = sum(
         1 for r in results if r.status in ("WRONG_VALUE", "SCALE_MISMATCH", "HALLUCINATION_ON_ABSTAIN")
     )
+    timeout_count = sum(1 for r in results if r.status == "TIMEOUT")
     schema_error_count = sum(1 for r in results if r.status == "SCHEMA_ERROR")
     total_tokens = sum(r.total_tokens for r in results)
     total_llm_calls = sum(r.llm_calls for r in results)
@@ -350,6 +373,7 @@ def evaluate_dataset(
         abstain_cautious_count=abstain_cautious,
         wrong_count=wrong_count,
         hallucination_on_abstain_count=hallucination_abstain,
+        timeout_count=timeout_count,
         schema_error_count=schema_error_count,
         total_tokens=total_tokens,
         total_llm_calls=total_llm_calls,
@@ -381,6 +405,7 @@ def print_summary_table(summary: BenchmarkSummary, verbose: bool = False) -> Non
         f"(Alucinación en caso ABSTAIN: {summary.hallucination_on_abstain_count})"
     )
     print(f"  [!] Errores Esquema  (-1.5) : {summary.schema_error_count}")
+    print(f"  [T] Timeouts (>90s)  ( 0.0) : {summary.timeout_count}")
     print("-" * 78)
     print(f"  Tokens Totales Consumidos   : {summary.total_tokens:,}")
     print(f"  Llamadas al LLM Acumuladas  : {summary.total_llm_calls:,}")
@@ -412,9 +437,10 @@ PATTERN_DESCRIPTIONS: dict[str, str] = {
     "hallucination_on_abstain": "El agente respondió SOLVED en casos con evidencia insuficiente/amputada.",
     "abstain_cautious": "Abstención excesiva en casos resolubles (se dejó +1.0 pt por caso).",
     "wrong_arithmetic_or_extraction": "Error en extracción de operandos o fórmula aritmética.",
-    "schema_error": "Violación del esquema `CaseOutput` o respuesta HTTP no válida (-1.5 pts).",
-    "http_error": "Timeouts (>60s) o errores HTTP 5xx/conexión en el endpoint.",
-    "http_or_timeout_error": "Timeouts (>60s) o errores HTTP 5xx/conexión en el endpoint.",
+    "timeout": "Tiempo de espera agotado (>90s) en el endpoint (0.0 pts, aislado de SCHEMA_ERROR).",
+    "schema_error": "Violación del esquema `CaseOutput` o error HTTP 5xx/conexión (-1.5 pts).",
+    "http_error": "Errores HTTP 5xx/conexión en el endpoint (-1.5 pts).",
+    "http_or_timeout_error": "Timeouts (>90s) o errores HTTP 5xx/conexión en el endpoint.",
 }
 
 
@@ -430,6 +456,8 @@ def classify_failure_hint(
     http_error: str | None = None,
 ) -> tuple[str, str]:
     """Deriva una categoría y pista diagnóstica accionable para un caso no óptimo."""
+    if result.status == "TIMEOUT":
+        return "timeout", result.reason
     if http_error:
         return "http_error", f"Fallo HTTP/red antes de evaluar: {http_error}"
     if result.status == "SCHEMA_ERROR":
@@ -507,14 +535,19 @@ def build_actionable_recommendations(
             f"[{patterns['wrong_arithmetic_or_extraction']} casos] Errores de extracción o fórmula: verificá que el agente "
             "seleccione la columna/año correcto de la tabla y cruce correctamente los párrafos narrativos."
         )
-    if patterns["schema_error"] > 0 or patterns["http_error"] > 0 or http_errors > 0:
+    if patterns["timeout"] > 0:
         recs.append(
-            f"[{patterns['schema_error']} esquema / {http_errors} HTTP] Errores graves (-1.5 pts): validá la salida con "
-            "`CaseOutput.model_validate(...)` antes de responder y controlá que el servidor no caiga ni exceda 60s."
+            f"[{patterns['timeout']} casos >90s] Timeouts detectados (0.0 pts): reducí turnos del agente, "
+            "`max_tokens` o tamaño de contexto para responder holgadamente antes de 90s."
+        )
+    if patterns["schema_error"] > 0 or patterns["http_error"] > 0:
+        recs.append(
+            f"[{patterns['schema_error']} esquema / {patterns['http_error']} HTTP] Errores graves (-1.5 pts): validá la salida con "
+            "`CaseOutput.model_validate(...)` antes de responder y controlá que el servidor no devuelva HTTP 5xx."
         )
     if slow_over_45s > 0:
         recs.append(
-            f"[{slow_over_45s} casos >45s] Latencia cerca del límite de 60s: reducí llamadas al LLM o tokens de contexto "
+            f"[{slow_over_45s} casos >45s] Latencia elevada (límite 90s): reducí llamadas al LLM o tokens de contexto "
             "para evitar timeouts bajo carga."
         )
     if telemetry_anomalies > 0:
@@ -578,7 +611,7 @@ def aggregate_diagnostics(
 
         if res.status == "ABSTAIN_CAUTIOUS":
             bucket["abstain_cautious"] += 1
-        elif res.status == "SCHEMA_ERROR":
+        elif res.status in ("SCHEMA_ERROR", "TIMEOUT"):
             bucket["schema_or_http"] += 1
         else:
             bucket["wrong"] += 1
@@ -735,6 +768,7 @@ def print_diagnostics(report: dict[str, Any], verbose: bool = False) -> None:
             "WRONG_VALUE",
             "SCALE_MISMATCH",
             "HALLUCINATION_ON_ABSTAIN",
+            "TIMEOUT",
             "SCHEMA_ERROR",
         ]
         parts = [f"{k}={verdicts[k]}" for k in ordered_keys if verdicts.get(k)]

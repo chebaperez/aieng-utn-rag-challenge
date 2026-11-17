@@ -42,7 +42,7 @@ aieng-utn-rag-challenge/
 * **`scripts/run_local_eval.py`**: Cliente HTTP que envía `data/dev_set.json` a tu `POST /solve` local y ejecuta `src/evaluator.py`.
 * **`scripts/viewer.py`**: Visualizador web local para recorrer los 150 casos de `data/dev_set.json` y contrastar `predictions_local.json` contra el *Ground Truth*.
 * **`data/dev_set.json`**: Dataset Público de Desarrollo (**150 casos**: 135 resolubles `SOLVED` + 15 incompletos `ABSTAIN`).
-* **`notebooks/Colab_Starter_Template.ipynb`**: Plantilla para levantar `src/server.py` y el túnel `cloudflared` en Google Colab.
+* **`notebooks/Colab_Starter_Template.ipynb`**: Plantilla para el **Track Open-Weight** en Google Colab GPU T4 (CUDA 12, `llama-cpp-python`, `src/server.py` en hilo secundario compartiendo VRAM y túnel `cloudflared`).
 
 ---
 
@@ -124,9 +124,9 @@ python scripts/viewer.py --open
    - `"percent"` solo es compatible con `"percent"`.
 3. **Función de Puntuación Asimétrica:**
    - **`+1.0` punto:** `SOLVED` correcto dentro de tolerancia.
-   - **` 0.0` puntos:** `ABSTAIN` declarado.
+   - **` 0.0` puntos:** `ABSTAIN` declarado o `TIMEOUT` (`>90s` en el endpoint).
    - **`-1.0` punto:** `SOLVED` erróneo, escala incompatible o alucinación sobre un caso `ABSTAIN`.
-   - **`-1.5` puntos:** Violación del esquema `CaseOutput` o caída del endpoint.
+   - **`-1.5` puntos:** Violación del esquema `CaseOutput` o error HTTP 5xx/conexión.
 4. **Criterio de Desempate en Leaderboard:**
    1. Mayor Puntaje Neto acumulado.
    2. Menor consumo total de tokens (`total_tokens`).

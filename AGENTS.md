@@ -71,12 +71,12 @@ Antes de proponer cambios como terminados o consumir una corrida de calibración
    ```bash
    python scripts/run_local_eval.py --limit 20 --verbose
    ```
-   Verificar `schema_error_count == 0`, `telemetry_anomaly_count == 0` y latencias por debajo de `45 s`.
+   Verificar en consola `Errores Esquema (-1.5) : 0` (y en `eval_report_local.json` que `summary.telemetry_anomaly_count == 0`, sin clave `SCHEMA_ERROR` en `verdict_breakdown`) y latencias por debajo de `45 s`.
 4. **Ejecutar evaluación completa (`150` casos) y analizar `eval_report_local.json`**:
    ```bash
    python scripts/run_local_eval.py
    ```
-   Revisar `failure_patterns`, `by_answer_from` (`table` vs `table-text`) y latencia `p95` / `max` (debe ser `< 60 s`).
+   Revisar `failure_patterns`, `by_answer_from` (`table` vs `table-text`) y latencia `p95` / `max` (debe ser `< 90 s`).
 5. **Inspeccionar casos representativos en `scripts/viewer.py`**: confirmar que los cambios mejoran el razonamiento general y no introducen regresiones en otra modalidad.
 6. **Calibración remota controlada**: solo lanzar `POST /calibrate` cuando el cambio haya demostrado mejora neta en `dev_set.json`. Respetar el cooldown de `300 s` y no sobreajustar a métricas ciegas.
 
@@ -93,5 +93,5 @@ Si `run_local_eval.py` o el Evaluador Remoto reportan alguno de estos patrones:
 | `magnitude_10x` / `scale_mismatch` | Unidad de tabla ignorada o re-escalada por `1000` | Revisar detección de escala (`detect_scale_hint`) y mantener valor y `scale` en la misma unidad. |
 | `hallucination_on_abstain` | Se emitió `SOLVED` usando números inventados | Agregar/reforzar guardrail de respaldo de operandos en tabla y párrafos antes de calcular. |
 | `abstain_cautious` | El agente/auditor rechaza casos válidos | Relajar criterios de abstención y mejorar recuperación en notas (`search_notes`) para `table-text`. |
-| `schema_error` / `>45s` | Violación Pydantic, caída del servicio o timeout `60s` | Validar con `CaseOutput.model_validate`, acotar iteraciones/tokens y controlar VRAM/red. |
+| `schema_error` / `timeout` | Violación Pydantic, HTTP 5xx o timeout `>90s` | Validar con `CaseOutput.model_validate` (`-1.5`); si hay timeouts (`0.0`), acotar iteraciones/tokens. |
 | `telemetry_anomaly` | `usage` incompleto o `llm_calls == 0` | Sumar tokens y llamadas de todos los nodos/turnos del flujo en `TokenUsage`. |

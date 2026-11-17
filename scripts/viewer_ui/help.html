@@ -113,9 +113,15 @@
                   <td>GT: <code>ABSTAIN</code> · Pred: <code>SOLVED (42.0)</code></td>
                 </tr>
                 <tr>
+                  <td><span class="badge badge-warn">TIMEOUT</span></td>
+                  <td class="mono"><strong>0.0</strong></td>
+                  <td>Tiempo de espera agotado (<code>&gt;90s</code>) sin respuesta del endpoint (aislado de <code>SCHEMA_ERROR</code>).</td>
+                  <td>Latencia excede 90s bajo carga o generación extensa</td>
+                </tr>
+                <tr>
                   <td><span class="badge badge-err">SCHEMA_ERROR</span></td>
                   <td class="mono"><strong>-1.5</strong></td>
-                  <td>Falta la predicción, falló el contrato Pydantic o hubo error HTTP.</td>
+                  <td>Falta la predicción, falló el contrato Pydantic o hubo error HTTP (5xx/conexión).</td>
                   <td><code>primary_value: null</code> con <code>verdict: "SOLVED"</code></td>
                 </tr>
               </tbody>
@@ -158,7 +164,7 @@
         <div class="card-body">
           <ul>
             <li><strong>ORIGEN (<code>answer_from</code>):</strong> indica dónde está la evidencia necesaria para responder:
-              <code>table</code> (solo tabla), <code>text</code> (solo párrafos), <code>table-text</code> (híbrido entre tabla y párrafos) o <code>abstain</code> (evidencia insuficiente).</li>
+              <code>table</code> (solo tabla), <code>text</code> (solo párrafos) o <code>table-text</code> (híbrido entre tabla y párrafos).</li>
             <li><strong>GROUND TRUTH:</strong> filtra entre casos resolubles (<code>SOLVED</code>) e irresolubles (<code>ABSTAIN</code>).</li>
             <li><strong>RESULTADO EVALUACIÓN:</strong> disponible al cargar un JSON de predicciones; permite aislar rápidamente <em>Solo errores</em> (<code>-1.0 / -1.5</code>), <em>No óptimos</em> (incluye abstenciones cautelosas) o un estado específico.</li>
             <li><strong>Atajos de teclado:</strong> <code>&larr;</code> / <code>&rarr;</code> (o <code>K</code> / <code>J</code>) para cambiar de caso, y <code>S</code> para ocultar o mostrar el panel lateral de casos.</li>

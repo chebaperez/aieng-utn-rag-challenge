@@ -68,13 +68,12 @@
 
         <div class="filter-grid">
           <label class="filter-field">
-            <span>Origen <span class="help-tip" tabindex="0" data-tip="Fuente de evidencia necesaria: table (solo tabla), text (solo párrafos), table-text (ambos) o abstain (insuficiente).">?</span></span>
+            <span>Origen <span class="help-tip" tabindex="0" data-tip="Fuente de evidencia necesaria: table (solo tabla), text (solo párrafos) o table-text (ambos).">?</span></span>
             <select id="filter-source" class="select">
               <option value="all">Todos</option>
               <option value="table">table</option>
               <option value="text">text</option>
               <option value="table-text">table-text</option>
-              <option value="abstain">abstain</option>
             </select>
           </label>
 
@@ -99,6 +98,7 @@
               <option value="WRONG_VALUE">WRONG_VALUE (-1.0)</option>
               <option value="SCALE_MISMATCH">SCALE_MISMATCH (-1.0)</option>
               <option value="HALLUCINATION_ON_ABSTAIN">HALLUCINATION_ON_ABSTAIN (-1.0)</option>
+              <option value="TIMEOUT">TIMEOUT (0.0)</option>
               <option value="SCHEMA_ERROR">SCHEMA_ERROR (-1.5)</option>
             </select>
           </label>

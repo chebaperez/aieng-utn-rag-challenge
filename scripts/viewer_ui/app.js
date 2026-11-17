@@ -80,6 +80,7 @@
       case "ABSTAIN_ON_UNSOLVABLE":
         return "neutral";
       case "ABSTAIN_CAUTIOUS":
+      case "TIMEOUT":
         return "warn";
       case "WRONG_VALUE":
       case "SCALE_MISMATCH":
@@ -315,7 +316,7 @@
     primary_value: "Valor numérico final (en percent va de 0 a 100). En ABSTAIN debe ser null.",
     scale: "Unidad del valor: null, thousand, million, billion (normalizables entre sí) o percent (solo compatible con percent).",
     derivation: "Fórmula o expresión aritmética usada para obtener primary_value.",
-    answer_from: "Origen de la evidencia necesaria: table, text, table-text o abstain.",
+    answer_from: "Origen de la evidencia necesaria: table, text o table-text.",
     error_num: "Diferencia absoluta (abs) y relativa (rel) luego de normalizar escalas. Se aprueba si abs <= 0.01 o rel <= 0.001.",
   };
 

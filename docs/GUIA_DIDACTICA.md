@@ -23,7 +23,7 @@ El objetivo del desafío es construir un sistema de **Agent-Based Financial QA**
 | `data/dev_set.json` | Dataset público de desarrollo con **150 casos** (`135 SOLVED` + `15 ABSTAIN`; `61 table` + `89 table-text`; escalas: `56 percent`, `42 thousand`, `33 null`, `19 million`). |
 | `scripts/run_local_eval.py` | Cliente HTTP secuencial contra tu `POST /solve` local; genera `predictions_local.json` y `eval_report_local.json`. |
 | `scripts/viewer.py` | Visualizador web (`http://127.0.0.1:8501`) para inspeccionar casos, tablas, párrafos, *Ground Truth* y predicciones en `scripts/viewer_ui/`. |
-| `notebooks/Colab_Starter_Template.ipynb` | Plantilla lista para Google Colab (clonado, `uvicorn` en hilo secundario compartiendo GPU y túnel `cloudflared`). |
+| `notebooks/Colab_Starter_Template.ipynb` | Plantilla para el **Track Open-Weight** en Google Colab GPU T4 (CUDA 12, `llama-cpp-python`, `uvicorn` compartiendo VRAM y túnel `cloudflared`). |
 | `requirements.txt` | Dependencias base (`fastapi`, `uvicorn`, `pydantic`, `httpx`, `python-dotenv`). |
 
 ### 1.2 Flujo de desarrollo iterativo local
@@ -95,7 +95,8 @@ $$\text{pred\_norm} = \text{primary\_value} \times \frac{\text{factor}(\text{pre
 | `WRONG_VALUE` | `SOLVED` con valor numérico fuera de tolerancia | **`-1.0`** |
 | `SCALE_MISMATCH` | `SOLVED` con escala incompatible (`percent` vs no-`percent`) | **`-1.0`** |
 | `HALLUCINATION_ON_ABSTAIN` | `SOLVED` emitido sobre un caso cuyo *Ground Truth* es `ABSTAIN` | **`-1.0`** |
-| `SCHEMA_ERROR` | Violación de `CaseOutput`, desalineación de `case_id`, error HTTP o timeout (`>60s`) | **`-1.5`** |
+| `TIMEOUT` | Tiempo de espera agotado (`>90s`) sin respuesta del endpoint (aislado de `SCHEMA_ERROR`) | **`0.0`** |
+| `SCHEMA_ERROR` | Violación de `CaseOutput`, desalineación de `case_id` o error HTTP 5xx/conexión | **`-1.5`** |
 
 La asimetría es intencional: **adivinar sin evidencia cuesta el doble de diferencia que abstenerse (`-1.0` vs `0.0`)**, y romper el contrato o caerse cuesta aún más (`-1.5`).
 
@@ -285,7 +286,7 @@ flowchart LR
 
     subgraph N3["Nivel 3: Multi-Agente (Consenso + Auditor)"]
         direction TB
-        N3A["Extractor Tabular + Analista Textual"] --> N3B["Consenso de fórmulas"]
+        N3A["Analista Directo (1-Shot) + Investigador ReAct"] --> N3B["Consenso / Arbitraje"]
         N3B --> N3C["Auditor de Orden Temporal y Grounding"]
         N3C --> N3D["Veredicto final (SOLVED / ABSTAIN)"]
     end
@@ -302,8 +303,8 @@ flowchart LR
    - Bucle de *Tool-Calling* donde el agente decide qué filas inspeccionar (`inspect_table`), qué párrafos recuperar (`search_notes`) y qué calcular (`safe_calculate`).
    - Incorpora feedback automático del guardrail (`verify_operands_grounded_in_evidence`): si intenta calcular con un número inexistente, recibe el error en el historial para autocorregirse o abstenerse.
    - **Ventaja:** reduce drásticamente errores de escala (`SCALE_MISMATCH`) y mejora la detección de `ABSTAIN`.
-3. **Nivel 3 — Sistema Multi-Agente (Consenso + Auditor de Orden Temporal/Grounding):**
-   - Combina extracción especializada / doble perspectiva con un **Auditor** final encargado exclusivamente de validar tres puntos críticos antes de emitir `SOLVED`:
+3. **Nivel 3 — Sistema Multi-Agente (Analista + ReAct + Auditor de Orden Temporal/Grounding):**
+   - Combina una extracción directa (Analista 1-Shot) y una exploración autónoma (Investigador ReAct) con un **Auditor** final encargado exclusivamente de arbitrar y validar tres puntos críticos antes de emitir `SOLVED`:
      1. Que los operandos estén respaldados en evidencia real.
      2. Que el orden de resta corresponda a `Valor_Reciente - Valor_Base` (evitando errores de signo).
      3. Que exista coherencia entre la pregunta (`change` vs `percentage change`), la derivación y la escala.
@@ -418,7 +419,7 @@ El evaluador (`src/evaluator.py`) clasifica automáticamente los errores en cate
 6. **Configuración de runtime en Google Colab GPU T4:**
    - Usar `n_ctx = 16384` para no truncar tablas largas junto con sus notas y trazas de tools.
    - Fijar `temperature = 0.0` para reproducibilidad y estabilidad en formato JSON.
-   - Limitar `max_tokens` por respuesta y controlar la cantidad máxima de iteraciones del agente para que el peor caso (`max_latency`) quede holgadamente por debajo del timeout remoto de **`60 s`**.
+   - Limitar `max_tokens` por respuesta y controlar la cantidad máxima de iteraciones del agente para que el peor caso (`max_latency`) quede holgadamente por debajo del timeout remoto de **`90 s`**.
    - Verificar que el servidor corra en un hilo secundario dentro del mismo kernel (como muestra `notebooks/Colab_Starter_Template.ipynb`) cuando el modelo local usa la GPU, evitando duplicar procesos y quedar sin VRAM.
 
 ### 5.1 Cómo usar RAG de forma efectiva en este Challenge
@@ -428,7 +429,7 @@ Una duda habitual al abordar el desafío es dónde conviene aplicar **RAG con em
 ```mermaid
 flowchart LR
     CI["CaseInput (tabla + notas locales)"] --> R{"¿<= 5 párrafos y <= 20 filas?"}
-    R -->|"Sí (77.3%)"| FP["Fast-Path Adaptativo: inyectar tabla alineada + todos los párrafos"]
+    R -->|"Sí (73.3%)"| FP["Fast-Path Adaptativo: inyectar tabla alineada + todos los párrafos"]
     R -->|"No (> 5 párrafos, ~23%)"| AD["BM25 ligero + Footnote Linking + notas de escala (top_k=2..3)"]
     KB["Base Offline (tatqa_train / patrones propios)"] -->|"Embeddings CPU"| PR["Pattern / Few-Shot RAG (top_k=2..3 plantillas simbólicas)"]
     FP --> LLM["Modelo / Agente + Guardrail Grounding"]
@@ -442,10 +443,10 @@ flowchart LR
    - Incluso en un agente ReAct, ocultar la tabla y las notas en el Turno 0 para obligarlo a invocar `inspect_table` + `search_notes(..., top_k=5)` en casos chicos **duplica o triplica** las llamadas y tokens sin mejorar el rendimiento en `table-text`.
 
 2. **Enfoque recomendado sobre el `CaseInput`: *Retrieval Adaptativo* (sin embeddings):**
-   - **Fast-path en casos compactos (`<= 5` párrafos y `<= 20` filas):** inyectar directamente la tabla alineada y todos los párrafos ordenados (registrándolos en `execution_trace` si corresponde), evitando turnos ReAct redundantes.
+   - **Fast-path en casos compactos (`<= 5` párrafos y `<= 20` filas, `73.3%` de `dev_set.json`):** inyectar directamente la tabla alineada y todos los párrafos ordenados (registrándolos en `execution_trace` si corresponde), evitando turnos ReAct redundantes.
    - **Focalización de alta precisión en casos largos (`> 5` párrafos, ~`23%` del dataset):** aquí el problema no es falta de espacio en el contexto, sino **distracción por cifras vecinas** (en referencia de cátedra con `gpt-4.1-mini`, los casos `> 5` párrafos cayeron de **`79.4%`** con `top_k=2` a **`61.8%`** con `top_k=5`). Para atacarlo sin embeddings:
      - Reemplazar el conteo léxico simple por **BM25 ligero** (normalizando por el largo del párrafo).
-     - Usar **Footnote Linking**: cruzar marcadores en celdas (como `costs2` o `(1)`) con párrafos numerados `2.` / `(1)`, presentes en ~`37%` de los casos.
+     - Usar **Footnote Linking**: cruzar marcadores en celdas (como `costs2` o `(1)`) con párrafos numerados `2.` / `(1)`, presentes en ~`35%` (`34.7%`) de los casos.
      - **Preservar siempre las notas estructurales de unidad/escala** (ej. párrafos con `"in thousands"` o `"in millions"`) por fuera del recorte `top_k`, para no perder la escala al acotar a `top_k=2..3`.
 
 3. **Dónde SÍ tiene sentido un RAG real con embeddings (*Pattern / Few-Shot RAG* externo):**
@@ -474,7 +475,7 @@ sequenceDiagram
     Eval->>Tun: 1. Pre-vuelo GET /health (timeout 10s)
     Tun->>Eq: GET /health
     Eq-->>Eval: 200 OK {"status": "ok"} (si falla, NO descuenta cuota)
-    loop Cada caso del lote ciego (concurrencia = 1, timeout = 60s)
+    loop Cada caso del lote ciego (concurrencia = 1, timeout = 90s)
         Eval->>Tun: POST /solve (CaseInput)
         Tun->>Eq: POST /solve
         Eq-->>Eval: CaseOutput (1 reintento si 502/503/504 o timeout)
@@ -484,7 +485,7 @@ sequenceDiagram
 
 ### 6.1 Exposición del endpoint (`cloudflared` o servidor HTTPS)
 
-- En **Google Colab**, ejecutá las celdas de `notebooks/Colab_Starter_Template.ipynb`: levanta `src/server.py` en el puerto `8000` y abre un túnel público temporal `https://<id>.trycloudflare.com`.
+- En **Track Open-Weight (Google Colab GPU T4)**, ejecutá las celdas de `notebooks/Colab_Starter_Template.ipynb`: prepara `llama-cpp-python` con CUDA 12, levanta `src/server.py` en el puerto `8000` compartiendo VRAM y abre un túnel público temporal `https://<id>.trycloudflare.com`.
 - En **entorno local o servidor propio** (frecuente en Track Cloud Propietario), podés usar `cloudflared tunnel --url http://127.0.0.1:8000` o un dominio HTTPS público propio.
 - Comprobá desde otra terminal o navegador que `GET https://<tu-url>/health` devuelva HTTP `200` antes de lanzar una corrida remota.
 
@@ -505,7 +506,7 @@ Reglas operativas del evaluador remoto:
 2. **Cuota máxima:** cada equipo dispone de **`10` corridas** de calibración.
 3. **Cooldown:** existe una ventana de enfriamiento de **`300` segundos (5 minutos)** entre corridas sucesivas (`HTTP 429` si intentás antes).
 4. **Progreso en vivo:** mientras corre, el portal consulta `GET /calibrate/status/{team_id}` mostrando caso actual, latencia y errores HTTP.
-5. **Despacho secuencial y tolerancia de red:** los 30 casos se envían de a 1 por vez (`concurrencia = 1`) con timeout de `60 s` por caso y **1 reintento automático** (`backoff = 3 s`) ante errores transitorios de red/Cloudflare (`502`, `503`, `504` o timeout) antes de contabilizar `-1.5`.
+5. **Despacho secuencial y tolerancia de red:** los 30 casos se envían de a 1 por vez (`concurrencia = 1`) con timeout de `90 s` por caso y **1 reintento automático** (`backoff = 3 s`) ante errores transitorios de red/Cloudflare (`502`, `503`, `504` o timeout). Si tras el reintento persiste el *timeout*, se registra `TIMEOUT` (`0.0` pts); si falla el esquema o devuelve HTTP 5xx, se penaliza con `SCHEMA_ERROR` (`-1.5`).
 
 ### 6.3 Interpretación del diagnóstico ciego y prevención de sobreajuste
 

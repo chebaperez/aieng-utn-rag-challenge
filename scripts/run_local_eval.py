@@ -66,8 +66,8 @@ def main() -> int:
     parser.add_argument(
         "--timeout",
         type=float,
-        default=60.0,
-        help="Timeout en segundos por caso (por defecto: 60s).",
+        default=90.0,
+        help="Timeout en segundos por caso (por defecto: 90s).",
     )
     parser.add_argument(
         "--verbose",
@@ -83,6 +83,7 @@ def main() -> int:
 
     latencies_by_id: dict[str, float] = {}
     http_errors_by_id: dict[str, str] = {}
+    timed_out_ids: set[str] = set()
     raw_preds_by_id: dict[str, dict[str, Any]] = {}
 
     with httpx.Client(timeout=args.timeout) as client:
@@ -111,6 +112,11 @@ def main() -> int:
                     msg = f"HTTP {resp.status_code}: {resp.text[:160]}"
                     http_errors_by_id[case.case_id] = msg
                     print(f"  [!] {case.case_id}: {msg}")
+            except httpx.TimeoutException as exc:
+                latencies_by_id[case.case_id] = time.perf_counter() - t0
+                timed_out_ids.add(case.case_id)
+                http_errors_by_id[case.case_id] = f"Timeout (>{args.timeout:.0f}s): {exc}"
+                print(f"  [!] {case.case_id}: Timeout (>{args.timeout:.0f}s)")
             except Exception as exc:
                 latencies_by_id[case.case_id] = time.perf_counter() - t0
                 http_errors_by_id[case.case_id] = str(exc)
@@ -124,7 +130,7 @@ def main() -> int:
         json.dumps(predictions, indent=2, ensure_ascii=False), encoding="utf-8"
     )
 
-    summary = evaluate_dataset(cases, predictions)
+    summary = evaluate_dataset(cases, predictions, timed_out_ids=timed_out_ids)
     print_summary_table(summary, verbose=False)
 
     report = build_diagnostic_report(

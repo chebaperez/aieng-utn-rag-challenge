@@ -69,9 +69,9 @@ flowchart TB
 - **`src/server.py`**: expone la aplicación FastAPI `app`. Su función `solve_endpoint(case_input: CaseInput) -> CaseOutput` viene inicialmente con un *stub* que responde `ABSTAIN` y debe conectarse al pipeline del equipo.
 - **`src/evaluator.py`**: implementa la misma lógica de calificación usada por el Evaluador Remoto:
   - `compare_numeric_with_scale`: compatibilidad de `"percent"` y conversión de magnitudes (`None`, `"thousand"`, `"million"`, `"billion"`).
-  - `evaluate_single_case` / `evaluate_dataset`: asignación de estados (`CORRECT`, `ABSTAIN_ON_UNSOLVABLE`, `ABSTAIN_CAUTIOUS`, `WRONG_VALUE`, `SCALE_MISMATCH`, `HALLUCINATION_ON_ABSTAIN`, `SCHEMA_ERROR`) y puntaje asimétrico (`+1.0`, `0.0`, `-1.0`, `-1.5`).
+  - `evaluate_single_case` / `evaluate_dataset`: asignación de estados (`CORRECT`, `ABSTAIN_ON_UNSOLVABLE`, `ABSTAIN_CAUTIOUS`, `WRONG_VALUE`, `SCALE_MISMATCH`, `HALLUCINATION_ON_ABSTAIN`, `TIMEOUT`, `SCHEMA_ERROR`) y puntaje asimétrico (`+1.0`, `0.0`, `-1.0`, `-1.5`).
   - `aggregate_diagnostics` / `build_diagnostic_report`: cálculo de percentiles de latencia, desglose por `answer_from` (`table` vs `table-text`), clasificación de patrones de fallo (`classify_failure_hint`) y recomendaciones accionables.
-- **`scripts/run_local_eval.py`**: cliente HTTP síncrono que valida `GET /health`, envía secuencialmente los casos de `data/dev_set.json` a `POST /solve` (timeout configurable, por defecto `60.0 s`), guarda `predictions_local.json` y `eval_report_local.json` e imprime el diagnóstico en consola.
+- **`scripts/run_local_eval.py`**: cliente HTTP síncrono que valida `GET /health`, envía secuencialmente los casos de `data/dev_set.json` a `POST /solve` (timeout configurable, por defecto `90.0 s`), guarda `predictions_local.json` y `eval_report_local.json` e imprime el diagnóstico en consola.
 - **`scripts/viewer.py`**: servidor web ligero (`uvicorn` en `127.0.0.1:8501`) que carga `data/dev_set.json` y `predictions_local.json` (o cualquier archivo subido desde el navegador) para inspeccionar tablas, notas, *Ground Truth*, traza de herramientas y pista diagnóstica caso por caso.
 
 ---
@@ -90,7 +90,7 @@ sequenceDiagram
     Net->>API: GET /health
     API-->>Client: 200 OK {"status": "ok"}
 
-    loop Secuencial por caso (timeout 60s)
+    loop Secuencial por caso (timeout 90s)
         Client->>Net: 2. POST /solve (CaseInput)
         Net->>API: Valida CaseInput con Pydantic
         API->>Agent: Ejecuta razonamiento y tools deterministas
@@ -110,7 +110,7 @@ sequenceDiagram
 | **Acceso al *Ground Truth*** | Completo (en `eval_report_local.json` y `scripts/viewer.py`) | Opaco (solo métricas agregadas y patrones en `/api/runs/{run_id}/diagnostics`) |
 | **Cuota y Cooldown** | Ilimitada (local) | Calibración: máx. `10` corridas, `300 s` cooldown; Final: ejecutada por la cátedra |
 | **Reintento transitorio** | No (reporta error HTTP directo) | 1 reintento automático (`3 s` backoff) ante `502`/`503`/`504` o error de red |
-| **Concurrencia por equipo** | Secuencial (`1` caso por vez) | Secuencial (`1` caso por vez), `60 s` de timeout por caso |
+| **Concurrencia por equipo** | Secuencial (`1` caso por vez) | Secuencial (`1` caso por vez), `90 s` de timeout por caso |
 
 ---
 
@@ -118,7 +118,7 @@ sequenceDiagram
 
 El motor `src/evaluator.py` aplica un pipeline determinista sobre cada predicción:
 
-1. **Validación estructural**: si la petición falla (timeout `>60 s`, HTTP no-200), no pasa `CaseOutput.model_validate(...)` o `pred.case_id != case.case_id`, asigna `SCHEMA_ERROR` (`-1.5` pts).
+1. **Validación estructural y timeout**: si la petición excede el timeout (`>90 s`), asigna `TIMEOUT` (`0.0` pts, aislado de errores de contrato); si falla por HTTP 5xx/conexión, no pasa `CaseOutput.model_validate(...)` o `pred.case_id != case.case_id`, asigna `SCHEMA_ERROR` (`-1.5` pts).
 2. **Auditoría de telemetría**: marca `telemetry_anomaly = True` si `usage.total_tokens < 50` o `usage.llm_calls < 1`.
 3. **Evaluación de veredicto**:
    - `ABSTAIN`: suma `0.0` pts (diferenciando `ABSTAIN_ON_UNSOLVABLE` vs `ABSTAIN_CAUTIOUS`).
