@@ -140,6 +140,7 @@ def main() -> int:
     )
     print_diagnostics(report, verbose=args.verbose)
     print(f"Reporte diagnóstico guardado en: {args.report}")
+    print("Tip: inspeccioná los casos y errores visualmente con: python scripts/viewer.py")
     return 0
 
 

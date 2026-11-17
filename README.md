@@ -19,7 +19,9 @@ aieng-utn-rag-challenge/
 ├── notebooks/
 │   └── Colab_Starter_Template.ipynb   # Plantilla para Google Colab + cloudflared
 ├── scripts/
-│   └── run_local_eval.py              # Cliente HTTP para evaluación local
+│   ├── run_local_eval.py              # Cliente HTTP para evaluación local
+│   ├── viewer.py                      # Visualizador web de casos y predicciones
+│   └── viewer_ui/                     # Interfaz web estática (HTML/CSS/JS)
 ├── src/
 │   ├── __init__.py
 │   ├── schemas.py                     # Contrato formal Pydantic v2
@@ -33,6 +35,7 @@ aieng-utn-rag-challenge/
 * **`src/evaluator.py`**: Arnés de evaluación local offline (idéntico al motor del servidor central).
 * **`src/server.py`**: Plantilla base del microservicio FastAPI (`GET /health` y `POST /solve`).
 * **`scripts/run_local_eval.py`**: Cliente HTTP que envía `data/dev_set.json` a tu `POST /solve` local y ejecuta `src/evaluator.py`.
+* **`scripts/viewer.py`**: Visualizador web local para recorrer los 150 casos de `data/dev_set.json` y contrastar `predictions_local.json` contra el *Ground Truth*.
 * **`data/dev_set.json`**: Dataset Público de Desarrollo (**150 casos**: 135 resolubles `SOLVED` + 15 incompletos `ABSTAIN`).
 * **`notebooks/Colab_Starter_Template.ipynb`**: Plantilla para levantar `src/server.py` y el túnel `cloudflared` en Google Colab.
 
@@ -52,6 +55,9 @@ uvicorn src.server:app --host 0.0.0.0 --port 8000
 
 # 3. Evaluar tu servidor HTTP localmente contra data/dev_set.json (Terminal 2)
 python scripts/run_local_eval.py --limit 20 --verbose
+
+# 4. Explorar visualmente los 150 casos y contrastar predicciones vs Ground Truth
+python scripts/viewer.py --open
 ```
 
 ---
@@ -120,4 +126,12 @@ python scripts/run_local_eval.py --limit 20 --verbose
    1. Mayor Puntaje Neto acumulado.
    2. Menor consumo total de tokens (`total_tokens`).
    3. Menor latencia promedio por caso.
+
+---
+
+## 📚 Documentación Complementaria
+
+* [**Guía Didáctica y de Buenas Prácticas (`docs/GUIA_DIDACTICA.md`)**](./docs/GUIA_DIDACTICA.md): Catálogo conceptual de tools recomendadas, progresión didáctica de referencia en 3 niveles con resultados medidos por la cátedra, patrones de falla reales y guía de uso del Evaluador Remoto.
+* [**Arquitectura del Starter Kit (`ARCHITECTURE.md`)**](./ARCHITECTURE.md): Mapa de componentes, contrato HTTP de caja negra, flujo de evaluación local/remota y topologías por Track.
+* [**Guía Operativa para Agentes y Desarrolladores (`AGENTS.md`)**](./AGENTS.md): Invariantes del contrato, flujo de verificación offline y checklist de diagnóstico.
 

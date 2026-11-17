@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Benchmark Viewer · Agentic Financial RAG</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div id="drop-overlay" class="drop-overlay hidden">
+    <div class="drop-overlay-box">
+      <div class="drop-icon">JSON</div>
+      <p>Soltá tu archivo de predicciones (<code>.json</code>) para evaluarlo y contrastarlo</p>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <button
+        id="toggle-sidebar-btn"
+        class="btn btn-sm"
+        title="Ocultar / mostrar panel de casos (S)"
+        aria-expanded="true"
+      >
+        &#9776; Casos
+      </button>
+      <div class="topbar-brand">
+        <div class="brand-title">
+          <span class="brand-dot"></span>
+          <h1>Agentic RAG Benchmark Viewer</h1>
+        </div>
+        <span id="dataset-meta" class="brand-sub">Cargando dataset...</span>
+      </div>
+    </div>
+
+    <div id="summary-bar" class="summary-bar"></div>
+
+    <div class="topbar-actions">
+      <div id="pred-badge" class="pred-badge hidden">
+        <span id="pred-filename"></span>
+        <button id="clear-pred-btn" class="icon-btn" title="Quitar predicciones">&times;</button>
+      </div>
+      <label class="btn" for="dataset-file-input" title="Cargar otro archivo dev_set.json">
+        Cargar dataset (.json)
+      </label>
+      <input id="dataset-file-input" type="file" accept=".json,application/json" hidden />
+      <label class="btn btn-primary" for="pred-file-input">
+        Cargar predicciones (.json)
+      </label>
+      <input id="pred-file-input" type="file" accept=".json,application/json" hidden />
+    </div>
+  </header>
+
+  <div id="error-banner" class="error-banner hidden"></div>
+
+  <div id="workspace" class="workspace">
+    <aside class="sidebar">
+      <div class="sidebar-controls">
+        <input
+          id="search-input"
+          type="search"
+          class="input"
+          placeholder="Buscar ID, pregunta, tabla o texto..."
+        />
+
+        <div class="filter-grid">
+          <label class="filter-field">
+            <span>Origen</span>
+            <select id="filter-source" class="select">
+              <option value="all">Todos</option>
+              <option value="table">table</option>
+              <option value="text">text</option>
+              <option value="table-text">table-text</option>
+              <option value="abstain">abstain</option>
+            </select>
+          </label>
+
+          <label class="filter-field">
+            <span>Ground Truth</span>
+            <select id="filter-gt-verdict" class="select">
+              <option value="all">Todos</option>
+              <option value="SOLVED">SOLVED</option>
+              <option value="ABSTAIN">ABSTAIN</option>
+            </select>
+          </label>
+
+          <label class="filter-field filter-full">
+            <span>Resultado evaluación</span>
+            <select id="filter-eval-status" class="select" disabled>
+              <option value="all">Todos (sin predicciones)</option>
+              <option value="ERRORS_ONLY">Solo errores (-1.0 / -1.5)</option>
+              <option value="NON_OPTIMAL">No óptimos (errores + cautelosos)</option>
+              <option value="CORRECT">CORRECT (+1.0)</option>
+              <option value="ABSTAIN_ON_UNSOLVABLE">ABSTAIN_ON_UNSOLVABLE (0.0)</option>
+              <option value="ABSTAIN_CAUTIOUS">ABSTAIN_CAUTIOUS (0.0)</option>
+              <option value="WRONG_VALUE">WRONG_VALUE (-1.0)</option>
+              <option value="SCALE_MISMATCH">SCALE_MISMATCH (-1.0)</option>
+              <option value="HALLUCINATION_ON_ABSTAIN">HALLUCINATION_ON_ABSTAIN (-1.0)</option>
+              <option value="SCHEMA_ERROR">SCHEMA_ERROR (-1.5)</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="nav-strip">
+          <span id="filter-count" class="nav-count">0 / 0</span>
+          <div class="nav-buttons">
+            <button id="prev-btn" class="btn btn-sm" title="Caso anterior (←)">&larr; Ant</button>
+            <button id="next-btn" class="btn btn-sm" title="Caso siguiente (→)">Sig &rarr;</button>
+          </div>
+        </div>
+      </div>
+
+      <ul id="case-list" class="case-list"></ul>
+    </aside>
+
+    <main id="detail-pane" class="detail-pane">
+      <div class="empty-state">Cargando casos...</div>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
