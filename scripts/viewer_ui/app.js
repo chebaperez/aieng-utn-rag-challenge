@@ -107,6 +107,11 @@
     els.errorBanner.classList.remove("hidden");
   }
 
+  function helpTip(text) {
+    const safe = escapeHtml(text);
+    return `<span class="help-tip" tabindex="0" data-tip="${safe}" title="${safe}">?</span>`;
+  }
+
   function renderSummaryBar() {
     if (!state.evalData || !state.evalData.loaded) {
       const total = state.cases.length;
@@ -114,8 +119,8 @@
       const abstain = total - solved;
       els.summaryBar.innerHTML = `
         <span class="metric-pill">Casos: <strong>${total}</strong></span>
-        <span class="metric-pill ok">SOLVED: <strong>${solved}</strong></span>
-        <span class="metric-pill">ABSTAIN: <strong>${abstain}</strong></span>
+        <span class="metric-pill ok" title="Casos resolubles con la evidencia dada">SOLVED: <strong>${solved}</strong></span>
+        <span class="metric-pill" title="Casos donde falta evidencia y el agente debe abstenerse">ABSTAIN: <strong>${abstain}</strong></span>
       `;
       els.predBadge.classList.add("hidden");
       els.filterEvalStatus.disabled = true;
@@ -129,13 +134,13 @@
     const acc = typeof s.accuracy_rate === "number" ? `${s.accuracy_rate.toFixed(1)}%` : "—";
 
     els.summaryBar.innerHTML = `
-      <span class="metric-pill">Score: <strong>${s.net_score} / ${s.max_possible_score}</strong></span>
-      <span class="metric-pill">Accuracy: <strong>${acc}</strong></span>
-      <span class="metric-pill ok">OK: <strong>${s.correct_count}</strong></span>
-      <span class="metric-pill">Abst. OK: <strong>${s.abstain_on_unsolvable_count}</strong></span>
-      <span class="metric-pill warn">Cautelosos: <strong>${s.abstain_cautious_count}</strong></span>
-      <span class="metric-pill err">Errores: <strong>${errors}</strong></span>
-      <span class="metric-pill">Tokens: <strong>${(s.total_tokens || 0).toLocaleString()}</strong></span>
+      <span class="metric-pill" title="Puntaje neto acumulado (+1.0 correcto, 0.0 abstención, -1.0 error/alucinación, -1.5 schema)">Score: <strong>${s.net_score} / ${s.max_possible_score}</strong></span>
+      <span class="metric-pill" title="Porcentaje de casos óptimos (CORRECT + ABSTAIN_ON_UNSOLVABLE)">Accuracy: <strong>${acc}</strong></span>
+      <span class="metric-pill ok" title="Casos SOLVED correctos dentro de tolerancia (+1.0)">OK: <strong>${s.correct_count}</strong></span>
+      <span class="metric-pill" title="Abstenciones correctas en casos irresolubles (0.0)">Abst. OK: <strong>${s.abstain_on_unsolvable_count}</strong></span>
+      <span class="metric-pill warn" title="Abstenciones en casos que sí eran resolubles (0.0)">Cautelosos: <strong>${s.abstain_cautious_count}</strong></span>
+      <span class="metric-pill err" title="WRONG_VALUE, SCALE_MISMATCH, HALLUCINATION_ON_ABSTAIN (-1.0) y SCHEMA_ERROR (-1.5)">Errores: <strong>${errors}</strong></span>
+      <span class="metric-pill" title="Total de tokens reportados en toda la corrida">Tokens: <strong>${(s.total_tokens || 0).toLocaleString()}</strong></span>
     `;
 
     els.predFilename.textContent = state.evalData.source_name || "predictions.json";
@@ -290,20 +295,29 @@
     `;
   }
 
-  function renderCompareRow(gtLabel, gtVal, predLabel, predVal, diffClass = "", isLast = false) {
+  function renderCompareRow(gtLabel, gtVal, predLabel, predVal, diffClass = "", isLast = false, gtTip = "", predTip = "") {
     const lastCls = isLast ? "is-last" : "";
     const diffCls = diffClass ? "is-diff" : "";
     return `
       <div class="compare-cell ${lastCls}">
-        <span class="compare-cell-label">${escapeHtml(gtLabel)}</span>
+        <span class="compare-cell-label">${escapeHtml(gtLabel)}${gtTip ? helpTip(gtTip) : ""}</span>
         <span class="compare-cell-value">${gtVal}</span>
       </div>
       <div class="compare-cell ${lastCls} ${diffCls}">
-        <span class="compare-cell-label">${escapeHtml(predLabel)}</span>
+        <span class="compare-cell-label">${escapeHtml(predLabel)}${predTip ? helpTip(predTip) : ""}</span>
         <span class="compare-cell-value">${predVal}</span>
       </div>
     `;
   }
+
+  const FIELD_TIPS = {
+    verdict: "SOLVED si hay evidencia suficiente para calcular; ABSTAIN si falta información indispensable.",
+    primary_value: "Valor numérico final (en percent va de 0 a 100). En ABSTAIN debe ser null.",
+    scale: "Unidad del valor: null, thousand, million, billion (normalizables entre sí) o percent (solo compatible con percent).",
+    derivation: "Fórmula o expresión aritmética usada para obtener primary_value.",
+    answer_from: "Origen de la evidencia necesaria: table, text, table-text o abstain.",
+    error_num: "Diferencia absoluta (abs) y relativa (rel) luego de normalizar escalas. Se aprueba si abs <= 0.01 o rel <= 0.001.",
+  };
 
   function renderComparisonSection(caseObj, evalEntry) {
     const gt = caseObj.ground_truth;
@@ -313,11 +327,11 @@
         <div class="compare-section">
           <div class="compare-aligned-grid">
             <div class="compare-panel-head">
-              <h3 class="card-title">Ground Truth</h3>
+              <h3 class="card-title">Ground Truth ${helpTip("Respuesta oficial esperada contra la cual se evalúa cada caso.")}</h3>
               <span class="badge badge-${gt.verdict === "ABSTAIN" ? "neutral" : "accent"}">${escapeHtml(gt.verdict)}</span>
             </div>
             <div class="compare-panel-head">
-              <h3 class="card-title">Predicción</h3>
+              <h3 class="card-title">Predicción ${helpTip("Salida CaseOutput devuelta por tu endpoint POST /solve para este caso.")}</h3>
               <span class="badge badge-neutral">Sin cargar</span>
             </div>
 
@@ -325,33 +339,51 @@
               "verdict",
               escapeHtml(gt.verdict),
               "verdict",
-              '<span class="sub-note" style="margin:0;">—</span>'
+              '<span class="sub-note" style="margin:0;">—</span>',
+              false,
+              false,
+              FIELD_TIPS.verdict,
+              FIELD_TIPS.verdict
             )}
             ${renderCompareRow(
               "primary_value",
               escapeHtml(formatVal(gt.primary_value)),
               "primary_value",
-              '<span class="sub-note" style="margin:0;">—</span>'
+              '<span class="sub-note" style="margin:0;">—</span>',
+              false,
+              false,
+              FIELD_TIPS.primary_value,
+              FIELD_TIPS.primary_value
             )}
             ${renderCompareRow(
               "scale",
               escapeHtml(formatVal(gt.scale)),
               "scale",
-              '<span class="sub-note" style="margin:0;">—</span>'
+              '<span class="sub-note" style="margin:0;">—</span>',
+              false,
+              false,
+              FIELD_TIPS.scale,
+              FIELD_TIPS.scale
             )}
             ${renderCompareRow(
               "derivation",
               escapeHtml(gt.derivation || "—"),
               "derivation",
-              '<span class="sub-note" style="margin:0;">—</span>'
+              '<span class="sub-note" style="margin:0;">—</span>',
+              false,
+              false,
+              FIELD_TIPS.derivation,
+              FIELD_TIPS.derivation
             )}
             ${renderCompareRow(
               "answer_from",
               escapeHtml(gt.answer_from),
               "estado",
               'Cargá o arrastrá <code>predictions_local.json</code>',
-              "",
-              true
+              false,
+              true,
+              FIELD_TIPS.answer_from,
+              ""
             )}
           </div>
         </div>
@@ -399,11 +431,11 @@
 
         <div class="compare-aligned-grid">
           <div class="compare-panel-head">
-            <h3 class="card-title">Ground Truth</h3>
+            <h3 class="card-title">Ground Truth ${helpTip("Respuesta oficial esperada contra la cual se evalúa cada caso.")}</h3>
             <span class="badge badge-${gt.verdict === "ABSTAIN" ? "neutral" : "accent"}">${escapeHtml(gt.verdict)}</span>
           </div>
           <div class="compare-panel-head">
-            <h3 class="card-title">Predicción</h3>
+            <h3 class="card-title">Predicción ${helpTip("Salida CaseOutput devuelta por tu endpoint POST /solve para este caso.")}</h3>
             <span class="badge badge-${tone}">${escapeHtml(ev.status)} (${formatScore(ev.score)})</span>
           </div>
 
@@ -412,27 +444,40 @@
             escapeHtml(ev.expected_verdict),
             "verdict",
             escapeHtml(ev.predicted_verdict ?? "—"),
-            verdictDiff
+            verdictDiff,
+            false,
+            FIELD_TIPS.verdict,
+            FIELD_TIPS.verdict
           )}
           ${renderCompareRow(
             "primary_value",
             escapeHtml(formatVal(ev.expected_value)),
             "primary_value",
             `${escapeHtml(formatVal(ev.predicted_value))}${predValExtra}`,
-            valDiff
+            valDiff,
+            false,
+            FIELD_TIPS.primary_value,
+            FIELD_TIPS.primary_value
           )}
           ${renderCompareRow(
             "scale",
             escapeHtml(formatVal(ev.expected_scale)),
             "scale",
             escapeHtml(formatVal(ev.predicted_scale)),
-            scaleDiff
+            scaleDiff,
+            false,
+            FIELD_TIPS.scale,
+            FIELD_TIPS.scale
           )}
           ${renderCompareRow(
             "derivation",
             escapeHtml(gt.derivation || "—"),
             "derivation",
-            escapeHtml(pred.derivation || "—")
+            escapeHtml(pred.derivation || "—"),
+            false,
+            false,
+            FIELD_TIPS.derivation,
+            FIELD_TIPS.derivation
           )}
           ${renderCompareRow(
             "answer_from",
@@ -440,7 +485,9 @@
             "error num.",
             escapeHtml(errorStats),
             false,
-            true
+            true,
+            FIELD_TIPS.answer_from,
+            FIELD_TIPS.error_num
           )}
         </div>
       </div>
@@ -457,7 +504,7 @@
     return `
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title">Execution Trace (${trace.length} pasos)</h2>
+          <h2 class="card-title">Execution Trace (${trace.length} pasos) ${helpTip("Secuencia de herramientas invocadas por el agente (tool_name, input y output) para resolver el caso.")}</h2>
         </div>
         <div class="card-body">
           ${
@@ -497,7 +544,7 @@
 
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title">Telemetría (usage)</h2>
+          <h2 class="card-title">Telemetría (usage) ${helpTip("Tokens y llamadas LLM consumidas en este caso. Si total_tokens < 50, llm_calls < 1 o la suma no cierra, se marca anomalía.")}</h2>
           ${
             ev.telemetry_anomaly
               ? `<span class="badge badge-warn">Anomalía telemetría</span>`
@@ -548,7 +595,7 @@
     const tableCard = `
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">Tabla Financiera</h3>
+          <h3 class="card-title">Tabla Financiera ${helpTip("Tabla extraída del reporte financiero 10-K enviada al agente como contexto estructurado.")}</h3>
           <div class="highlight-bar">
             <input
               id="local-highlight-input"
@@ -568,7 +615,7 @@
     const paragraphsCard = `
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">Párrafos Narrativos (${(caseObj.paragraphs || []).length})</h3>
+          <h3 class="card-title">Párrafos Narrativos (${(caseObj.paragraphs || []).length}) ${helpTip("Notas y párrafos narrativos numerados del reporte 10-K enviados al agente.")}</h3>
         </div>
         <div id="paragraphs-container" class="card-body">
           ${renderParagraphs(caseObj.paragraphs, state.highlightTerm)}

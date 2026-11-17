@@ -40,6 +40,9 @@
         <span id="pred-filename"></span>
         <button id="clear-pred-btn" class="icon-btn" title="Quitar predicciones">&times;</button>
       </div>
+      <a href="/help" target="_blank" class="btn" title="Abrir guía de conceptos y ejemplos del evaluador">
+        ? Ayuda
+      </a>
       <label class="btn" for="dataset-file-input" title="Cargar otro archivo dev_set.json">
         Cargar dataset (.json)
       </label>
@@ -65,7 +68,7 @@
 
         <div class="filter-grid">
           <label class="filter-field">
-            <span>Origen</span>
+            <span>Origen <span class="help-tip" tabindex="0" data-tip="Fuente de evidencia necesaria: table (solo tabla), text (solo párrafos), table-text (ambos) o abstain (insuficiente)." title="Fuente de evidencia necesaria: table (solo tabla), text (solo párrafos), table-text (ambos) o abstain (insuficiente).">?</span></span>
             <select id="filter-source" class="select">
               <option value="all">Todos</option>
               <option value="table">table</option>
@@ -76,7 +79,7 @@
           </label>
 
           <label class="filter-field">
-            <span>Ground Truth</span>
+            <span>Ground Truth <span class="help-tip" tabindex="0" data-tip="Veredicto esperado oficial: SOLVED (resoluble con la evidencia dada) o ABSTAIN (evidencia insuficiente)." title="Veredicto esperado oficial: SOLVED (resoluble con la evidencia dada) o ABSTAIN (evidencia insuficiente).">?</span></span>
             <select id="filter-gt-verdict" class="select">
               <option value="all">Todos</option>
               <option value="SOLVED">SOLVED</option>
@@ -85,7 +88,7 @@
           </label>
 
           <label class="filter-field filter-full">
-            <span>Resultado evaluación</span>
+            <span>Resultado evaluación <span class="help-tip" tabindex="0" data-tip="Clasificación del evaluador al contrastar la predicción contra el Ground Truth (+1.0 correcto, 0.0 abstención, -1.0 error/alucinación, -1.5 error de esquema)." title="Clasificación del evaluador al contrastar la predicción contra el Ground Truth (+1.0 correcto, 0.0 abstención, -1.0 error/alucinación, -1.5 error de esquema).">?</span></span>
             <select id="filter-eval-status" class="select" disabled>
               <option value="all">Todos (sin predicciones)</option>
               <option value="ERRORS_ONLY">Solo errores (-1.0 / -1.5)</option>

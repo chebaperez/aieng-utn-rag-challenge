@@ -145,6 +145,10 @@ def create_app(
     def index() -> FileResponse:
         return FileResponse(UI_DIR / "index.html")
 
+    @app.get("/help", include_in_schema=False)
+    def help_page() -> FileResponse:
+        return FileResponse(UI_DIR / "help.html")
+
     @app.get("/api/dataset")
     def get_dataset() -> dict[str, Any]:
         return {

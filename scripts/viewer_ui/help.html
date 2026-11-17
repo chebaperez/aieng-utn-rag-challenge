@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ayuda y Guía de Referencia · Agentic RAG Benchmark Viewer</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="help-body">
+  <header class="topbar">
+    <div class="topbar-left">
+      <a href="/" class="btn btn-sm">&larr; Volver al visualizador</a>
+      <div class="topbar-brand">
+        <div class="brand-title">
+          <span class="brand-dot"></span>
+          <h1>Guía del Evaluador y Visualizador</h1>
+        </div>
+        <span class="brand-sub">Conceptos, filtros, métricas y ejemplos representativos</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="help-container">
+    <nav class="help-toc card">
+      <div class="card-header">
+        <h2 class="card-title">Contenido</h2>
+      </div>
+      <div class="card-body help-toc-links">
+        <a href="#evaluador">1. Cómo evalúa el benchmark</a>
+        <a href="#estados">2. Estados y puntuación asimétrica</a>
+        <a href="#escalas">3. Escalas, tolerancias y ejemplos</a>
+        <a href="#filtros">4. Filtros y navegación</a>
+        <a href="#paneles">5. Cómo leer los paneles y comparar</a>
+      </div>
+    </nav>
+
+    <main class="help-main">
+      <section id="evaluador" class="card help-section">
+        <div class="card-header">
+          <h2 class="card-title">1. Cómo evalúa el benchmark</h2>
+        </div>
+        <div class="card-body">
+          <p>
+            Cada caso del dataset contiene una <strong>pregunta financiera</strong>, una
+            <strong>tabla</strong>, una lista de <strong>párrafos narrativos</strong> y el
+            <strong>Ground Truth (GT)</strong> esperado. Tu sistema agéntico debe responder un objeto
+            <code>CaseOutput</code> con:
+          </p>
+          <ul>
+            <li><code>verdict</code>: <code>"SOLVED"</code> si encontró evidencia suficiente para calcular la respuesta, o <code>"ABSTAIN"</code> si falta información indispensable.</li>
+            <li><code>primary_value</code>: número finito cuando <code>verdict == "SOLVED"</code>, o <code>null</code> cuando <code>verdict == "ABSTAIN"</code>.</li>
+            <li><code>scale</code>: unidad de magnitud (<code>null</code>, <code>"thousand"</code>, <code>"million"</code>, <code>"billion"</code> o <code>"percent"</code>).</li>
+            <li><code>derivation</code>: fórmula o expresión aritmética utilizada para llegar al valor.</li>
+            <li><code>execution_trace</code>: pasos de herramientas ejecutados (al menos 1 paso si <code>verdict == "SOLVED"</code>).</li>
+            <li><code>usage</code>: contadores reales de tokens (<code>prompt_tokens + completion_tokens == total_tokens</code>) y <code>llm_calls</code>.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="estados" class="card help-section">
+        <div class="card-header">
+          <h2 class="card-title">2. Estados de evaluación y puntuación asimétrica</h2>
+        </div>
+        <div class="card-body">
+          <p>
+            El evaluador premia las respuestas correctas, no penaliza abstenerse cuando corresponde (y es neutro ante una abstención cautelosa), pero castiga las alucinaciones y errores numéricos o de contrato:
+          </p>
+          <div class="table-wrap">
+            <table class="contrast-table">
+              <thead>
+                <tr>
+                  <th>Estado</th>
+                  <th>Puntaje</th>
+                  <th>Cuándo ocurre</th>
+                  <th>Ejemplo típico</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="badge badge-ok">CORRECT</span></td>
+                  <td class="mono"><strong>+1.0</strong></td>
+                  <td><code>SOLVED</code> en caso resoluble, escala compatible y valor dentro de tolerancia.</td>
+                  <td>GT: <code>-5.934 percent</code> · Pred: <code>-5.934 percent</code></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-neutral">ABSTAIN_ON_UNSOLVABLE</span></td>
+                  <td class="mono"><strong>0.0</strong></td>
+                  <td><code>ABSTAIN</code> correcto sobre un caso sin evidencia suficiente.</td>
+                  <td>GT: <code>ABSTAIN</code> · Pred: <code>ABSTAIN</code></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-warn">ABSTAIN_CAUTIOUS</span></td>
+                  <td class="mono"><strong>0.0</strong></td>
+                  <td>El agente se abstuvo, pero el caso sí era resoluble (dejó +1.0 pt sin ganar).</td>
+                  <td>GT: <code>SOLVED (19213)</code> · Pred: <code>ABSTAIN</code></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-err">WRONG_VALUE</span></td>
+                  <td class="mono"><strong>-1.0</strong></td>
+                  <td>El valor normalizado excede la tolerancia respecto del Ground Truth.</td>
+                  <td>GT: <code>19213</code> · Pred: <code>12345</code> (error de extracción o cálculo)</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-err">SCALE_MISMATCH</span></td>
+                  <td class="mono"><strong>-1.0</strong></td>
+                  <td>Se mezcló <code>"percent"</code> con una escala de magnitud (o viceversa).</td>
+                  <td>GT: <code>15.4 percent</code> · Pred: <code>15.4 million</code></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-err">HALLUCINATION_ON_ABSTAIN</span></td>
+                  <td class="mono"><strong>-1.0</strong></td>
+                  <td>El agente respondió <code>SOLVED</code> en un caso cuyo GT es <code>ABSTAIN</code>.</td>
+                  <td>GT: <code>ABSTAIN</code> · Pred: <code>SOLVED (42.0)</code></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-err">SCHEMA_ERROR</span></td>
+                  <td class="mono"><strong>-1.5</strong></td>
+                  <td>Falta la predicción, falló el contrato Pydantic o hubo error HTTP.</td>
+                  <td><code>primary_value: null</code> con <code>verdict: "SOLVED"</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="escalas" class="card help-section">
+        <div class="card-header">
+          <h2 class="card-title">3. Normalización de escalas y tolerancia numérica</h2>
+        </div>
+        <div class="card-body">
+          <ul>
+            <li><strong>Magnitudes (<code>null</code>, <code>"thousand"</code>, <code>"million"</code>, <code>"billion"</code>):</strong> el evaluador convierte la predicción a la escala del Ground Truth antes de comparar. Por ejemplo, <code>1500</code> con <code>scale="thousand"</code> equivale exactamente a <code>1.5</code> con <code>scale="million"</code>.</li>
+            <li><strong>Porcentajes (<code>"percent"</code>):</strong> siempre deben expresarse de <strong>0 a 100</strong> (ej. <code>15.4</code> para <code>15.4%</code>, nunca <code>0.154</code>) y solo son compatibles con <code>scale="percent"</code>.</li>
+            <li><strong>Tolerancia numérica:</strong> se aprueba si el error absoluto es <code>&le; 0.01</code> <strong>o</strong> el error relativo es <code>&le; 0.001</code> (0.1%).</li>
+          </ul>
+          <div class="diag-banner ok" style="margin-top:10px;">
+            <div class="diag-top"><span>Ejemplo de normalización válida</span><span>+1.0</span></div>
+            <div class="diag-msg">
+              GT: <code>primary_value = 2.828</code>, <code>scale = "million"</code> &nbsp;|&nbsp;
+              Pred: <code>primary_value = 2828</code>, <code>scale = "thousand"</code> &rarr; Normalizado a <code>2.828</code> &rarr; <strong>CORRECT</strong>.
+            </div>
+          </div>
+          <div class="diag-banner err" style="margin-top:8px;">
+            <div class="diag-top"><span>Ejemplo de error frecuente (percent_decimal)</span><span>-1.0</span></div>
+            <div class="diag-msg">
+              GT: <code>primary_value = 15.4</code>, <code>scale = "percent"</code> &nbsp;|&nbsp;
+              Pred: <code>primary_value = 0.154</code>, <code>scale = "percent"</code> &rarr; <strong>WRONG_VALUE</strong> (faltó multiplicar por 100).
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="filtros" class="card help-section">
+        <div class="card-header">
+          <h2 class="card-title">4. Filtros y navegación del visualizador</h2>
+        </div>
+        <div class="card-body">
+          <ul>
+            <li><strong>ORIGEN (<code>answer_from</code>):</strong> indica dónde está la evidencia necesaria para responder:
+              <code>table</code> (solo tabla), <code>text</code> (solo párrafos), <code>table-text</code> (híbrido entre tabla y párrafos) o <code>abstain</code> (evidencia insuficiente).</li>
+            <li><strong>GROUND TRUTH:</strong> filtra entre casos resolubles (<code>SOLVED</code>) e irresolubles (<code>ABSTAIN</code>).</li>
+            <li><strong>RESULTADO EVALUACIÓN:</strong> disponible al cargar un JSON de predicciones; permite aislar rápidamente <em>Solo errores</em> (<code>-1.0 / -1.5</code>), <em>No óptimos</em> (incluye abstenciones cautelosas) o un estado específico.</li>
+            <li><strong>Atajos de teclado:</strong> <code>&larr;</code> / <code>&rarr;</code> (o <code>K</code> / <code>J</code>) para cambiar de caso, y <code>S</code> para ocultar o mostrar el panel lateral de casos.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="paneles" class="card help-section">
+        <div class="card-header">
+          <h2 class="card-title">5. Cómo leer los paneles y la comparación</h2>
+        </div>
+        <div class="card-body">
+          <ul>
+            <li><strong>Barra superior:</strong> muestra <strong>Score</strong> (puntaje neto acumulado / máximo posible), <strong>Accuracy</strong> (% de casos óptimos: <code>CORRECT + ABSTAIN_ON_UNSOLVABLE</code>), conteo por categoría y <strong>Tokens</strong> totales consumidos.</li>
+            <li><strong>Ground Truth vs Predicción (lado a lado):</strong> compara fila a fila <code>verdict</code>, <code>primary_value</code> (mostrando el valor normalizado si difiere de escala), <code>scale</code>, <code>derivation</code> y <code>error num.</code> Las celdas resaltadas en naranja marcan exactamente dónde hubo discrepancia.</li>
+            <li><strong>Tabla Financiera y Párrafos Narrativos:</strong> representan el contexto exacto enviado al agente en <code>POST /solve</code>. Usá el buscador superior derecho de la tabla para resaltar términos o cifras en ambos bloques.</li>
+            <li><strong>Execution Trace:</strong> detalla cada llamada a herramienta (<code>tool_name</code>, <code>tool_input</code>, <code>tool_output</code>) para auditar qué recuperó el agente y qué expresión calculó.</li>
+            <li><strong>Telemetría (<code>usage</code>):</strong> muestra tokens y llamadas LLM del caso; si <code>total_tokens &lt; 50</code>, <code>llm_calls &lt; 1</code> o la suma no coincide, el evaluador marca <em>Anomalía telemetría</em>.</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
