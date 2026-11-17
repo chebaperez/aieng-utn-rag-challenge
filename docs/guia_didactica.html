@@ -1,0 +1,3206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guía Didáctica Interactiva · Agent-Based Financial QA Challenge (UTN FRSR)</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --bg-dots: #e2e8f2;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --surface-tint: #f1f5fd;
+      --border: #dce3ee;
+      --border-strong: #c4cfdf;
+      --text: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+
+      --navy: #0f2d5c;
+      --navy-light: #1e4282;
+      --cobalt: #2563eb;
+      --cobalt-soft: #eff6ff;
+      --cobalt-border: #bfdbfe;
+
+      --teal: #0d9488;
+      --teal-soft: #f0fdfa;
+      --teal-border: #99f6e4;
+
+      --emerald: #059669;
+      --emerald-soft: #ecfdf5;
+      --emerald-border: #a7f3d0;
+
+      --amber: #d97706;
+      --amber-soft: #fffbeb;
+      --amber-border: #fde68a;
+
+      --rose: #dc2626;
+      --rose-soft: #fef2f2;
+      --rose-border: #fecaca;
+
+      --indigo: #4f46e5;
+      --indigo-soft: #eef2ff;
+      --indigo-border: #c7d2fe;
+
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 10px 30px -10px rgba(15, 45, 92, 0.12), 0 4px 10px -4px rgba(15, 23, 42, 0.05);
+      --radius: 14px;
+      --radius-sm: 9px;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-serif: Georgia, "Times New Roman", serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: var(--font-sans);
+      color: var(--text);
+      background-color: var(--bg);
+      background-image: radial-gradient(var(--bg-dots) 1px, transparent 1px);
+      background-size: 22px 22px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Top Header */
+    .deck-header {
+      height: 58px;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 22px;
+      flex-shrink: 0;
+      z-index: 20;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-seal {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--navy), var(--cobalt));
+      color: #fff;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    }
+
+    .brand-meta {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .brand-kicker {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--cobalt);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--navy);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .slide-counter {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .btn {
+      appearance: none;
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--cobalt);
+      color: var(--cobalt);
+      background: var(--cobalt-soft);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #fff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--navy-light);
+      border-color: var(--navy-light);
+      color: #fff;
+    }
+
+    /* Progress Bar */
+    .progress-track {
+      height: 3px;
+      background: var(--border);
+      width: 100%;
+      flex-shrink: 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cobalt), var(--teal), var(--indigo));
+      transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+      width: 9%;
+    }
+
+    /* Main Stage */
+    .stage-wrapper {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 16px 24px;
+      overflow: hidden;
+    }
+
+    .slide-card {
+      flex: 1;
+      min-width: 0;
+      width: 100%;
+      max-width: 1480px;
+      height: 100%;
+      max-height: 920px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Synchronized Study Notes Drawer */
+    .notes-drawer {
+      display: none;
+      width: 390px;
+      flex-shrink: 0;
+      height: 100%;
+      max-height: 920px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow-md);
+      flex-direction: column;
+      overflow: hidden;
+      animation: slideFadeIn 0.2s ease-out;
+    }
+
+    .notes-drawer.open { display: flex; }
+
+    .notes-head {
+      padding: 13px 16px;
+      background: linear-gradient(135deg, #0f2d5c, #1e4282);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .notes-head-title {
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .notes-close {
+      background: rgba(255,255,255,0.16);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #fff;
+      border-radius: 7px;
+      padding: 3px 9px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .notes-close:hover { background: rgba(255,255,255,0.28); }
+
+    .notes-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 12.8px;
+      line-height: 1.55;
+      color: var(--text-secondary);
+    }
+
+    .notes-body h4 {
+      margin: 0;
+      font-size: 14.5px;
+      color: var(--navy);
+      line-height: 1.25;
+    }
+
+    .notes-section-lbl {
+      font-size: 10.8px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--cobalt);
+      margin-bottom: 4px;
+    }
+
+    .notes-foot {
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+      background: var(--surface-alt);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn-active {
+      background: var(--cobalt-soft);
+      border-color: var(--cobalt);
+      color: var(--cobalt);
+    }
+
+    @media (max-width: 1120px) {
+      .notes-drawer.open {
+        position: fixed;
+        right: 14px;
+        top: 66px;
+        bottom: 60px;
+        height: auto;
+        max-height: none;
+        width: 370px;
+        max-width: calc(100vw - 28px);
+        z-index: 40;
+      }
+    }
+
+    .slide {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      padding: 28px 34px 24px;
+      overflow-y: auto;
+      animation: slideFadeIn 0.24s ease-out;
+    }
+
+    .slide.active {
+      display: flex;
+    }
+
+    @keyframes slideFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Slide Header */
+    .slide-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .slide-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 8px;
+    }
+
+    .eyebrow-cobalt { background: var(--cobalt-soft); color: var(--cobalt); border: 1px solid var(--cobalt-border); }
+    .eyebrow-teal { background: var(--teal-soft); color: var(--teal); border: 1px solid var(--teal-border); }
+    .eyebrow-indigo { background: var(--indigo-soft); color: var(--indigo); border: 1px solid var(--indigo-border); }
+    .eyebrow-amber { background: var(--amber-soft); color: var(--amber); border: 1px solid var(--amber-border); }
+    .eyebrow-emerald { background: var(--emerald-soft); color: var(--emerald); border: 1px solid var(--emerald-border); }
+    .eyebrow-rose { background: var(--rose-soft); color: var(--rose); border: 1px solid var(--rose-border); }
+
+    .slide-title {
+      margin: 0;
+      font-size: 27px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--navy);
+      line-height: 1.18;
+    }
+
+    .slide-subtitle {
+      margin: 6px 0 0;
+      font-size: 15.2px;
+      color: var(--text-muted);
+      max-width: 960px;
+      line-height: 1.45;
+    }
+
+    .slide-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Footer Navigation */
+    .deck-footer {
+      height: 52px;
+      background: rgba(255, 255, 255, 0.94);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 22px;
+      flex-shrink: 0;
+      gap: 14px;
+    }
+
+    .slide-dots {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+
+    .dot-btn {
+      height: 8px;
+      width: 20px;
+      border-radius: 999px;
+      border: none;
+      background: var(--border-strong);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 0;
+    }
+
+    .dot-btn:hover { background: var(--cobalt); opacity: 0.7; }
+    .dot-btn.active { width: 34px; background: var(--cobalt); }
+
+    .footer-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    kbd {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border-strong);
+      border-radius: 5px;
+      padding: 1px 5px;
+      color: var(--text-secondary);
+    }
+
+    /* Grids & Panels */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .grid-asymmetric {
+      display: grid;
+      grid-template-columns: 1.32fr 0.95fr;
+      gap: 16px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .panel {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .panel-white {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .panel-title {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--navy);
+      margin: 0 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    /* Hero Slide 1 */
+    .hero-banner {
+      background: linear-gradient(125deg, #0f2d5c 0%, #1d4ed8 55%, #0d9488 100%);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 32px 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-banner::after {
+      content: "";
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.14), transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-kicker {
+      font-size: 12.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #bfdbfe;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .hero-title {
+      font-family: var(--font-serif);
+      font-size: 34px;
+      font-weight: 700;
+      margin: 0 0 10px;
+      line-height: 1.15;
+    }
+
+    .hero-desc {
+      margin: 0;
+      font-size: 15.5px;
+      color: #e2e8f0;
+      max-width: 760px;
+      line-height: 1.55;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      min-width: 320px;
+      z-index: 1;
+    }
+
+    .hero-stat {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 12px;
+      padding: 13px 16px;
+      backdrop-filter: blur(4px);
+    }
+
+    .hero-stat-val {
+      font-size: 23px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .hero-stat-lbl {
+      font-size: 12.2px;
+      color: #dbeafe;
+      margin-top: 3px;
+    }
+
+    .pillar-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--cobalt);
+      border-radius: var(--radius-sm);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .pillar-card.teal { border-top-color: var(--teal); }
+    .pillar-card.emerald { border-top-color: var(--emerald); }
+    .pillar-card.amber { border-top-color: var(--amber); }
+
+    .pillar-card h4 {
+      margin: 0 0 8px;
+      font-size: 15.5px;
+      color: var(--navy);
+    }
+
+    .pillar-card p {
+      margin: 0;
+      font-size: 13.8px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .quick-nav-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+
+    .quick-jump {
+      text-align: left;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 15px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .quick-jump:hover {
+      border-color: var(--cobalt);
+      background: var(--cobalt-soft);
+      transform: translateY(-1px);
+    }
+
+    .quick-jump .qj-num {
+      font-size: 11.2px;
+      font-weight: 800;
+      color: var(--cobalt);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .quick-jump .qj-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-top: 4px;
+    }
+
+    /* Callouts */
+    .callout {
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 13.8px;
+      line-height: 1.5;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .callout-important {
+      background: var(--indigo-soft);
+      border: 1px solid var(--indigo-border);
+      border-left: 4px solid var(--indigo);
+      color: #1e1b4b;
+    }
+
+    .callout-warn {
+      background: var(--amber-soft);
+      border: 1px solid var(--amber-border);
+      border-left: 4px solid var(--amber);
+      color: #78350f;
+    }
+
+    .callout-ok {
+      background: var(--emerald-soft);
+      border: 1px solid var(--emerald-border);
+      border-left: 4px solid var(--emerald);
+      color: #064e3b;
+    }
+
+    /* Interactive SVG diagrams */
+    .diagram-box {
+      background: #fbfcfe;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .diagram-hint {
+      font-size: 11.5px;
+      color: var(--cobalt);
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    svg.interactive-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      user-select: none;
+    }
+
+    .svg-node {
+      cursor: pointer;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .svg-node:hover rect,
+    .svg-node:hover polygon {
+      filter: drop-shadow(0 3px 6px rgba(37, 99, 235, 0.22));
+      stroke-width: 2.2px;
+    }
+
+    .svg-node.selected rect,
+    .svg-node.selected polygon {
+      stroke: var(--navy) !important;
+      stroke-width: 2.8px !important;
+      filter: drop-shadow(0 4px 10px rgba(15, 45, 92, 0.25));
+    }
+
+    /* Inspector Panel */
+    .inspector {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+    }
+
+    .inspector-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 9px;
+      border-radius: 6px;
+      width: fit-content;
+    }
+
+    .badge-readonly { background: var(--rose-soft); color: var(--rose); border: 1px solid var(--rose-border); }
+    .badge-editable { background: var(--emerald-soft); color: var(--emerald); border: 1px solid var(--emerald-border); }
+    .badge-tool { background: var(--cobalt-soft); color: var(--cobalt); border: 1px solid var(--cobalt-border); }
+    .badge-guardrail { background: var(--amber-soft); color: var(--amber); border: 1px solid var(--amber-border); }
+    .badge-remote { background: var(--indigo-soft); color: var(--indigo); border: 1px solid var(--indigo-border); }
+
+    .inspector h3 {
+      margin: 0;
+      font-size: 19px;
+      color: var(--navy);
+    }
+
+    .inspector p {
+      margin: 0;
+      font-size: 14.5px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    pre.code-block {
+      margin: 0;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: var(--font-mono);
+      font-size: 13.2px;
+      line-height: 1.55;
+      padding: 14px 16px;
+      border-radius: 9px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+
+    code.inline {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      background: #eef2f7;
+      color: var(--navy);
+      padding: 1px 6px;
+      border-radius: 5px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 13px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn:hover { border-color: var(--cobalt); color: var(--cobalt); }
+    .tab-btn.active {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #fff;
+    }
+
+    /* Tables */
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.8px;
+    }
+
+    table.data-table th,
+    table.data-table td {
+      padding: 9px 11px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    table.data-table th {
+      background: var(--surface-alt);
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    table.data-table td.num,
+    table.data-table th.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    table.data-table tr.highlight-row {
+      background: #f4f8ff;
+      font-weight: 700;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pill-ok { background: var(--emerald-soft); color: var(--emerald); }
+    .pill-zero { background: var(--amber-soft); color: var(--amber); }
+    .pill-err { background: var(--rose-soft); color: var(--rose); }
+    .pill-info { background: var(--cobalt-soft); color: var(--cobalt); }
+
+    /* Interactive JSON Contract Fields */
+    .json-line {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 13.2px;
+      transition: background 0.12s ease;
+    }
+
+    .json-line:hover { background: rgba(37, 99, 235, 0.14); }
+    .json-line.active { background: rgba(37, 99, 235, 0.24); outline: 1px solid #60a5fa; }
+
+    /* Simulator Form Controls */
+    .sim-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .field-lbl {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .field-lbl input,
+    .field-lbl select {
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      padding: 8px 10px;
+      border: 1px solid var(--border-strong);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--text);
+    }
+
+    .sim-result {
+      border-radius: 10px;
+      padding: 13px 15px;
+      font-size: 13.8px;
+      border: 1px solid var(--border);
+    }
+
+    /* Failure pattern cards & Error Explorer */
+    .pattern-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .pattern-btn {
+      text-align: left;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--border-strong);
+      border-radius: 10px;
+      padding: 14px 16px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s ease;
+    }
+
+    .pattern-btn:hover { border-color: var(--cobalt); background: var(--cobalt-soft); }
+    .pattern-btn.active {
+      border-color: var(--navy);
+      border-left-color: var(--rose);
+      background: #fff;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .pattern-btn .pt-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .pattern-btn .pt-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Checklist */
+    .checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 11px 13px;
+      border-radius: 9px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 13.8px;
+      cursor: pointer;
+      transition: background 0.12s ease;
+    }
+
+    .check-item:hover { background: var(--cobalt-soft); }
+    .check-item input { margin-top: 2px; accent-color: var(--emerald); }
+    .check-item.checked {
+      background: var(--emerald-soft);
+      border-color: var(--emerald-border);
+      color: #064e3b;
+    }
+
+    /* Outline Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(3px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 20px;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal-card {
+      background: #fff;
+      border-radius: 16px;
+      max-width: 780px;
+      width: 100%;
+      max-height: 82vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 24px 50px rgba(15, 23, 42, 0.25);
+      overflow: hidden;
+    }
+
+    .modal-head {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-head h3 { margin: 0; font-size: 16px; color: var(--navy); }
+
+    .modal-list {
+      padding: 16px 20px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .outline-item {
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-alt);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.14s ease;
+    }
+
+    .outline-item:hover, .outline-item.current {
+      border-color: var(--cobalt);
+      background: var(--cobalt-soft);
+    }
+
+    .outline-item .oi-num { font-size: 10.5px; font-weight: 800; color: var(--cobalt); text-transform: uppercase; }
+    .outline-item .oi-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-top: 2px; }
+
+    /* Responsive adjustments */
+    @media (max-width: 1040px) {
+      .grid-2, .grid-asymmetric, .grid-4, .grid-3, .quick-nav-grid, .modal-list {
+        grid-template-columns: 1fr;
+      }
+      .hero-banner { flex-direction: column; align-items: flex-start; }
+      .slide { padding: 18px; }
+      .footer-hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Header -->
+  <header class="deck-header">
+    <div class="brand-group">
+      <div class="brand-seal">UTN</div>
+      <div class="brand-meta">
+        <span class="brand-kicker">UTN FRSR · Desarrollo de Aplicaciones con LLMs</span>
+        <span class="brand-title">Guía Didáctica: Agent-Based Financial QA Challenge</span>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <span id="slideCounter" class="slide-counter">1 / 12</span>
+      <button id="toggleNotesBtn" class="btn" title="Mostrar / ocultar notas detalladas de la diapositiva (N)">📖 Notas</button>
+      <button id="openOutlineBtn" class="btn" title="Ver índice completo de diapositivas (I)">☰ Índice</button>
+      <button id="prevBtn" class="btn" title="Diapositiva anterior (←)">← Anterior</button>
+      <button id="nextBtn" class="btn btn-primary" title="Siguiente diapositiva (→)">Siguiente →</button>
+    </div>
+  </header>
+
+  <div class="progress-track">
+    <div id="progressFill" class="progress-fill"></div>
+  </div>
+
+  <!-- Main Presentation Stage -->
+  <main class="stage-wrapper">
+    <div class="slide-card">
+
+      <!-- SLIDE 1: PORTADA -->
+      <section class="slide active" data-title="Misión del Desafío y Mapa General">
+        <div class="slide-body" style="justify-content: space-between;">
+          <div class="hero-banner">
+            <div>
+              <div class="hero-kicker">Benchmark Competitivo Integrador · Starter Kit Oficial</div>
+              <h1 class="hero-title">Agent-Based Financial QA Challenge</h1>
+              <p class="hero-desc">
+                Construí un microservicio HTTP de <strong>caja negra</strong> (<code style="background:rgba(255,255,255,0.18);color:#fff;padding:1px 6px;border-radius:5px;">POST /solve</code>) capaz de resolver consultas cuantitativas sobre reportes financieros <strong>10-K (TAT-QA)</strong> combinando tablas contables, notas aclaratorias, cómputo determinista y abstención responsable.
+              </p>
+            </div>
+            <div class="hero-stats">
+              <div class="hero-stat">
+                <div class="hero-stat-val">150</div>
+                <div class="hero-stat-lbl">Casos públicos (dev_set)</div>
+              </div>
+              <div class="hero-stat">
+                <div class="hero-stat-val">30 / 100</div>
+                <div class="hero-stat-lbl">Calibración / Final ciegos</div>
+              </div>
+              <div class="hero-stat">
+                <div class="hero-stat-val">+1 / -1 / -1.5</div>
+                <div class="hero-stat-lbl">Puntuación asimétrica</div>
+              </div>
+              <div class="hero-stat">
+                <div class="hero-stat-val">2 Tracks</div>
+                <div class="hero-stat-lbl">Open-Weight &amp; Cloud</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-4">
+            <div class="pillar-card">
+              <h4>1. Lectura Tabular 2D</h4>
+              <p>Interpretar matrices financieras con encabezados jerárquicos, unidades implícitas y orden temporal variable.</p>
+            </div>
+            <div class="pillar-card teal">
+              <h4>2. Evidencia Híbrida</h4>
+              <p>El <strong>59.3%</strong> de los casos (<code class="inline">89/150</code>) exige cruzar la tabla con párrafos y notas al pie (<em>table-text</em>).</p>
+            </div>
+            <div class="pillar-card emerald">
+              <h4>3. Cálculo Determinista</h4>
+              <p>Prohibido calcular "de memoria" en el LLM: toda fórmula debe ejecutarse vía herramientas trazables.</p>
+            </div>
+            <div class="pillar-card amber">
+              <h4>4. Abstención (ABSTAIN)</h4>
+              <p>Detectar evidencia faltante o amputada vale <code class="inline">0.0</code> pts; inventar una cifra cuesta <code class="inline">-1.0</code> pt.</p>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:8px;">
+              Recorrido interactivo de la guía (hacé clic para saltar a un bloque)
+            </div>
+            <div class="quick-nav-grid">
+              <button class="quick-jump" onclick="goToSlide(1)">
+                <div class="qj-num">Bloque 1 · Slide 2</div>
+                <div class="qj-title">Starter Kit &amp; Flujo Local</div>
+              </button>
+              <button class="quick-jump" onclick="goToSlide(2)">
+                <div class="qj-num">Bloque 2 · Slides 3–4</div>
+                <div class="qj-title">Contrato, Escala y Scoring</div>
+              </button>
+              <button class="quick-jump" onclick="goToSlide(4)">
+                <div class="qj-num">Bloque 3 · Slides 5–6</div>
+                <div class="qj-title">Tools &amp; Estrategia RAG</div>
+              </button>
+              <button class="quick-jump" onclick="goToSlide(6)">
+                <div class="qj-num">Bloque 4 · Slides 7–9</div>
+                <div class="qj-title">Referencia 3 Niveles &amp; Datos</div>
+              </button>
+              <button class="quick-jump" onclick="goToSlide(9)">
+                <div class="qj-num">Bloque 5 · Slides 10–12</div>
+                <div class="qj-title">Errores &amp; Evaluación Remota</div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 2: STARTER KIT & CICLO LOCAL -->
+      <section class="slide" data-title="Starter Kit y Ciclo de Desarrollo Local">
+        <div class="slide-top">
+          <div>
+            <span class="slide-eyebrow eyebrow-cobalt">1 · Arquitectura del Starter Kit</span>
+            <h2 class="slide-title">Mapa de Archivos y Ciclo Iterativo Offline</h2>
+            <p class="slide-subtitle">Explorá cada componente haciendo clic sobre los nodos del diagrama para ver su rol, permisos de edición y comandos exactos.</p>
+          </div>
+        </div>
+
+        <div class="slide-body grid-asymmetric">
+          <div class="diagram-box">
+            <div class="diagram-hint">👆 Hacé clic en cualquier módulo del diagrama para inspeccionarlo</div>
+            <svg class="interactive-svg" viewBox="0 0 680 420" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="arrow1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b"/>
+                </marker>
+              </defs>
+
+              <!-- Edges -->
+              <path d="M 185 75 L 255 75" stroke="#64748b" stroke-width="1.8" fill="none" marker-end="url(#arrow1)"/>
+              <path d="M 415 75 L 480 75" stroke="#64748b" stroke-width="1.8" fill="none" marker-end="url(#arrow1)"/>
+              <path d="M 570 110 L 570 185" stroke="#64748b" stroke-width="1.8" fill="none" marker-end="url(#arrow1)"/>
+              <path d="M 480 225 L 415 225" stroke="#64748b" stroke-width="1.8" fill="none" marker-end="url(#arrow1)"/>
+              <path d="M 255 225 L 185 225" stroke="#64748b" stroke-width="1.8" fill="none" marker-end="url(#arrow1)"/>
+              <path d="M 335 110 L 335 185" stroke="#94a3b8" stroke-dasharray="4 3" stroke-width="1.5" fill="none" marker-end="url(#arrow1)"/>
+              <path d="M 100 265 L 100 325 L 255 325" stroke="#0d9488" stroke-width="1.8" fill="none" marker-end="url(#arrow1)"/>
+              <path d="M 425 325 L 485 325" stroke="#4f46e5" stroke-width="1.8" fill="none" marker-end="url(#arrow1)"/>
+
+              <!-- Node: dev_set -->
+              <g class="svg-node selected" data-kit="devset" onclick="selectKitNode('devset', this)">
+                <rect x="20" y="38" width="165" height="72" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.6"/>
+                <text x="102" y="65" text-anchor="middle" font-size="12" font-weight="700" fill="#78350f">data/dev_set.json</text>
+                <text x="102" y="83" text-anchor="middle" font-size="10.5" fill="#92400e">150 casos públicos</text>
+                <text x="102" y="98" text-anchor="middle" font-size="10" fill="#b45309">(61 table · 89 table-text)</text>
+              </g>
+
+              <!-- Node: run_local_eval -->
+              <g class="svg-node" data-kit="runeval" onclick="selectKitNode('runeval', this)">
+                <rect x="255" y="38" width="160" height="72" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6"/>
+                <text x="335" y="64" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">scripts/run_local_eval.py</text>
+                <text x="335" y="82" text-anchor="middle" font-size="10.5" fill="#1d4ed8">Cliente HTTP secuencial</text>
+                <text x="335" y="97" text-anchor="middle" font-size="10" fill="#3b82f6">Genera reporte + JSON</text>
+              </g>
+
+              <!-- Node: server.py -->
+              <g class="svg-node" data-kit="server" onclick="selectKitNode('server', this)">
+                <rect x="480" y="38" width="180" height="72" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+                <text x="570" y="64" text-anchor="middle" font-size="12" font-weight="700" fill="#065f46">src/server.py</text>
+                <text x="570" y="82" text-anchor="middle" font-size="10.5" fill="#047857">GET /health · POST /solve</text>
+                <text x="570" y="97" text-anchor="middle" font-size="10" fill="#059669">✏️ Tu implementación aquí</text>
+              </g>
+
+              <!-- Node: schemas.py -->
+              <g class="svg-node" data-kit="schemas" onclick="selectKitNode('schemas', this)">
+                <rect x="480" y="188" width="180" height="72" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.6"/>
+                <text x="570" y="214" text-anchor="middle" font-size="12" font-weight="700" fill="#991b1b">src/schemas.py</text>
+                <text x="570" y="232" text-anchor="middle" font-size="10.5" fill="#b91c1c">CaseInput / CaseOutput</text>
+                <text x="570" y="247" text-anchor="middle" font-size="10" fill="#dc2626">🔒 Contrato Pydantic v2</text>
+              </g>
+
+              <!-- Node: evaluator.py -->
+              <g class="svg-node" data-kit="evaluator" onclick="selectKitNode('evaluator', this)">
+                <rect x="255" y="188" width="160" height="72" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.6"/>
+                <text x="335" y="214" text-anchor="middle" font-size="12" font-weight="700" fill="#991b1b">src/evaluator.py</text>
+                <text x="335" y="232" text-anchor="middle" font-size="10.5" fill="#b91c1c">Scoring + Escala + Hints</text>
+                <text x="335" y="247" text-anchor="middle" font-size="10" fill="#dc2626">🔒 Motor oficial offline</text>
+              </g>
+
+              <!-- Node: viewer.py -->
+              <g class="svg-node" data-kit="viewer" onclick="selectKitNode('viewer', this)">
+                <rect x="20" y="188" width="165" height="72" rx="10" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.6"/>
+                <text x="102" y="214" text-anchor="middle" font-size="12" font-weight="700" fill="#115e59">scripts/viewer.py</text>
+                <text x="102" y="232" text-anchor="middle" font-size="10.5" fill="#0f766e">Visualizador Web (:8501)</text>
+                <text x="102" y="247" text-anchor="middle" font-size="10" fill="#0d9488">Contrasta GT vs Pred</text>
+              </g>
+
+              <!-- Node: colab -->
+              <g class="svg-node" data-kit="colab" onclick="selectKitNode('colab', this)">
+                <rect x="255" y="292" width="170" height="72" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+                <text x="340" y="318" text-anchor="middle" font-size="11.5" font-weight="700" fill="#312e81">Colab_Starter_Template</text>
+                <text x="340" y="336" text-anchor="middle" font-size="10.5" fill="#4338ca">GPU T4 + uvicorn hilo</text>
+                <text x="340" y="351" text-anchor="middle" font-size="10" fill="#4f46e5">+ túnel cloudflared</text>
+              </g>
+
+              <!-- Node: remote -->
+              <g class="svg-node" data-kit="remote" onclick="selectKitNode('remote', this)">
+                <rect x="485" y="292" width="175" height="72" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+                <text x="572" y="318" text-anchor="middle" font-size="12" font-weight="700" fill="#312e81">Evaluador Remoto</text>
+                <text x="572" y="336" text-anchor="middle" font-size="10.5" fill="#4338ca">Calibración (30) / Final (100)</text>
+                <text x="572" y="351" text-anchor="middle" font-size="10" fill="#4f46e5">100% Caja Negra</text>
+              </g>
+
+              <text x="20" y="405" font-size="10.5" fill="#64748b">Leyenda: 🔒 Intocable (contrato oficial) · ✏️ Editable por tu equipo · 👆 Clic para detalles</text>
+            </svg>
+          </div>
+
+          <div id="kitInspector" class="inspector">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 3: CONTRATO STRICT + SIMULADOR ESCALA -->
+      <section class="slide" data-title="Contrato JSON y Simulador de Escala">
+        <div class="slide-top">
+          <div>
+            <span class="slide-eyebrow eyebrow-teal">2 · Contrato Estricto (src/schemas.py)</span>
+            <h2 class="slide-title">Esquema Input/Output y Simulador de Normalización</h2>
+            <p class="slide-subtitle">Inspeccioná las reglas Pydantic de cada campo a la izquierda y probá en vivo cómo evalúa <code class="inline">compare_numeric_with_scale</code> a la derecha.</p>
+          </div>
+        </div>
+
+        <div class="slide-body grid-2">
+          <!-- Left: Interactive Contract Explorer -->
+          <div class="panel-white" style="gap: 10px;">
+            <div class="panel-title">
+              <span>Explorador de Contrato JSON</span>
+              <div class="tabs">
+                <button class="tab-btn active" onclick="switchContractTab('output', this)">CaseOutput</button>
+                <button class="tab-btn" onclick="switchContractTab('input', this)">CaseInput</button>
+                <button class="tab-btn" onclick="switchContractTab('abstain', this)">ABSTAIN</button>
+              </div>
+            </div>
+            <div id="contractCodeBox" style="background:#0f172a;color:#e2e8f0;border-radius:10px;padding:10px;overflow-y:auto;flex:1;">
+              <!-- Populated by JS -->
+            </div>
+            <div id="contractFieldNote" class="callout callout-important" style="margin-top:auto;">
+              <span>💡</span>
+              <div>Hacé clic en cualquier campo resaltado arriba para ver su regla de validación en <code class="inline">src/schemas.py</code>.</div>
+            </div>
+          </div>
+
+          <!-- Right: Live Scale & Tolerance Simulator -->
+          <div class="panel" style="gap: 10px;">
+            <div class="panel-title">
+              <span>Simulador en Vivo: Escala y Tolerancias</span>
+              <span class="pill pill-info">abs ≤ 0.01 o rel ≤ 0.001</span>
+            </div>
+            <div class="tabs">
+              <button class="tab-btn" onclick="loadScalePreset(4500, 'thousand', 4.5, 'million')">4,500 thousand vs 4.5 million</button>
+              <button class="tab-btn" onclick="loadScalePreset(0.154, 'percent', 15.4, 'percent')">0.154 vs 15.4 percent</button>
+              <button class="tab-btn" onclick="loadScalePreset(15.4, 'None', 15.4, 'percent')">None vs percent</button>
+            </div>
+            <div class="sim-grid">
+              <label class="field-lbl">
+                Tu <code class="inline">primary_value</code>
+                <input id="simPredVal" type="number" step="any" value="4500" oninput="runScaleSim()" />
+              </label>
+              <label class="field-lbl">
+                Tu <code class="inline">scale</code>
+                <select id="simPredScale" onchange="runScaleSim()">
+                  <option value="None">None (unidades/ratios)</option>
+                  <option value="thousand" selected>thousand</option>
+                  <option value="million">million</option>
+                  <option value="billion">billion</option>
+                  <option value="percent">percent (0–100)</option>
+                </select>
+              </label>
+              <label class="field-lbl">
+                Ground Truth <code class="inline">primary_value</code>
+                <input id="simGtVal" type="number" step="any" value="4.5" oninput="runScaleSim()" />
+              </label>
+              <label class="field-lbl">
+                Ground Truth <code class="inline">scale</code>
+                <select id="simGtScale" onchange="runScaleSim()">
+                  <option value="None">None (unidades/ratios)</option>
+                  <option value="thousand">thousand</option>
+                  <option value="million" selected>million</option>
+                  <option value="billion">billion</option>
+                  <option value="percent">percent (0–100)</option>
+                </select>
+              </label>
+            </div>
+
+            <div id="simOutputBox" class="sim-result"></div>
+
+            <div style="font-size:13.5px;color:var(--text-secondary);line-height:1.5;margin-top:auto;">
+              <strong>Reglas clave:</strong>
+              <ul style="margin:5px 0 0;padding-left:18px;">
+                <li><code class="inline">percent</code> solo es compatible con <code class="inline">percent</code> y siempre en base <strong>0–100</strong>.</li>
+                <li>Si <code class="inline">verdict == "SOLVED"</code>, <code class="inline">len(execution_trace) >= 1</code> es obligatorio.</li>
+                <li><code class="inline">usage.total_tokens == prompt_tokens + completion_tokens</code> y no usar valores dummy (<code class="inline">&lt; 50</code> tokens o <code class="inline">llm_calls &lt; 1</code>).</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 4: PUNTUACIÓN ASIMÉTRICA & ESTRATEGIA -->
+      <section class="slide" data-title="Puntuación Asimétrica y Desempate">
+        <div class="slide-top">
+          <div>
+            <span class="slide-eyebrow eyebrow-amber">2 · Función de Puntuación Oficial</span>
+            <h2 class="slide-title">Por qué la Asimetría Premia la Abstención Inteligente</h2>
+            <p class="slide-subtitle">Adivinar sin evidencia cuesta el doble en puntaje relativo (<code class="inline">-1.0</code> vs <code class="inline">0.0</code>), y romper el esquema JSON o hacer timeout penaliza <code class="inline">-1.5</code>.</p>
+          </div>
+        </div>
+
+        <div class="slide-body grid-asymmetric">
+          <div class="panel-white" style="gap: 12px;">
+            <div class="panel-title"><span>Tabla de Veredictos y Puntajes</span></div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Estado</th>
+                  <th>Condición</th>
+                  <th class="num">Puntos</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="pill pill-ok">CORRECT</span></td>
+                  <td><code class="inline">SOLVED</code> dentro de tolerancia y escala compatible</td>
+                  <td class="num"><strong>+1.0</strong></td>
+                </tr>
+                <tr>
+                  <td><span class="pill pill-zero">ABSTAIN_ON_UNSOLVABLE</span></td>
+                  <td><code class="inline">ABSTAIN</code> correcto cuando falta evidencia</td>
+                  <td class="num"><strong>0.0</strong></td>
+                </tr>
+                <tr>
+                  <td><span class="pill pill-zero">ABSTAIN_CAUTIOUS</span></td>
+                  <td><code class="inline">ABSTAIN</code> en caso resoluble (resigna +1.0, evita -1.0)</td>
+                  <td class="num"><strong>0.0</strong></td>
+                </tr>
+                <tr>
+                  <td><span class="pill pill-err">WRONG_VALUE</span></td>
+                  <td><code class="inline">SOLVED</code> con error numérico o signo invertido</td>
+                  <td class="num"><strong>-1.0</strong></td>
+                </tr>
+                <tr>
+                  <td><span class="pill pill-err">SCALE_MISMATCH</span></td>
+                  <td><code class="inline">percent</code> vs otra escala</td>
+                  <td class="num"><strong>-1.0</strong></td>
+                </tr>
+                <tr>
+                  <td><span class="pill pill-err">HALLUCINATION_ON_ABSTAIN</span></td>
+                  <td><code class="inline">SOLVED</code> sobre un caso que era <code class="inline">ABSTAIN</code></td>
+                  <td class="num"><strong>-1.0</strong></td>
+                </tr>
+                <tr>
+                  <td><span class="pill pill-err">SCHEMA_ERROR</span></td>
+                  <td>Fallo Pydantic, <code class="inline">case_id</code> distinto o timeout (&gt;60s)</td>
+                  <td class="num"><strong>-1.5</strong></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="callout callout-ok" style="margin-top:auto;">
+              <span>🏆</span>
+              <div>
+                <strong>Desempate en Leaderboard:</strong> 1° Mayor Puntaje Neto → 2° Menor <code class="inline">total_tokens</code> → 3° Menor latencia promedio (<code class="inline">avg_latency_ms</code>).
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Score Trade-off Explorer -->
+          <div class="panel" style="gap: 10px;">
+            <div class="panel-title">
+              <span>Simulador de Impacto en el Puntaje (150 casos)</span>
+              <span class="pill pill-info">135 SOLVED · 15 ABSTAIN</span>
+            </div>
+            <p style="margin:0;font-size:13.8px;color:var(--text-secondary);line-height:1.5;">
+              Ajustá el comportamiento de un agente hipotético sobre los 150 casos para observar el peso brutal de las alucinaciones y errores de esquema:
+            </p>
+            <div style="display:flex;flex-direction:column;gap:9px;margin-top:4px;">
+              <label class="field-lbl">
+                <span>Casos <code class="inline">SOLVED</code> resueltos bien (de 135): <strong id="scCorrectLbl">101</strong></span>
+                <input id="scCorrect" type="range" min="0" max="135" value="101" oninput="updateScoreCalc()" />
+              </label>
+              <label class="field-lbl">
+                <span>Abstenciones cautelosas en casos resolubles: <strong id="scCautiousLbl">6</strong></span>
+                <input id="scCautious" type="range" min="0" max="34" value="6" oninput="updateScoreCalc()" />
+              </label>
+              <label class="field-lbl">
+                <span>Alucinaciones en los 15 casos <code class="inline">ABSTAIN</code>: <strong id="scHallucLbl">5</strong></span>
+                <input id="scHalluc" type="range" min="0" max="15" value="5" oninput="updateScoreCalc()" />
+              </label>
+              <label class="field-lbl">
+                <span>Errores de Esquema / Timeout (&gt;60s): <strong id="scSchemaLbl">0</strong></span>
+                <input id="scSchema" type="range" min="0" max="20" value="0" oninput="updateScoreCalc()" />
+              </label>
+            </div>
+            <div id="scSummaryBox" class="panel-white" style="margin-top:auto;gap:6px;">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 5: CATÁLOGO DE 5 TOOLS -->
+      <section class="slide" data-title="Catálogo de Tools y Guardrails">
+        <div class="slide-top">
+          <div>
+            <span class="slide-eyebrow eyebrow-cobalt">3 · Primitivas Deterministas Recomendadas</span>
+            <h2 class="slide-title">5 Tools para Eliminar Alucinaciones y Errores de Lectura</h2>
+            <p class="slide-subtitle">Especificación conceptual, invariantes y pseudocódigo de alto nivel. Hacé clic en cada primitiva del flujo para inspeccionarla.</p>
+          </div>
+        </div>
+
+        <div class="slide-body grid-asymmetric">
+          <div class="diagram-box">
+            <div class="diagram-hint">👆 Seleccioná una primitiva o guardrail para ver Contrato, Invariantes y Pseudocódigo</div>
+            <svg class="interactive-svg" viewBox="0 0 680 410" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+                </marker>
+                <marker id="arrow2-err" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
+                </marker>
+              </defs>
+
+              <!-- Input box -->
+              <rect x="20" y="155" width="120" height="82" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+              <text x="80" y="185" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0f172a">CaseInput</text>
+              <text x="80" y="203" text-anchor="middle" font-size="10" fill="#475569">question</text>
+              <text x="80" y="217" text-anchor="middle" font-size="10" fill="#475569">table + notes</text>
+
+              <!-- Fanout lines -->
+              <path d="M 140 175 L 200 68" stroke="#475569" stroke-width="1.6" fill="none" marker-end="url(#arrow2)"/>
+              <path d="M 140 196 L 200 196" stroke="#475569" stroke-width="1.6" fill="none" marker-end="url(#arrow2)"/>
+              <path d="M 140 218 L 200 324" stroke="#475569" stroke-width="1.6" fill="none" marker-end="url(#arrow2)"/>
+
+              <!-- Tool 1: inspect_table -->
+              <g class="svg-node selected" data-tool="inspect_table" onclick="selectToolNode('inspect_table', this)">
+                <rect x="205" y="28" width="170" height="72" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+                <text x="290" y="55" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">1. inspect_table</text>
+                <text x="290" y="73" text-anchor="middle" font-size="10" fill="#1d4ed8">Encabezados dinámicos +</text>
+                <text x="290" y="87" text-anchor="middle" font-size="10" fill="#1d4ed8">vista alineada col=valor</text>
+              </g>
+
+              <!-- Tool 2: search_notes -->
+              <g class="svg-node" data-tool="search_notes" onclick="selectToolNode('search_notes', this)">
+                <rect x="205" y="160" width="170" height="72" rx="10" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.8"/>
+                <text x="290" y="187" text-anchor="middle" font-size="12" font-weight="700" fill="#115e59">2. search_notes</text>
+                <text x="290" y="205" text-anchor="middle" font-size="10" fill="#0f766e">Pondera años &amp; términos</text>
+                <text x="290" y="219" text-anchor="middle" font-size="10" fill="#0f766e">Preserva orden original</text>
+              </g>
+
+              <!-- Tool 4: detect_scale_hint -->
+              <g class="svg-node" data-tool="detect_scale_hint" onclick="selectToolNode('detect_scale_hint', this)">
+                <rect x="205" y="290" width="170" height="72" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
+                <text x="290" y="317" text-anchor="middle" font-size="12" font-weight="700" fill="#312e81">4. detect_scale_hint</text>
+                <text x="290" y="335" text-anchor="middle" font-size="10" fill="#4338ca">Jerarquía percent / per share</text>
+                <text x="290" y="349" text-anchor="middle" font-size="10" fill="#4338ca">/ headers / paréntesis</text>
+              </g>
+
+              <!-- Lines to LLM -->
+              <path d="M 375 64 L 420 150" stroke="#475569" stroke-width="1.6" fill="none" marker-end="url(#arrow2)"/>
+              <path d="M 375 196 L 420 185" stroke="#475569" stroke-width="1.6" fill="none" marker-end="url(#arrow2)"/>
+              <path d="M 375 324 L 420 220" stroke="#475569" stroke-width="1.6" fill="none" marker-end="url(#arrow2)"/>
+
+              <!-- LLM Hub -->
+              <rect x="422" y="140" width="108" height="90" rx="12" fill="#0f2d5c" stroke="#0f2d5c"/>
+              <text x="476" y="176" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">Agente LLM</text>
+              <text x="476" y="194" text-anchor="middle" font-size="10" fill="#bfdbfe">Extrae operandos</text>
+              <text x="476" y="208" text-anchor="middle" font-size="10" fill="#bfdbfe">y arma fórmula</text>
+
+              <!-- Line LLM -> Guardrail -->
+              <path d="M 476 230 L 476 278" stroke="#475569" stroke-width="1.6" fill="none" marker-end="url(#arrow2)"/>
+
+              <!-- Tool 5: verify_operands -->
+              <g class="svg-node" data-tool="verify_operands" onclick="selectToolNode('verify_operands', this)">
+                <rect x="398" y="282" width="166" height="78" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.8"/>
+                <text x="481" y="307" text-anchor="middle" font-size="11.2" font-weight="700" fill="#78350f">5. verify_operands_</text>
+                <text x="481" y="321" text-anchor="middle" font-size="11.2" font-weight="700" fill="#78350f">grounded_in_evidence</text>
+                <text x="481" y="340" text-anchor="middle" font-size="10" fill="#92400e">Guardrail anti-alucinación</text>
+              </g>
+
+              <!-- Retry arc on guardrail failure -->
+              <path d="M 564 310 C 600 310, 600 185, 534 185" stroke="#dc2626" stroke-dasharray="4 3" stroke-width="1.6" fill="none" marker-end="url(#arrow2-err)"/>
+              <text x="615" y="250" text-anchor="middle" font-size="9.5" font-weight="700" fill="#dc2626">Si falla:</text>
+              <text x="615" y="262" text-anchor="middle" font-size="9.5" fill="#dc2626">feedback</text>
+
+              <!-- Line Guardrail -> safe_calculate -->
+              <path d="M 530 140 L 530 105" stroke="#059669" stroke-width="1.8" fill="none" marker-end="url(#arrow2)"/>
+
+              <!-- Tool 3: safe_calculate -->
+              <g class="svg-node" data-tool="safe_calculate" onclick="selectToolNode('safe_calculate', this)">
+                <rect x="445" y="28" width="215" height="72" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+                <text x="552" y="55" text-anchor="middle" font-size="12" font-weight="700" fill="#065f46">3. safe_calculate (AST)</text>
+                <text x="552" y="73" text-anchor="middle" font-size="10" fill="#047857">Aritmética pura sin eval()</text>
+                <text x="552" y="87" text-anchor="middle" font-size="10" fill="#059669">→ CaseOutput.primary_value</text>
+              </g>
+            </svg>
+          </div>
+
+          <div class="inspector" id="toolInspector">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 6: CÓMO USAR RAG DE FORMA EFECTIVA -->
+      <section class="slide" data-title="Estrategia RAG: Adaptativo vs. Pattern RAG">
+        <div class="slide-top">
+          <div>
+            <span class="slide-eyebrow eyebrow-teal">3 · Estrategia de Recuperación y Contexto</span>
+            <h2 class="slide-title">Cómo Usar RAG de Forma Efectiva en este Challenge</h2>
+            <p class="slide-subtitle">Distinguir el contexto local del <code class="inline">CaseInput</code> (Retrieval Adaptativo sin embeddings) de una base externa de patrones (Pattern RAG offline) evita latencia, distracción y fuga de operandos.</p>
+          </div>
+        </div>
+
+        <div class="slide-body grid-asymmetric">
+          <div class="diagram-box">
+            <div class="diagram-hint">👆 Hacé clic en cada nodo o etapa para ver los datos empíricos y recomendaciones</div>
+            <svg class="interactive-svg" viewBox="0 0 680 410" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="ar-rag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+                </marker>
+                <marker id="ar-rag-ok" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669"/>
+                </marker>
+              </defs>
+
+              <!-- Top Banner: Anti-pattern -->
+              <g class="svg-node selected" data-rag="no_vec" onclick="selectRagNode('no_vec', this)">
+                <rect x="20" y="18" width="640" height="58" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="5 3"/>
+                <text x="340" y="42" text-anchor="middle" font-size="11.5" font-weight="800" fill="#991b1b">❌ Anti-patrón: RAG Vectorial por Request sobre los párrafos de CaseInput</text>
+                <text x="340" y="60" text-anchor="middle" font-size="10" fill="#b91c1c">77.3% tiene ≤5 párrafos (~4.5 prom / ~1,360 chars) · top_k=5 recupera todo y agrega latencia + tokens</text>
+              </g>
+
+              <!-- Lane 1: CaseInput Adaptive Retrieval -->
+              <rect x="20" y="96" width="130" height="106" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+              <text x="85" y="132" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0f172a">CaseInput</text>
+              <text x="85" y="150" text-anchor="middle" font-size="10" fill="#475569">Tabla + Notas</text>
+              <text x="85" y="165" text-anchor="middle" font-size="10" fill="#64748b">locales</text>
+
+              <path d="M 150 130 L 195 118" stroke="#059669" stroke-width="1.8" fill="none" marker-end="url(#ar-rag-ok)"/>
+              <path d="M 150 170 L 195 198" stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#ar-rag)"/>
+
+              <g class="svg-node" data-rag="adaptive_fast" onclick="selectRagNode('adaptive_fast', this)">
+                <rect x="200" y="92" width="245" height="62" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+                <text x="322" y="116" text-anchor="middle" font-size="11.5" font-weight="700" fill="#065f46">✅ Fast-Path (≤5 párrs y ≤20 filas)</text>
+                <text x="322" y="134" text-anchor="middle" font-size="10" fill="#047857">77.3% de casos: tabla alineada + todos los párrafos</text>
+                <text x="322" y="147" text-anchor="middle" font-size="9.5" fill="#059669">Sin embeddings ni turnos ReAct redundantes</text>
+              </g>
+
+              <g class="svg-node" data-rag="adaptive_long" onclick="selectRagNode('adaptive_long', this)">
+                <rect x="200" y="166" width="245" height="72" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+                <text x="322" y="190" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1e3a8a">🎯 Casos Largos (&gt;5 párrs, ~23%)</text>
+                <text x="322" y="207" text-anchor="middle" font-size="10" fill="#1d4ed8">BM25 ligero + Footnote Linking (costs2 / (1))</text>
+                <text x="322" y="222" text-anchor="middle" font-size="9.5" fill="#3b82f6">top_k=2..3 + preservar notas de unidad/escala</text>
+              </g>
+
+              <!-- Lane 2: Offline Pattern RAG -->
+              <g class="svg-node" data-rag="pattern_rag" onclick="selectRagNode('pattern_rag', this)">
+                <rect x="20" y="264" width="425" height="68" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
+                <text x="232" y="288" text-anchor="middle" font-size="11.5" font-weight="700" fill="#312e81">✅ Dónde SÍ usar Embeddings: Pattern / Few-Shot RAG Offline</text>
+                <text x="232" y="305" text-anchor="middle" font-size="10" fill="#4338ca">Base pre-indexada (tatqa_train / patrones propios) → recupera top_k=2..3 por question</text>
+                <text x="232" y="320" text-anchor="middle" font-size="9.5" fill="#4f46e5">Guía fórmula y escala (change vs %, average, per share, ABSTAIN) · CPU en Colab T4</text>
+              </g>
+
+              <!-- Lines to LLM + Pitfalls -->
+              <path d="M 445 123 L 495 190" stroke="#059669" stroke-width="1.7" fill="none" marker-end="url(#ar-rag-ok)"/>
+              <path d="M 445 202 L 495 202" stroke="#2563eb" stroke-width="1.7" fill="none" marker-end="url(#ar-rag)"/>
+              <path d="M 445 298 L 495 220" stroke="#4f46e5" stroke-width="1.7" fill="none" marker-end="url(#ar-rag)"/>
+
+              <rect x="498" y="160" width="162" height="86" rx="12" fill="#0f2d5c"/>
+              <text x="579" y="193" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">Agente / LLM</text>
+              <text x="579" y="211" text-anchor="middle" font-size="9.8" fill="#bfdbfe">Contexto limpio +</text>
+              <text x="579" y="226" text-anchor="middle" font-size="9.8" fill="#bfdbfe">plantilla simbólica</text>
+
+              <!-- Bottom: Pitfalls -->
+              <g class="svg-node" data-rag="pitfalls" onclick="selectRagNode('pitfalls', this)">
+                <rect x="20" y="346" width="640" height="48" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.6"/>
+                <text x="340" y="367" text-anchor="middle" font-size="11" font-weight="700" fill="#78350f">⚠️ Riesgos a evitar en Pattern RAG: Operand Leakage · Data Leakage / Sesgo · Competencia por VRAM</text>
+                <text x="340" y="383" text-anchor="middle" font-size="9.8" fill="#92400e">Usar plantillas simbólicas + verify_operands_grounded_in_evidence + embeddings en CPU</text>
+              </g>
+            </svg>
+          </div>
+
+          <div class="inspector" id="ragInspector">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 7: ENFOQUE DIDÁCTICO 3 NIVELES -->
+      <section class="slide" data-title="Enfoque Didáctico en 3 Niveles (Referencia)">
+        <div class="slide-top">
+          <div>
+            <span class="slide-eyebrow eyebrow-indigo">4 · Referencia Didáctica No Obligatoria</span>
+            <h2 class="slide-title">Progresión en 3 Niveles: Qué Resuelve Cada Capa</h2>
+            <p class="slide-subtitle">Seleccioná cada nivel para visualizar su topología interna y los modos de falla específicos que mitiga.</p>
+          </div>
+        </div>
+
+        <div class="slide-body" style="gap: 12px;">
+          <div class="callout callout-important">
+            <span>ℹ️</span>
+            <div>
+              <strong>Aclaración obligatoria:</strong> Esta progresión en 3 niveles se presenta <strong>únicamente con propósito didáctico</strong> como referencia base de la cátedra. <strong>No se evalúa ni es obligatoria:</strong> la evaluación es 100% <strong>caja negra sobre <code class="inline">POST /solve</code></strong> y cada equipo puede diseñar la arquitectura que prefiera.
+            </div>
+          </div>
+
+          <div class="tabs">
+            <button class="tab-btn active" onclick="selectLevel(1, this)">Nivel 1 · Secuencial 1-Shot</button>
+            <button class="tab-btn" onclick="selectLevel(2, this)">Nivel 2 · Agente ReAct + Guardrail</button>
+            <button class="tab-btn" onclick="selectLevel(3, this)">Nivel 3 · Multi-Agente (Consenso + Auditor)</button>
+          </div>
+
+          <div class="grid-asymmetric" style="flex:1;min-height:0;">
+            <div class="diagram-box" id="levelDiagramBox">
+              <!-- SVG rendered dynamically by JS -->
+            </div>
+            <div class="inspector" id="levelInspector">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 7: RESULTADOS TRACK OPEN-WEIGHT -->
+      <section class="slide" data-title="Resultados Open-Weight (Qwen 2.5 7B)">
+        <div class="slide-top">
+          <div>
+            <span class="slide-eyebrow eyebrow-emerald">4 · Evidencia Empírica (Track Open-Weight)</span>
+            <h2 class="slide-title">Resultados con Qwen 2.5 7B en Google Colab GPU T4</h2>
+            <p class="slide-subtitle"><code class="inline">Qwen2.5-7B-Instruct-Q4_K_M.gguf</code> · <code class="inline">n_ctx = 16384</code> · <code class="inline">temperature = 0.0</code> · Alterná entre el dataset de desarrollo y la calibración ciega.</p>
+          </div>
+          <div class="tabs">
+            <button class="tab-btn active" onclick="renderOpenWeight('dev', this)">dev_set.json (150)</button>
+            <button class="tab-btn" onclick="renderOpenWeight('cal', this)">Calibración (30)</button>
+          </div>
+        </div>
+
+        <div class="slide-body grid-asymmetric">
+          <div class="panel-white" style="gap: 8px;">
+            <div class="panel-title">
+              <span id="owChartTitle">Salto de Puntaje Neto y Exactitud por Nivel</span>
+              <span class="pill pill-ok">0 errores de esquema</span>
+            </div>
+            <div id="owChartBox" style="flex:1;display:flex;align-items:center;"></div>
+            <div id="owTakeaway" class="callout callout-ok"></div>
+          </div>
+
+          <div class="panel" style="overflow-y:auto;">
+            <div class="panel-title"><span>Desglose Completo de Métricas</span></div>
+            <div id="owTableBox"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 8: RESULTADOS TRACK CLOUD & COSTOS -->
+      <section class="slide" data-title="Resultados Cloud (GPT-4.1-mini) y Costos">
+        <div class="slide-top">
+          <div>
+            <span class="slide-eyebrow eyebrow-indigo">4 · Evidencia Empírica (Track Cloud Propietario)</span>
+            <h2 class="slide-title">Resultados con GPT-4.1-mini, Tokens y Costo Real (USD)</h2>
+            <p class="slide-subtitle"><code class="inline">openai/gpt-4.1-mini</code> · <code class="inline">temperature = 0.0</code> · Costo total acumulado de las 6 corridas (540 evaluaciones): <strong>USD 0.8041</strong>.</p>
+          </div>
+          <div class="tabs">
+            <button class="tab-btn active" onclick="renderCloud('dev', this)">dev_set.json (150)</button>
+            <button class="tab-btn" onclick="renderCloud('cal', this)">Calibración (30)</button>
+            <button class="tab-btn" onclick="renderCloud('compare', this)">Open-Weight vs Cloud</button>
+          </div>
+        </div>
+
+        <div class="slide-body grid-asymmetric">
+          <div class="panel-white" style="gap: 8px;">
+            <div class="panel-title">
+              <span id="clChartTitle">Puntaje Neto, Latencia y Costo Real</span>
+              <span class="pill pill-info">Total 6 corridas: USD 0.8041</span>
+            </div>
+            <div id="clChartBox" style="flex:1;display:flex;align-items:center;"></div>
+            <div id="clTakeaway" class="callout callout-important"></div>
+          </div>
+
+          <div class="panel" style="overflow-y:auto;">
+            <div class="panel-title"><span>Tabla de Métricas y Consumo</span></div>
+            <div id="clTableBox"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 9: PATRONES DE FALLA PARTE I -->
+      <section class="slide" data-title="Patrones de Falla: Semántica, Signo y Escala">
+        <div class="slide-top">
+          <div>
+            <span class="slide-eyebrow eyebrow-rose">5 · Buenas Prácticas de Ingeniería (Parte I)</span>
+            <h2 class="slide-title">Los 4 Errores Cuantitativos más Costosos (y Cómo Evitarlos)</h2>
+            <p class="slide-subtitle">Explorá cada categoría reportada por <code class="inline">src/evaluator.py</code> con un caso típico de <em>antes vs. después</em>.</p>
+          </div>
+        </div>
+
+        <div class="slide-body grid-asymmetric">
+          <div class="pattern-list">
+            <button class="pattern-btn active" onclick="selectErrorPattern('pct_vs_abs', this)">
+              <div class="pt-head">
+                <span>1. Variación Absoluta vs. Porcentual (<code class="inline">percent_decimal</code> / <code class="inline">scale_mismatch</code>)</span>
+                <span class="pill pill-err">-1.0 pt</span>
+              </div>
+              <div class="pt-sub">Confundir "change / difference" con "percentage change" u olvidar multiplicar por 100.</div>
+            </button>
+
+            <button class="pattern-btn" onclick="selectErrorPattern('magnitude', this)">
+              <div class="pt-head">
+                <span>2. Re-escalado Indebido por 1,000 (<code class="inline">magnitude_10x</code>)</span>
+                <span class="pill pill-err">-1.0 pt</span>
+              </div>
+              <div class="pt-sub">Multiplicar o dividir valores ya expresados en la unidad declarada de la tabla.</div>
+            </button>
+
+            <button class="pattern-btn" onclick="selectErrorPattern('sign', this)">
+              <div class="pt-head">
+                <span>3. Inversión de Signo Temporal (<code class="inline">sign_error</code>)</span>
+                <span class="pill pill-err">-1.0 pt</span>
+              </div>
+              <div class="pt-sub">Tablas 10-K ordenadas de derecha a izquierda (<code class="inline">2019 | 2018</code>) inducen restas invertidas.</div>
+            </button>
+
+            <button class="pattern-btn" onclick="selectErrorPattern('rounding', this)">
+              <div class="pt-head">
+                <span>4. Redondeo Prematuro (<code class="inline">near_miss_rounding</code>)</span>
+                <span class="pill pill-err">-1.0 pt</span>
+              </div>
+              <div class="pt-sub">Truncar pasos intermedios rompe la tolerancia <code class="inline">abs ≤ 0.01</code> / <code class="inline">rel ≤ 0.001</code>.</div>
+            </button>
+          </div>
+
+          <div class="inspector" id="errorInspector">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 10: PATRONES DE FALLA PARTE II (AGENTES & COLAB T4) -->
+      <section class="slide" data-title="Patrones de Falla: Agentes y Runtime Colab T4">
+        <div class="slide-top">
+          <div>
+            <span class="slide-eyebrow eyebrow-amber">5 · Buenas Prácticas de Ingeniería (Parte II)</span>
+            <h2 class="slide-title">Diseño Agéntico sin Regresiones y Tuning en Colab T4</h2>
+            <p class="slide-subtitle">Reglas arquitectónicas que separan un agente estable de uno que alucina, se sobre-abstiene o cae por timeout.</p>
+          </div>
+        </div>
+
+        <div class="slide-body grid-2">
+          <div class="panel-white" style="gap: 10px;">
+            <div class="panel-title"><span>Control de Flujo Agéntico y Contexto</span></div>
+            <div class="tabs">
+              <button class="tab-btn active" onclick="selectAgentTip('turn0', this)">Bloqueo Turno 0</button>
+              <button class="tab-btn" onclick="selectAgentTip('tabletext', this)">Ceguera table-text</button>
+              <button class="tab-btn" onclick="selectAgentTip('cautious', this)">Sobre-abstención Auditor</button>
+            </div>
+            <div id="agentTipBox" style="flex:1;display:flex;flex-direction:column;gap:10px;">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <div class="panel" style="gap: 10px;">
+            <div class="panel-title">
+              <span>Configuración Recomendada en Google Colab GPU T4</span>
+              <span class="pill pill-ok">Timeout &lt; 60 s</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Parámetro</th>
+                  <th>Valor Sugerido</th>
+                  <th>Motivo Técnico</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code class="inline">n_ctx</code></td>
+                  <td><strong>16384</strong></td>
+                  <td>Evita truncar tablas extensas + notas + historial de tools.</td>
+                </tr>
+                <tr>
+                  <td><code class="inline">temperature</code></td>
+                  <td><strong>0.0</strong></td>
+                  <td>Estabilidad determinista en JSON y selección de operandos.</td>
+                </tr>
+                <tr>
+                  <td><code class="inline">max_tokens</code></td>
+                  <td><strong>Acotado (ej. 512–1024)</strong></td>
+                  <td>Impide verborragia infinita y mantiene <code class="inline">max_latency &lt; 60s</code>.</td>
+                </tr>
+                <tr>
+                  <td>Servidor FastAPI</td>
+                  <td><strong>Hilo daemon en kernel</strong></td>
+                  <td>Comparte la GPU VRAM con el modelo sin duplicar procesos CUDA.</td>
+                </tr>
+                <tr>
+                  <td>Iteraciones ReAct</td>
+                  <td><strong>Máx. 4–5 pasos</strong></td>
+                  <td>Limita latencia <code class="inline">p95</code> (en T4: ~24–38s) y consumo de tokens.</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="callout callout-warn" style="margin-top:auto;">
+              <span>⚡</span>
+              <div>
+                <strong>Regla práctica de latencia:</strong> Si tu <code class="inline">p95</code> local en T4 supera <code class="inline">45 s</code>, reducí turnos o longitud de respuesta antes de calibrar para evitar timeouts bajo túnel <code class="inline">cloudflared</code>.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 11: EVALUACIÓN REMOTA -->
+      <section class="slide" data-title="Plataforma Remota: Calibración y Final">
+        <div class="slide-top">
+          <div>
+            <span class="slide-eyebrow eyebrow-emerald">6 · Evaluación Remota y Leaderboard Final</span>
+            <h2 class="slide-title">Ciclo Remoto (<code class="inline">&lt;URL_EVALUADOR_REMOTO&gt;</code>) y Checklist Pre-Vuelo</h2>
+            <p class="slide-subtitle">La cátedra entrega URL, <code class="inline">team_id</code> y <code class="inline">api_token</code> al habilitar tu equipo. Hacé clic en los pasos del diagrama para ver reglas y cuotas.</p>
+          </div>
+        </div>
+
+        <div class="slide-body grid-asymmetric">
+          <div style="display:flex;flex-direction:column;gap:10px;min-height:0;">
+            <div class="diagram-box" style="flex:1;">
+              <div class="diagram-hint">👆 Hacé clic en cada etapa para inspeccionar cuotas, reintentos y diagnóstico ciego</div>
+              <svg class="interactive-svg" viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <marker id="arrow3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+                  </marker>
+                </defs>
+
+                <!-- Step 1: Tunnel -->
+                <g class="svg-node selected" data-rem="tunnel" onclick="selectRemoteNode('tunnel', this)">
+                  <rect x="18" y="34" width="142" height="78" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+                  <text x="89" y="60" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1e3a8a">1. Exponer HTTP</text>
+                  <text x="89" y="78" text-anchor="middle" font-size="10" fill="#1d4ed8">cloudflared / HTTPS</text>
+                  <text x="89" y="93" text-anchor="middle" font-size="10" fill="#3b82f6">puerto 8000 → URL</text>
+                </g>
+
+                <path d="M 160 73 L 188 73" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arrow3)"/>
+
+                <!-- Step 2: Health -->
+                <g class="svg-node" data-rem="health" onclick="selectRemoteNode('health', this)">
+                  <rect x="190" y="34" width="145" height="78" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+                  <text x="262" y="60" text-anchor="middle" font-size="11.5" font-weight="700" fill="#065f46">2. Pre-vuelo /health</text>
+                  <text x="262" y="78" text-anchor="middle" font-size="10" fill="#047857">Timeout 10s</text>
+                  <text x="262" y="93" text-anchor="middle" font-size="10" fill="#059669">No gasta cuota si falla</text>
+                </g>
+
+                <path d="M 335 73 L 363 73" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arrow3)"/>
+
+                <!-- Step 3: Calibrate -->
+                <g class="svg-node" data-rem="calibrate" onclick="selectRemoteNode('calibrate', this)">
+                  <rect x="365" y="34" width="145" height="78" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.8"/>
+                  <text x="437" y="60" text-anchor="middle" font-size="11.5" font-weight="700" fill="#78350f">3. Calibración (30)</text>
+                  <text x="437" y="78" text-anchor="middle" font-size="10" fill="#92400e">Máx. 10 corridas</text>
+                  <text x="437" y="93" text-anchor="middle" font-size="10" fill="#b45309">Cooldown 300s · 60s/caso</text>
+                </g>
+
+                <path d="M 510 73 L 538 73" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arrow3)"/>
+
+                <!-- Step 4: Diagnostics -->
+                <g class="svg-node" data-rem="diagnostics" onclick="selectRemoteNode('diagnostics', this)">
+                  <rect x="540" y="34" width="122" height="78" rx="10" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.8"/>
+                  <text x="601" y="60" text-anchor="middle" font-size="11.5" font-weight="700" fill="#115e59">4. Diagnóstico</text>
+                  <text x="601" y="78" text-anchor="middle" font-size="10" fill="#0f766e">Agregado ciego</text>
+                  <text x="601" y="93" text-anchor="middle" font-size="10" fill="#0d9488">Copiar JSON p/ IA</text>
+                </g>
+
+                <!-- Step 5: Final Leaderboard -->
+                <path d="M 601 112 L 601 154 L 340 154 L 340 175" stroke="#4f46e5" stroke-width="1.8" fill="none" marker-end="url(#arrow3)"/>
+                <g class="svg-node" data-rem="final" onclick="selectRemoteNode('final', this)">
+                  <rect x="135" y="178" width="410" height="76" rx="12" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
+                  <text x="340" y="206" text-anchor="middle" font-size="12.5" font-weight="800" fill="#312e81">5. Corte Definitivo: Final Leaderboard Set (100 casos)</text>
+                  <text x="340" y="224" text-anchor="middle" font-size="10.5" fill="#4338ca">Segregado por Track: Open-Weight vs Cloud Propietario</text>
+                  <text x="340" y="240" text-anchor="middle" font-size="10" fill="#4f46e5">Desempate: Net Score ↓ · Total Tokens ↑ · Avg Latency ↑</text>
+                </g>
+              </svg>
+            </div>
+
+            <div class="inspector" id="remoteInspector" style="max-height:190px;">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <div class="panel" style="gap: 10px;">
+            <div class="panel-title">
+              <span>Checklist Pre-Calibración (No quemar cuota)</span>
+              <span id="checkProgress" class="pill pill-info">0 / 5</span>
+            </div>
+            <div class="checklist" id="preFlightChecklist">
+              <label class="check-item">
+                <input type="checkbox" onchange="updateChecklist()" />
+                <span>Probé 150 casos completos en <code class="inline">data/dev_set.json</code> con <code class="inline">run_local_eval.py</code>.</span>
+              </label>
+              <label class="check-item">
+                <input type="checkbox" onchange="updateChecklist()" />
+                <span><code class="inline">schema_error_count == 0</code> y <code class="inline">telemetry_anomaly_count == 0</code>.</span>
+              </label>
+              <label class="check-item">
+                <input type="checkbox" onchange="updateChecklist()" />
+                <span>Latencia <code class="inline">p95 &lt; 45 s</code> y máximo por debajo de <code class="inline">60 s</code>.</span>
+              </label>
+              <label class="check-item">
+                <input type="checkbox" onchange="updateChecklist()" />
+                <span>Validé externamente que <code class="inline">GET &lt;tu-url&gt;/health</code> responde HTTP <code class="inline">200</code>.</span>
+              </label>
+              <label class="check-item">
+                <input type="checkbox" onchange="updateChecklist()" />
+                <span>No sobreajusté reglas a casos puntuales; ataqué patrones generales en <code class="inline">dev_set</code>.</span>
+              </label>
+            </div>
+            <div class="callout callout-warn" style="margin-top:auto;">
+              <span>🛡️</span>
+              <div>
+                <strong>Anti-Overfitting:</strong> Tenés solo <strong>10 intentos</strong> en Calibración (y 300s de espera entre cada uno). El set Final (100 casos) es completamente inédito.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Synchronized Study Notes Drawer -->
+    <aside id="notesDrawer" class="notes-drawer" aria-label="Notas detalladas de la diapositiva">
+      <div class="notes-head">
+        <span class="notes-head-title">📖 Notas de Estudio <span id="notesSlideBadge" style="opacity:0.85;font-weight:600;">· Slide 1</span></span>
+        <button class="notes-close" onclick="toggleNotes(false)" title="Cerrar notas (N)">Cerrar ✕</button>
+      </div>
+      <div id="notesBody" class="notes-body">
+        <!-- Populated dynamically by renderSlideNotes() -->
+      </div>
+      <div class="notes-foot">
+        <button class="btn" style="padding:4px 9px;font-size:11.5px;" onclick="goToSlide(currentSlide - 1)">← Anterior</button>
+        <span style="font-size:11px;color:var(--text-muted);">Atajo: <kbd>N</kbd></span>
+        <button class="btn" style="padding:4px 9px;font-size:11.5px;" onclick="goToSlide(currentSlide + 1)">Siguiente →</button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Bottom Navigation Footer -->
+  <footer class="deck-footer">
+    <div class="footer-hint">Navegación: <kbd>←</kbd> <kbd>→</kbd> o <kbd>Espacio</kbd> · Notas: <kbd>N</kbd> · Índice: <kbd>I</kbd></div>
+    <div id="slideDots" class="slide-dots"></div>
+    <div class="footer-hint" id="footerSlideTitle">Misión del Desafío y Mapa General</div>
+  </footer>
+
+  <!-- Outline Modal -->
+  <div id="outlineModal" class="modal-backdrop" onclick="if(event.target===this) toggleOutline(false)">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Índice de la Presentación (12 Diapositivas)</h3>
+        <button class="btn" onclick="toggleOutline(false)">Cerrar (Esc)</button>
+      </div>
+      <div id="outlineList" class="modal-list"></div>
+    </div>
+  </div>
+
+  <script>
+    // ==============================
+    // 1. SLIDE NAVIGATION ENGINE
+    // ==============================
+    const slides = Array.from(document.querySelectorAll(".slide"));
+    const totalSlides = slides.length;
+    let currentSlide = 0;
+
+    const slideCounter = document.getElementById("slideCounter");
+    const progressFill = document.getElementById("progressFill");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const slideDots = document.getElementById("slideDots");
+    const footerSlideTitle = document.getElementById("footerSlideTitle");
+    const outlineModal = document.getElementById("outlineModal");
+    const outlineList = document.getElementById("outlineList");
+
+    function buildNavigationUI() {
+      slideDots.innerHTML = "";
+      outlineList.innerHTML = "";
+      slides.forEach((s, idx) => {
+        const title = s.dataset.title || `Diapositiva ${idx + 1}`;
+        const dot = document.createElement("button");
+        dot.className = "dot-btn" + (idx === 0 ? " active" : "");
+        dot.title = `${idx + 1}. ${title}`;
+        dot.onclick = () => goToSlide(idx);
+        slideDots.appendChild(dot);
+
+        const item = document.createElement("button");
+        item.className = "outline-item" + (idx === 0 ? " current" : "");
+        item.innerHTML = `<div class="oi-num">Slide ${idx + 1}</div><div class="oi-title">${title}</div>`;
+        item.onclick = () => {
+          goToSlide(idx);
+          toggleOutline(false);
+        };
+        outlineList.appendChild(item);
+      });
+    }
+
+    function goToSlide(index) {
+      if (index < 0 || index >= totalSlides) return;
+      slides[currentSlide].classList.remove("active");
+      currentSlide = index;
+      slides[currentSlide].classList.add("active");
+      slides[currentSlide].scrollTop = 0;
+
+      slideCounter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+      progressFill.style.width = `${((currentSlide + 1) / totalSlides) * 100}%`;
+      prevBtn.disabled = currentSlide === 0;
+      nextBtn.disabled = currentSlide === totalSlides - 1;
+      footerSlideTitle.textContent = slides[currentSlide].dataset.title || "";
+
+      Array.from(slideDots.children).forEach((d, i) => d.classList.toggle("active", i === currentSlide));
+      Array.from(outlineList.children).forEach((o, i) => o.classList.toggle("current", i === currentSlide));
+      renderSlideNotes(currentSlide);
+      history.replaceState(null, "", `#slide-${currentSlide + 1}`);
+    }
+
+    function toggleOutline(show) {
+      outlineModal.classList.toggle("open", show);
+    }
+
+    function toggleNotes(force) {
+      const drawer = document.getElementById("notesDrawer");
+      const btn = document.getElementById("toggleNotesBtn");
+      const next = typeof force === "boolean" ? force : !drawer.classList.contains("open");
+      drawer.classList.toggle("open", next);
+      btn.classList.toggle("btn-active", next);
+    }
+
+    prevBtn.addEventListener("click", () => goToSlide(currentSlide - 1));
+    nextBtn.addEventListener("click", () => goToSlide(currentSlide + 1));
+    document.getElementById("openOutlineBtn").addEventListener("click", () => toggleOutline(true));
+    document.getElementById("toggleNotesBtn").addEventListener("click", () => toggleNotes());
+
+    document.addEventListener("keydown", (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.target.tagName === "TEXTAREA") return;
+      if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") {
+        e.preventDefault();
+        goToSlide(currentSlide + 1);
+      } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        e.preventDefault();
+        goToSlide(currentSlide - 1);
+      } else if (e.key === "Home") {
+        goToSlide(0);
+      } else if (e.key === "End") {
+        goToSlide(totalSlides - 1);
+      } else if (e.key.toLowerCase() === "i") {
+        toggleOutline(!outlineModal.classList.contains("open"));
+      } else if (e.key.toLowerCase() === "n") {
+        toggleNotes();
+      } else if (e.key === "Escape") {
+        toggleOutline(false);
+        if (window.innerWidth <= 1120) toggleNotes(false);
+      }
+    });
+
+    // ==============================
+    // 2. SLIDE 2: STARTER KIT NODES
+    // ==============================
+    const KIT_DATA = {
+      devset: {
+        badge: ["Dataset Público", "badge-readonly"],
+        title: "data/dev_set.json",
+        desc: "Conjunto oficial de desarrollo con 150 casos financieros reales (135 SOLVED y 15 ABSTAIN; 61 solo tabla y 89 table-text). Incluye ground_truth para iterar y medir mejoras offline.",
+        rule: "Prohibido alterar sus casos o escribir reglas específicas por case_id.",
+        cmd: "# Ver distribución rápida o evaluar 20 casos\npython scripts/run_local_eval.py --limit 20 --verbose"
+      },
+      runeval: {
+        badge: ["Cliente HTTP", "badge-tool"],
+        title: "scripts/run_local_eval.py",
+        desc: "Envía secuencialmente cada CaseInput hacia POST /solve en tu servidor local, valida respuestas con src/evaluator.py y guarda predictions_local.json + eval_report_local.json.",
+        rule: "Soporta --limit, --timeout (default 60s), --url y --verbose.",
+        cmd: "# Evaluación completa de los 150 casos\npython scripts/run_local_eval.py"
+      },
+      server: {
+        badge: ["Editable por Equipo", "badge-editable"],
+        title: "src/server.py",
+        desc: "Plantilla FastAPI con GET /health y POST /solve. Es el único punto de entrada que el Evaluador Remoto consume como caja negra.",
+        rule: "Mantené limpios los endpoints /health y /solve; modularizá agente y tools en src/.",
+        cmd: "# Levantar microservicio local\nuvicorn src.server:app --host 0.0.0.0 --port 8000"
+      },
+      schemas: {
+        badge: ["Intocable", "badge-readonly"],
+        title: "src/schemas.py",
+        desc: "Contratos estrictos Pydantic v2 (extra='forbid'): CaseInput, CaseOutput, ExecutionStep, TokenUsage y validadores automáticos de consistencia.",
+        rule: "No modificar nunca. Validá tu salida con CaseOutput.model_validate(...) antes de responder.",
+        cmd: "# Verificado automáticamente al importar src.server"
+      },
+      evaluator: {
+        badge: ["Intocable", "badge-readonly"],
+        title: "src/evaluator.py",
+        desc: "Motor oficial de normalización dimensional, tolerancias (abs <= 0.01 o rel <= 0.001), puntuación (+1.0 / 0.0 / -1.0 / -1.5), diagnóstico de patrones y auditoría de telemetría.",
+        rule: "Idéntico al motor del Evaluador Remoto. Prohibido alterarlo.",
+        cmd: "# Genera failure_patterns y actionable_recommendations en eval_report_local.json"
+      },
+      viewer: {
+        badge: ["Inspección Visual", "badge-tool"],
+        title: "scripts/viewer.py",
+        desc: "Aplicación web local (:8501) para explorar los 150 casos, tablas, notas aclaratorias, Ground Truth, execution_trace y pistas diagnósticas caso por caso.",
+        rule: "Autodetecta predictions_local.json o permite subir cualquier JSON de predicciones.",
+        cmd: "python scripts/viewer.py --open"
+      },
+      colab: {
+        badge: ["Runtime GPU", "badge-remote"],
+        title: "notebooks/Colab_Starter_Template.ipynb",
+        desc: "Prepara el entorno en Google Colab GPU T4: clona el Starter Kit, levanta uvicorn en un hilo daemon (compartiendo VRAM con tu modelo local) y abre el túnel cloudflared.",
+        rule: "Ideal para Track Open-Weight sin consumir procesos GPU duplicados.",
+        cmd: "# Dentro de Colab: ejecuta Celdas 1 y 2 para obtener https://<id>.trycloudflare.com"
+      },
+      remote: {
+        badge: ["Plataforma Central", "badge-remote"],
+        title: "Evaluador Remoto (<URL_EVALUADOR_REMOTO>)",
+        desc: "Evalúa tu microservicio en Fase de Calibración (30 casos ciegos, máx. 10 corridas) y en el Corte Final (100 casos ciegos) segregado por Track.",
+        rule: "100% caja negra: nunca ve tu código ni tu arquitectura interna.",
+        cmd: "POST <URL_EVALUADOR_REMOTO>/calibrate\n{\"team_id\": \"...\", \"api_token\": \"...\", \"endpoint_url\": \"https://...\"}"
+      }
+    };
+
+    function selectKitNode(key, el) {
+      document.querySelectorAll("[data-kit]").forEach(n => n.classList.remove("selected"));
+      if (el) el.classList.add("selected");
+      const d = KIT_DATA[key];
+      document.getElementById("kitInspector").innerHTML = `
+        <span class="inspector-badge ${d.badge[1]}">${d.badge[0]}</span>
+        <h3>${d.title}</h3>
+        <p>${d.desc}</p>
+        <div class="callout callout-warn" style="padding:11px 14px;font-size:13.5px;">
+          <span>📌</span><div><strong>Regla:</strong> ${d.rule}</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Comando / Uso típico</div>
+          <pre class="code-block">${d.cmd}</pre>
+        </div>
+      `;
+    }
+
+    // ==============================
+    // 3. SLIDE 3: CONTRATO & SIMULADOR
+    // ==============================
+    const CONTRACT_TABS = {
+      output: [
+        { k: "case_id", v: '"dev_001"', note: "Debe coincidir exactamente con CaseInput.case_id; de lo contrario, SCHEMA_ERROR (-1.5 pts)." },
+        { k: "verdict", v: '"SOLVED"', note: '"SOLVED" si hay evidencia verificada, o "ABSTAIN" si faltan datos indispensables.' },
+        { k: "primary_value", v: "-5.934", note: "Float finito obligatorio si SOLVED. Si scale=='percent', expresar en 0–100 (ej. 15.4, nunca 0.154)." },
+        { k: "scale", v: '"percent"', note: 'Valores válidos: null, "thousand", "million", "billion" o "percent".' },
+        { k: "derivation", v: '"(4785.7 - 5087.6) / 5087.6 * 100"', note: "String no vacío con la fórmula ejecutada o justificación clara de ABSTAIN." },
+        { k: "execution_trace", v: '[{"step_index": 1, "tool_name": "safe_calculate", ...}]', note: "Lista 1-based obligatoria con >= 1 paso cuando verdict == 'SOLVED'." },
+        { k: "usage", v: '{"prompt_tokens": 350, "completion_tokens": 80, "total_tokens": 430, "llm_calls": 1}', note: "total_tokens == prompt_tokens + completion_tokens. Valores dummy (<50 tokens o 0 calls) disparan telemetry_anomaly." }
+      ],
+      input: [
+        { k: "case_id", v: '"dev_001"', note: "Identificador único del caso a preservar en la respuesta." },
+        { k: "question", v: '"What was the percentage change in total emissions?"', note: "Consulta financiera en inglés sobre el extracto 10-K." },
+        { k: "table", v: '[["", "2019", "2018"], ["Total emissions", "4,785.7", "5,087.6"]]', note: "Matriz 2D (filas x columnas). Puede tener 1 o 2 filas de encabezado." },
+        { k: "paragraphs", v: '[{"index": 1, "text": "Greenhouse gas emissions (Tonnes of CO2e)."}]', note: "Párrafos narrativos 1-based donde suelen aclararse unidades, notas o valores clave." }
+      ],
+      abstain: [
+        { k: "case_id", v: '"dev_042"', note: "Idéntico al CaseInput recibido." },
+        { k: "verdict", v: '"ABSTAIN"', note: "Declarado cuando falta un año, un concepto o una nota indispensable." },
+        { k: "primary_value", v: "null", note: "Normalizado automáticamente a None cuando verdict == 'ABSTAIN'." },
+        { k: "scale", v: "null", note: "Puede quedar en null." },
+        { k: "derivation", v: '"ABSTAIN: Falta dato de emisiones para 2018 en tabla y notas."', note: "Debe ser un string no vacío explicando qué evidencia falta." },
+        { k: "execution_trace", v: '[{"step_index": 1, "tool_name": "inspect_table", ...}]', note: "Opcional en ABSTAIN, pero recomendable registrar la inspección realizada." },
+        { k: "usage", v: '{"prompt_tokens": 410, "completion_tokens": 55, "total_tokens": 465, "llm_calls": 1}', note: "Reportar siempre el consumo real acumulado." }
+      ]
+    };
+
+    function switchContractTab(tab, btn) {
+      btn.parentElement.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const box = document.getElementById("contractCodeBox");
+      const fields = CONTRACT_TABS[tab];
+      box.innerHTML = fields.map((f, i) => `
+        <div class="json-line ${i === 0 ? "active" : ""}" onclick="selectContractField('${tab}', ${i}, this)">
+          <span style="color:#93c5fd;">"${f.k}"</span><span style="color:#94a3b8;">:</span>
+          <span style="color:#86efac;word-break:break-word;">${f.v}</span>
+        </div>
+      `).join("");
+      selectContractField(tab, 0, box.firstElementChild);
+    }
+
+    function selectContractField(tab, idx, el) {
+      document.querySelectorAll("#contractCodeBox .json-line").forEach(n => n.classList.remove("active"));
+      if (el) el.classList.add("active");
+      const f = CONTRACT_TABS[tab][idx];
+      document.getElementById("contractFieldNote").innerHTML = `<span>📌</span><div><strong>${f.k}:</strong> ${f.note}</div>`;
+    }
+
+    const SCALE_FACTORS = { None: 1, thousand: 1000, million: 1e6, billion: 1e9 };
+
+    function loadScalePreset(pv, ps, gv, gs) {
+      document.getElementById("simPredVal").value = pv;
+      document.getElementById("simPredScale").value = ps;
+      document.getElementById("simGtVal").value = gv;
+      document.getElementById("simGtScale").value = gs;
+      runScaleSim();
+    }
+
+    function runScaleSim() {
+      const pv = parseFloat(document.getElementById("simPredVal").value);
+      const ps = document.getElementById("simPredScale").value;
+      const gv = parseFloat(document.getElementById("simGtVal").value);
+      const gs = document.getElementById("simGtScale").value;
+      const box = document.getElementById("simOutputBox");
+
+      if (Number.isNaN(pv) || Number.isNaN(gv)) {
+        box.innerHTML = "Ingresá valores numéricos válidos.";
+        return;
+      }
+
+      if ((gs === "percent") !== (ps === "percent")) {
+        box.style.background = "var(--rose-soft)";
+        box.style.borderColor = "var(--rose-border)";
+        box.innerHTML = `<strong style="color:var(--rose);">❌ SCALE_MISMATCH (-1.0 pt)</strong><br>Escala incompatible: <code class="inline">${ps}</code> vs <code class="inline">${gs}</code>. <code class="inline">percent</code> solo es compatible con <code class="inline">percent</code>.`;
+        return;
+      }
+
+      const predNorm = gs === "percent" ? pv : pv * (SCALE_FACTORS[ps] / SCALE_FACTORS[gs]);
+      const absErr = Math.abs(predNorm - gv);
+      const relErr = Math.abs(gv) < 1e-12 ? (absErr < 1e-12 ? 0 : Infinity) : absErr / Math.abs(gv);
+      const ok = absErr <= 0.01 || relErr <= 0.001;
+
+      if (ok) {
+        box.style.background = "var(--emerald-soft)";
+        box.style.borderColor = "var(--emerald-border)";
+        box.innerHTML = `<strong style="color:var(--emerald);">✅ CORRECT (+1.0 pt)</strong><br>Valor normalizado al marco GT (<code class="inline">${gs}</code>): <strong>${predNorm.toFixed(6).replace(/\.?0+$/, "")}</strong> · <code class="inline">abs_err=${absErr.toFixed(5)}</code> · <code class="inline">rel_err=${(relErr * 100).toFixed(4)}%</code>`;
+      } else {
+        const hint = gs === "percent" && Math.abs(predNorm * 100 - gv) <= 0.5
+          ? " (Patrón: <code>percent_decimal</code> — multiplicá por 100)"
+          : Math.abs(predNorm + gv) <= 0.02
+          ? " (Patrón: <code>sign_error</code> — resta invertida)"
+          : "";
+        box.style.background = "var(--rose-soft)";
+        box.style.borderColor = "var(--rose-border)";
+        box.innerHTML = `<strong style="color:var(--rose);">❌ WRONG_VALUE (-1.0 pt)</strong>${hint}<br>Normalizado: <strong>${predNorm.toFixed(4)}</strong> vs GT: <strong>${gv}</strong> (<code class="inline">abs_err=${absErr.toFixed(4)}</code>, <code class="inline">rel_err=${(relErr * 100).toFixed(2)}%</code>)`;
+      }
+    }
+
+    // ==============================
+    // 4. SLIDE 4: SCORE CALCULATOR
+    // ==============================
+    function updateScoreCalc() {
+      const correct = parseInt(document.getElementById("scCorrect").value, 10);
+      const maxCautious = 135 - correct;
+      const cautiousEl = document.getElementById("scCautious");
+      cautiousEl.max = maxCautious;
+      if (parseInt(cautiousEl.value, 10) > maxCautious) cautiousEl.value = maxCautious;
+      const cautious = parseInt(cautiousEl.value, 10);
+
+      const halluc = parseInt(document.getElementById("scHalluc").value, 10);
+      const schema = parseInt(document.getElementById("scSchema").value, 10);
+      const wrongSolved = Math.max(0, 135 - correct - cautious - schema);
+      const abstainOk = 15 - halluc;
+
+      document.getElementById("scCorrectLbl").textContent = correct;
+      document.getElementById("scCautiousLbl").textContent = cautious;
+      document.getElementById("scHallucLbl").textContent = halluc;
+      document.getElementById("scSchemaLbl").textContent = schema;
+
+      const net = correct * 1.0 - wrongSolved * 1.0 - halluc * 1.0 - schema * 1.5;
+      const acc = ((correct + abstainOk) / 150) * 100;
+      const color = net >= 60 ? "var(--emerald)" : net >= 20 ? "var(--cobalt)" : "var(--rose)";
+
+      document.getElementById("scSummaryBox").innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <span style="font-size:12.5px;color:var(--text-muted);font-weight:700;">PUNTAJE NETO PROYECTADO</span>
+          <span style="font-size:28px;font-weight:800;color:${color};">${net >= 0 ? "+" : ""}${net.toFixed(1)} / +135.0</span>
+        </div>
+        <div style="font-size:13.5px;color:var(--text-secondary);">
+          Exactitud global: <strong>${acc.toFixed(1)}%</strong> ·
+          SOLVED erróneos (-1.0): <strong>${wrongSolved}</strong> ·
+          ABSTAIN OK (0.0): <strong>${abstainOk}/15</strong> ·
+          Penalización por esquema: <strong>-${(schema * 1.5).toFixed(1)}</strong>
+        </div>
+      `;
+    }
+
+    // ==============================
+    // 5. SLIDE 5: TOOLS INSPECTOR
+    // ==============================
+    const TOOLS_DATA = {
+      inspect_table: {
+        badge: ["Primitiva Tabular", "badge-tool"],
+        title: "1. inspect_table(table, row_query, max_rows)",
+        contract: "Entrada: matriz 2D list[list[str]], filtro opcional row_query, límite max_rows=45. Salida: tabla Markdown + bloque [Alineación columna=valor por fila].",
+        invariants: [
+          "Detectar dinámicamente 1 o 2 filas de encabezado (evaluar cuántos valores monetarios/porcentuales hay en fila[1]; los años 19xx/20xx son encabezados, no datos).",
+          "Si row_query filtra filas y queda vacío, hacer fallback a toda la tabla para no perder evidencia.",
+          "Emitir vista explícita 'Fila -> Columna_1: Valor_1 | Columna_2: Valor_2' para evitar desfases horizontales en columnas adyacentes."
+        ],
+        pseudo: `FUNCION inspect_table(table, row_query=None, max_rows=45):
+    SI table vacía -> RETORNAR "EMPTY_TABLE"
+    header_count = 1 si fila[1] tiene >=2 celdas numéricas (sin contar años), si no 2
+    header_rows = table[:header_count]; body_rows = table[header_count:]
+    SI row_query tiene tokens relevantes (sin stopwords):
+        filtrar body_rows que coincidan; si hay matches, usarlos
+    renderizar Markdown de header_rows + body_rows[:max_rows]
+    SI filas mostradas <= 25:
+        emitir vista alineada "- <etiqueta> -> <col_1>: <val_1> | ..."`
+      },
+      search_notes: {
+        badge: ["Recuperación Léxica", "badge-tool"],
+        title: "2. search_notes(paragraphs, query, top_k=5)",
+        contract: "Entrada: lista de Paragraph (index, text), query textual y top_k. Salida: string con los top_k párrafos formateados como '[Paragraph i] texto'.",
+        invariants: [
+          "Ponderar más alto años exactos de 4 dígitos (peso 2.5) y términos contables largos (>=6 chars, peso 1.5) frente a palabras cortas (1.0) o subcadenas (0.5).",
+          "Seleccionar top_k por puntaje descendente, pero REORDENAR los seleccionados por p.index ascendente para preservar el hilo narrativo original."
+        ],
+        pseudo: `FUNCION search_notes(paragraphs, query, top_k=5):
+    SI paragraphs vacío -> RETORNAR "NO_PARAGRAPHS_AVAILABLE"
+    tokens = extraer palabras alfanuméricas de query (sin stopwords)
+    PARA cada párrafo p:
+        score += 2.5 si año exacto | 1.5 si len>=6 | 1.0 palabra exacta | 0.5 subcadena
+    elegir los top_k con mayor score
+    reordenar elegidos por p.index ascendente
+    RETORNAR "[Paragraph i] texto" concatenado`
+      },
+      safe_calculate: {
+        badge: ["Aritmética AST", "badge-editable"],
+        title: "3. safe_calculate(expression)",
+        contract: "Entrada: string matemático puro (ej. '(4785.7 - 5087.6) / 5087.6 * 100'). Salida: float finito redondeado o error controlado.",
+        invariants: [
+          "Prohibido usar eval() directo. Parsear en árbol AST en modo 'eval' y recorrer únicamente nodos seguros.",
+          "Limpiar [], $, €, £, % y comas separadoras de miles entre dígitos (sin romper comas de min(a, b) / max(a, b)).",
+          "Rechazar división por cero (|divisor| < 1e-12) y resultados NaN / Inf."
+        ],
+        pseudo: `FUNCION safe_calculate(expression):
+    normalizar [] -> (), quitar $, €, £, %, quitar comas de miles
+    tree = parsear AST en modo "eval"
+    FUNCION eval_nodo(nodo):
+        SI constante numérica -> float(valor)
+        SI UnaryOp (+, -) o BinOp (+, -, *, /, **) -> evaluar recursivamente
+        SI llamada en {abs, round, min, max} -> evaluar args y ejecutar
+        SI NO -> error de operación no permitida
+    verificar resultado finito y retornar redondeado a 6 decimales`
+      },
+      detect_scale_hint: {
+        badge: ["Inferencia Dimensional", "badge-remote"],
+        title: "4. detect_scale_hint(table, paragraphs, question)",
+        contract: "Entrada: table, paragraphs, question. Salida: 'percent' | 'thousand' | 'million' | 'billion' | None.",
+        invariants: [
+          "Prioridad 1: preguntas de porcentaje, margin o rate (sin 'percentage point' ni 'basis point') -> 'percent'.",
+          "Prioridad 2: preguntas adimensionales ('per share', 'share price', 'proportion of', 'ratio of') -> None (aunque la tabla diga 'in millions').",
+          "Prioridad 3: encabezados table[:3] -> Prioridad 4: paréntesis '(in millions)' / intros en párrafos -> Prioridad 5: fallback general."
+        ],
+        pseudo: `FUNCION detect_scale_hint(table, paragraphs, question):
+    SI question pide percentage/percent/%/margin/rate -> RETORNAR "percent"
+    SI question pide per share / price / proportion / ratio -> RETORNAR None
+    buscar declaraciones explícitas en primeras 3 filas de table
+    buscar aclaraciones "(... in billions/millions/thousands ...)" en paragraphs
+    fallback: mención general en (question + headers), luego paragraphs
+    RETORNAR None si no hay coincidencias`
+      },
+      verify_operands: {
+        badge: ["Guardrail Determinista", "badge-guardrail"],
+        title: "5. verify_operands_grounded_in_evidence(expression, case_input)",
+        contract: "Entrada: expresión aritmética propuesta y CaseInput original. Salida: (is_grounded: bool, ungrounded_operands: list[str]).",
+        invariants: [
+          "Extraer todo literal numérico de la expresión, excluyendo constantes estructurales de fórmula {0, 1, 2, 3, 4, 5, 10, 12, 100, 360, 365, 1000}.",
+          "Comparar en valor absoluto contra todos los números extraídos de case_input.table y case_input.paragraphs (tolerancia <= 1e-4).",
+          "Si algún operando no aparece en la evidencia, devolver el error al agente para que re-inspeccione o emita ABSTAIN."
+        ],
+        pseudo: `FUNCION verify_operands_grounded_in_evidence(expression, case_input):
+    constantes = {0, 1, 2, 3, 4, 5, 10, 12, 100, 360, 365, 1000}
+    operandos = números en expression (sin comas de miles)
+    evidencia = conjunto de |float(n)| presentes en table y paragraphs
+    faltantes = [op para op si op not in constantes y min(|op - ev|) > 1e-4]
+    RETORNAR (len(faltantes) == 0, faltantes)`
+      }
+    };
+
+    let currentToolTab = "contract";
+    let currentToolKey = "inspect_table";
+
+    function selectToolNode(key, el) {
+      currentToolKey = key;
+      document.querySelectorAll("[data-tool]").forEach(n => n.classList.remove("selected"));
+      if (el) el.classList.add("selected");
+      renderToolInspector();
+    }
+
+    function setToolTab(tab) {
+      currentToolTab = tab;
+      renderToolInspector();
+    }
+
+    function renderToolInspector() {
+      const t = TOOLS_DATA[currentToolKey];
+      let bodyHtml = "";
+      if (currentToolTab === "contract") {
+        bodyHtml = `<p>${t.contract}</p>`;
+      } else if (currentToolTab === "invariants") {
+        bodyHtml = `<ul style="margin:0;padding-left:20px;font-size:14.2px;color:var(--text-secondary);line-height:1.55;">
+          ${t.invariants.map(i => `<li style="margin-bottom:5px;">${i}</li>`).join("")}
+        </ul>`;
+      } else {
+        bodyHtml = `<pre class="code-block">${t.pseudo}</pre>`;
+      }
+
+      document.getElementById("toolInspector").innerHTML = `
+        <span class="inspector-badge ${t.badge[1]}">${t.badge[0]}</span>
+        <h3>${t.title}</h3>
+        <div class="tabs">
+          <button class="tab-btn ${currentToolTab === "contract" ? "active" : ""}" onclick="setToolTab('contract')">Contrato I/O</button>
+          <button class="tab-btn ${currentToolTab === "invariants" ? "active" : ""}" onclick="setToolTab('invariants')">Invariantes</button>
+          <button class="tab-btn ${currentToolTab === "pseudo" ? "active" : ""}" onclick="setToolTab('pseudo')">Pseudocódigo</button>
+        </div>
+        ${bodyHtml}
+      `;
+    }
+
+    // ==============================
+    // 5B. SLIDE 6: ESTRATEGIA RAG
+    // ==============================
+    const RAG_DATA = {
+      no_vec: {
+        badge: ["1 · Anti-patrón", "badge-readonly"],
+        title: "Por qué NO hacer RAG vectorial sobre cada CaseInput",
+        points: [
+          "<strong>Tamaño acotado:</strong> en <code class='inline'>dev_set.json</code> cada caso promedia ~<strong>4.5 párrafos</strong> (~<strong>1,360 caracteres</strong>); el <strong>77.3%</strong> tiene <code class='inline'>&lt;= 5</code> párrafos.",
+          "<strong>Sin ahorro real:</strong> indexar 4–5 párrafos por request para pedir <code class='inline'>top_k=5</code> devuelve casi todo el texto y agrega latencia, tokens y complejidad innecesaria.",
+          "<strong>Cuidado con Turno 0 en ReAct:</strong> ocultar tabla y notas para forzar <code class='inline'>inspect_table</code> + <code class='inline'>search_notes(..., top_k=5)</code> en casos chicos duplica o triplica llamadas y tokens sin mejorar <code class='inline'>table-text</code>."
+        ],
+        calloutClass: "callout-warn",
+        calloutText: "<strong>Regla práctica:</strong> no conviertas un problema de 4 párrafos en un pipeline de embeddings por request."
+      },
+      adaptive_fast: {
+        badge: ["2A · Retrieval Adaptativo", "badge-editable"],
+        title: "Fast-Path en Casos Compactos (<= 5 párrs y <= 20 filas)",
+        points: [
+          "Cubre el <strong>77.3%</strong> de los casos del dataset sin pérdida de información.",
+          "Inyectar directamente en el contexto la <strong>tabla alineada</strong> (<code class='inline'>col=valor</code>) y <strong>todos los párrafos ordenados</strong> (registrando el paso en <code class='inline'>execution_trace</code> si corresponde).",
+          "Evita turnos de herramienta redundantes, reduce latencia de red/VRAM y elimina errores por recortar un párrafo necesario."
+        ],
+        calloutClass: "callout-ok",
+        calloutText: "<strong>Impacto:</strong> menos llamadas LLM (menor costo y mejor desempate) sin sacrificar cobertura."
+      },
+      adaptive_long: {
+        badge: ["2B · Retrieval Adaptativo", "badge-tool"],
+        title: "Alta Precisión en Casos Largos (> 5 párrs, ~23% del dataset)",
+        points: [
+          "<strong>El problema real es distracción por cifras vecinas:</strong> en referencia de cátedra con <code class='inline'>gpt-4.1-mini</code>, los casos <code class='inline'>&gt; 5</code> párrafos cayeron de <strong>79.4%</strong> (<code class='inline'>top_k=2</code>) a <strong>61.8%</strong> (<code class='inline'>top_k=5</code>).",
+          "<strong>BM25 ligero:</strong> reemplazar el conteo léxico simple por BM25 normalizando por longitud del párrafo.",
+          "<strong>Footnote Linking (~37% de casos):</strong> cruzar marcadores de celdas (<code class='inline'>costs2</code>, <code class='inline'>(1)</code>) con párrafos numerados <code class='inline'>2.</code> / <code class='inline'>(1)</code>.",
+          "<strong>Preservar escala:</strong> mantener siempre los párrafos con unidades (<code class='inline'>\"in thousands\"</code> / <code class='inline'>\"in millions\"</code>) por fuera del recorte <code class='inline'>top_k=2..3</code>."
+        ],
+        calloutClass: "callout-ok",
+        calloutText: "<strong>Clave:</strong> filtrar con precisión quirúrgica (BM25 + notas al pie) en lugar de truncar a ciegas."
+      },
+      pattern_rag: {
+        badge: ["3 · Embeddings Útiles", "badge-remote"],
+        title: "Pattern / Few-Shot RAG sobre Base Externa Offline",
+        points: [
+          "En lugar de indexar el caso entrante, construir una <strong>base pre-indexada offline</strong> con resoluciones previas o plantillas de razonamiento (ej. <code class='inline'>tatqa_train</code> curado o patrones propios sintetizados de fallos locales).",
+          "Ante una nueva <code class='inline'>question</code>, recuperar por similitud semántica los <strong><code class='inline'>top_k=2..3</code> ejemplos más parecidos</strong>.",
+          "Orienta al LLM sobre <strong>qué fórmula y qué escala usar</strong> (<code class='inline'>change</code> vs <code class='inline'>percentage change</code>, <code class='inline'>average</code>, <code class='inline'>per share</code>, <code class='inline'>ratio of</code> o cuándo emitir <code class='inline'>ABSTAIN</code>)."
+        ],
+        calloutClass: "callout-important",
+        calloutText: "<strong>Ventaja:</strong> el índice se construye una sola vez offline antes de levantar el servidor HTTP."
+      },
+      pitfalls: {
+        badge: ["4 · Trampas Reales", "badge-guardrail"],
+        title: "Complicaciones a Evitar si Implementan Embeddings",
+        points: [
+          "<strong>Operand Leakage:</strong> si los ejemplos muestran números reales (<code class='inline'>4785.7 - 5087.6</code>), modelos <code class='inline'>3B/7B</code> los copian. Solución: usar <strong>plantillas simbólicas</strong> (<code class='inline'>(Valor_Nuevo - Valor_Base) / Valor_Base * 100</code>) o marcar <code class='inline'>[CIFRAS ILUSTRATIVAS]</code> + <code class='inline'>verify_operands_grounded_in_evidence</code>.",
+          "<strong>Data Leakage y sesgo de veredicto:</strong> no indexar casos que compartan tabla/documento con evaluación ciega, ni armar una base solo de <code class='inline'>SOLVED</code> <code class='inline'>table</code> (sesga contra <code class='inline'>ABSTAIN</code> y <code class='inline'>table-text</code>).",
+          "<strong>VRAM / API en Open-Weight:</strong> en Colab GPU T4 usar un modelo de embeddings liviano en <strong>CPU</strong> para no competir por VRAM con el modelo GGUF."
+        ],
+        calloutClass: "callout-warn",
+        calloutText: "<strong>Verificación obligatoria:</strong> todo operando del cálculo final debe pasar el guardrail de evidencia."
+      }
+    };
+
+    function selectRagNode(key, el) {
+      document.querySelectorAll("[data-rag]").forEach(n => n.classList.remove("selected"));
+      if (el) el.classList.add("selected");
+      const targetEl = document.querySelector(`[data-rag='${key}']`);
+      if (!el && targetEl) targetEl.classList.add("selected");
+
+      const d = RAG_DATA[key];
+      document.getElementById("ragInspector").innerHTML = `
+        <span class="inspector-badge ${d.badge[1]}">${d.badge[0]}</span>
+        <h3>${d.title}</h3>
+        <div class="tabs">
+          <button class="tab-btn ${key === "no_vec" ? "active" : ""}" onclick="selectRagNode('no_vec')">1. No al caso</button>
+          <button class="tab-btn ${key === "adaptive_fast" ? "active" : ""}" onclick="selectRagNode('adaptive_fast')">2A. Fast-Path</button>
+          <button class="tab-btn ${key === "adaptive_long" ? "active" : ""}" onclick="selectRagNode('adaptive_long')">2B. Largos</button>
+          <button class="tab-btn ${key === "pattern_rag" ? "active" : ""}" onclick="selectRagNode('pattern_rag')">3. Pattern RAG</button>
+          <button class="tab-btn ${key === "pitfalls" ? "active" : ""}" onclick="selectRagNode('pitfalls')">4. Trampas</button>
+        </div>
+        <ul style="margin:0;padding-left:20px;font-size:14px;color:var(--text-secondary);line-height:1.55;">
+          ${d.points.map(p => `<li style="margin-bottom:7px;">${p}</li>`).join("")}
+        </ul>
+        <div class="callout ${d.calloutClass}" style="margin-top:auto;padding:11px 13px;font-size:13.5px;">
+          <span>💡</span><div>${d.calloutText}</div>
+        </div>
+      `;
+    }
+
+    // ==============================
+    // 6. SLIDE 6: 3 LEVELS REFERENCE
+    // ==============================
+    const LEVELS_DATA = {
+      1: {
+        badge: ["Nivel 1 · Línea Base", "badge-tool"],
+        title: "Pipeline Secuencial 1-Shot",
+        desc: "Una única llamada LLM recibe la tabla alineada, las notas y el hint de escala, devolviendo veredicto y fórmula para ejecutar en safe_calculate.",
+        pros: "Latencia mínima (7.45s en T4 · 1.55s en GPT-4.1-mini) y mínimo consumo de tokens.",
+        cons: "En modelos 7B locales confunde columnas adyacentes, invierte restas temporales y alucina en 9 de 15 casos ABSTAIN.",
+        nodes: {
+          pre: { badge: ["Nodo · Pre-proceso", "badge-tool"], title: "Pre-proceso Determinista", desc: "Ejecuta inspect_table (vista col=valor), concatena párrafos e inyecta detect_scale_hint antes de llamar al LLM." },
+          llm: { badge: ["Nodo · Inferencia", "badge-remote"], title: "1 Llamada LLM Estructurada", desc: "Devuelve JSON con veredicto (SOLVED/ABSTAIN), escala y expresión matemática. Riesgo en modelos 7B: invierte restas y alucina si falta evidencia." },
+          calc: { badge: ["Nodo · Cómputo", "badge-editable"], title: "safe_calculate → CaseOutput", desc: "Evalúa la expresión en AST determinista, registra el paso en execution_trace y valida el esquema Pydantic final." }
+        },
+        svg: `
+          <div class="diagram-hint">👆 Hacé clic en cualquier nodo del Nivel 1 para ver información adicional</div>
+          <svg class="interactive-svg" viewBox="0 0 640 240">
+            <defs><marker id="al1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L10 5 L0 9 z" fill="#2563eb"/></marker></defs>
+            <g class="svg-node" data-lnode="pre" onclick="selectLevelNode(1, 'pre', this)">
+              <rect x="20" y="75" width="135" height="80" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.6"/>
+              <text x="87" y="108" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0f172a">Pre-proceso</text>
+              <text x="87" y="126" text-anchor="middle" font-size="10" fill="#475569">Tabla + Notas + Scale</text>
+            </g>
+            <path d="M 155 115 L 210 115" stroke="#2563eb" stroke-width="2" marker-end="url(#al1)"/>
+            <g class="svg-node" data-lnode="llm" onclick="selectLevelNode(1, 'llm', this)">
+              <rect x="215" y="70" width="175" height="90" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+              <text x="302" y="106" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">1 Llamada LLM</text>
+              <text x="302" y="124" text-anchor="middle" font-size="10" fill="#1d4ed8">Extrae + Decide veredicto</text>
+              <text x="302" y="139" text-anchor="middle" font-size="10" fill="#3b82f6">Propone fórmula</text>
+            </g>
+            <path d="M 390 115 L 445 115" stroke="#2563eb" stroke-width="2" marker-end="url(#al1)"/>
+            <g class="svg-node" data-lnode="calc" onclick="selectLevelNode(1, 'calc', this)">
+              <rect x="450" y="75" width="165" height="80" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+              <text x="532" y="108" text-anchor="middle" font-size="11.5" font-weight="700" fill="#065f46">safe_calculate</text>
+              <text x="532" y="126" text-anchor="middle" font-size="10" fill="#047857">→ CaseOutput</text>
+            </g>
+          </svg>
+        `
+      },
+      2: {
+        badge: ["Nivel 2 · Iterativo", "badge-guardrail"],
+        title: "Agente ReAct con Tools y Feedback de Grounding",
+        desc: "El agente itera eligiendo qué filas filtrar (inspect_table), qué párrafos leer (search_notes) y qué calcular. Si un operando no existe en evidencia, el guardrail rechaza el cálculo y devuelve feedback.",
+        pros: "Reduce SCALE_MISMATCH (6 → 2 en dev_set con Qwen 7B; 0 en calibración) y mejora detección de ABSTAIN.",
+        cons: "Más tokens (~3.3x) y riesgo de alucinación si no se valida el Turno 0 o si la fórmula es errónea con operandos reales.",
+        nodes: {
+          turn0: { badge: ["Guardrail · Turno 0", "badge-guardrail"], title: "Bloqueo de Turno 0", desc: "Impide invocar safe_calculate o emitir ABSTAIN en el primer paso: obliga a ejecutar al menos una herramienta de lectura (inspect_table / search_notes)." },
+          react: { badge: ["Bucle · Tool-Calling", "badge-tool"], title: "Agente ReAct Iterativo", desc: "Selecciona dinámicamente filtros row_query y consultas a notas. Acumula cada llamada en execution_trace (máx. 4–5 iteraciones)." },
+          ground: { badge: ["Guardrail · Evidencia", "badge-editable"], title: "Verify Operands Grounded", desc: "Si detecta un número inventado en la expresión, bloquea el cálculo y re-inyecta el error exacto en el historial para que el agente se autocorrija o se abstenga." }
+        },
+        svg: `
+          <div class="diagram-hint">👆 Hacé clic en cualquier bloque del bucle ReAct para ver su función</div>
+          <svg class="interactive-svg" viewBox="0 0 640 250">
+            <defs><marker id="al2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L10 5 L0 9 z" fill="#2563eb"/></marker></defs>
+            <g class="svg-node" data-lnode="turn0" onclick="selectLevelNode(2, 'turn0', this)">
+              <rect x="20" y="85" width="130" height="75" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.8"/>
+              <text x="85" y="114" text-anchor="middle" font-size="11" font-weight="700" fill="#78350f">Turno 0 Lock</text>
+              <text x="85" y="131" text-anchor="middle" font-size="9.5" fill="#92400e">Obliga inspect_table</text>
+              <text x="85" y="144" text-anchor="middle" font-size="9.5" fill="#92400e">o search_notes</text>
+            </g>
+            <path d="M 150 122 L 195 122" stroke="#2563eb" stroke-width="2" marker-end="url(#al2)"/>
+            <g class="svg-node" data-lnode="react" onclick="selectLevelNode(2, 'react', this)">
+              <rect x="200" y="75" width="175" height="95" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+              <text x="287" y="108" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">Bucle ReAct</text>
+              <text x="287" y="126" text-anchor="middle" font-size="10" fill="#1d4ed8">inspect_table / search_notes</text>
+              <text x="287" y="142" text-anchor="middle" font-size="10" fill="#1d4ed8">/ safe_calculate</text>
+            </g>
+            <path d="M 375 122 L 430 122" stroke="#2563eb" stroke-width="2" marker-end="url(#al2)"/>
+            <g class="svg-node" data-lnode="ground" onclick="selectLevelNode(2, 'ground', this)">
+              <rect x="435" y="75" width="180" height="95" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+              <text x="525" y="108" text-anchor="middle" font-size="11.5" font-weight="700" fill="#065f46">Guardrail Grounding</text>
+              <text x="525" y="126" text-anchor="middle" font-size="10" fill="#047857">¿Operandos en evidencia?</text>
+              <text x="525" y="142" text-anchor="middle" font-size="10" fill="#059669">OK → CaseOutput</text>
+            </g>
+            <path d="M 525 170 C 525 215, 287 215, 287 175" stroke="#dc2626" stroke-dasharray="4 3" stroke-width="1.8" fill="none" marker-end="url(#al2)"/>
+            <text x="406" y="218" text-anchor="middle" font-size="10" font-weight="700" fill="#dc2626">Falla grounding → Re-inyecta error y reintenta</text>
+          </svg>
+        `
+      },
+      3: {
+        badge: ["Nivel 3 · Consenso + Auditoría", "badge-remote"],
+        title: "Sistema Multi-Agente con Consenso y Auditor Temporal",
+        desc: "Combina extracción paralela/consensuada de tabla y notas con un nodo Auditor especializado en: (1) orden temporal de resta (Reciente - Base), (2) pregunta absoluta vs porcentual y (3) grounding real.",
+        pros: "Más del doble de puntaje neto vs Nivel 2 en Qwen 7B (+32 → +68 en dev_set) y rescata alucinaciones en GPT-4.1-mini (+21 → +24 en calibración).",
+        cons: "Mayor latencia promedio (28.05s en Colab T4 · 5.52s en Cloud) y consumo de tokens.",
+        nodes: {
+          tab: { badge: ["Especialista · Tablas", "badge-tool"], title: "Analista Tabular", desc: "Lee la matriz alineada col=valor, detecta columnas de años y sugiere la escala dimensional mediante detect_scale_hint." },
+          notes: { badge: ["Especialista · Párrafos", "badge-tool"], title: "Analista de Notas (table-text)", desc: "Recupera los párrafos relevantes con search_notes para capturar ajustes contables o cifras que no están en la tabla." },
+          cons: { badge: ["Síntesis · Cómputo", "badge-remote"], title: "Nodo de Consenso", desc: "Contrasta las rutas candidatas, construye la fórmula única y la ejecuta determinísticamente en safe_calculate." },
+          aud: { badge: ["Verificador · Final", "badge-guardrail"], title: "Auditor Temporal y Grounding", desc: "Verifica 3 invariantes antes de aprobar SOLVED: orden Reciente - Base, pregunta absoluta vs porcentual y respaldo real de operandos. Si falla, corrige o emite ABSTAIN." }
+        },
+        svg: `
+          <div class="diagram-hint">👆 Hacé clic en cualquier agente del grafo para inspeccionar su responsabilidad</div>
+          <svg class="interactive-svg" viewBox="0 0 640 250">
+            <defs><marker id="al3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L10 5 L0 9 z" fill="#4f46e5"/></marker></defs>
+            <g class="svg-node" data-lnode="tab" onclick="selectLevelNode(3, 'tab', this)">
+              <rect x="20" y="30" width="160" height="68" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+              <text x="100" y="59" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1e3a8a">Analista Tabular</text>
+              <text x="100" y="77" text-anchor="middle" font-size="10" fill="#1d4ed8">inspect_table + scale</text>
+            </g>
+
+            <g class="svg-node" data-lnode="notes" onclick="selectLevelNode(3, 'notes', this)">
+              <rect x="20" y="135" width="160" height="68" rx="10" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.8"/>
+              <text x="100" y="164" text-anchor="middle" font-size="11.5" font-weight="700" fill="#115e59">Analista de Notas</text>
+              <text x="100" y="182" text-anchor="middle" font-size="10" fill="#0f766e">search_notes (table-text)</text>
+            </g>
+
+            <path d="M 180 64 L 230 105" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#al3)"/>
+            <path d="M 180 169 L 230 130" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#al3)"/>
+
+            <g class="svg-node" data-lnode="cons" onclick="selectLevelNode(3, 'cons', this)">
+              <rect x="235" y="72" width="148" height="90" rx="12" fill="#eef2ff" stroke="#4f46e5" stroke-width="2"/>
+              <text x="309" y="107" text-anchor="middle" font-size="11.5" font-weight="700" fill="#312e81">Consenso</text>
+              <text x="309" y="125" text-anchor="middle" font-size="10" fill="#4338ca">Fórmula candidata +</text>
+              <text x="309" y="140" text-anchor="middle" font-size="10" fill="#4338ca">safe_calculate</text>
+            </g>
+
+            <path d="M 383 117 L 430 117" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#al3)"/>
+
+            <g class="svg-node" data-lnode="aud" onclick="selectLevelNode(3, 'aud', this)">
+              <rect x="435" y="65" width="185" height="104" rx="12" fill="#0f2d5c" stroke="#0f2d5c"/>
+              <text x="527" y="96" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">Auditor Final</text>
+              <text x="527" y="114" text-anchor="middle" font-size="9.8" fill="#bfdbfe">1. Orden Reciente - Base</text>
+              <text x="527" y="129" text-anchor="middle" font-size="9.8" fill="#bfdbfe">2. Grounding de operandos</text>
+              <text x="527" y="144" text-anchor="middle" font-size="9.8" fill="#bfdbfe">3. Emite SOLVED / ABSTAIN</text>
+            </g>
+          </svg>
+        `
+      }
+    };
+
+    function selectLevel(lvl, btn) {
+      if (btn) {
+        btn.parentElement.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      }
+      const d = LEVELS_DATA[lvl];
+      document.getElementById("levelDiagramBox").innerHTML = d.svg;
+      document.getElementById("levelInspector").innerHTML = `
+        <span class="inspector-badge ${d.badge[1]}">${d.badge[0]}</span>
+        <h3>${d.title}</h3>
+        <p>${d.desc}</p>
+        <div class="callout callout-ok" style="padding:11px 13px;font-size:13.5px;">
+          <span>✅</span><div><strong>Aporta:</strong> ${d.pros}</div>
+        </div>
+        <div class="callout callout-warn" style="padding:11px 13px;font-size:13.5px;">
+          <span>⚠️</span><div><strong>Trade-off:</strong> ${d.cons}</div>
+        </div>
+      `;
+    }
+
+    function selectLevelNode(lvl, nodeKey, el) {
+      document.querySelectorAll("[data-lnode]").forEach(n => n.classList.remove("selected"));
+      if (el) el.classList.add("selected");
+      const n = LEVELS_DATA[lvl].nodes[nodeKey];
+      document.getElementById("levelInspector").innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+          <span class="inspector-badge ${n.badge[1]}">${n.badge[0]}</span>
+          <button class="btn" style="padding:3px 9px;font-size:11px;" onclick="selectLevel(${lvl})">↩ Ver resumen Nivel ${lvl}</button>
+        </div>
+        <h3>${n.title}</h3>
+        <p>${n.desc}</p>
+      `;
+    }
+
+    // ==============================
+    // 7. SLIDES 7 & 8: CHARTS & TABLES
+    // ==============================
+    const OW_DATA = {
+      dev: {
+        title: "dev_set.json (150 casos: 135 SOLVED + 15 ABSTAIN)",
+        maxScore: 135,
+        scores: [22.0, 32.0, 68.0],
+        accs: [57.33, 61.33, 74.0],
+        takeaway: "<strong>Salto dramático en modelos locales 7B:</strong> +22.00 (N1) → +32.00 (N2) → <strong>+68.00 (N3)</strong>. El Auditor corrige inversiones de signo y dispara el acierto tanto en <code class='inline'>table</code> (63.9% → 78.7%) como en <code class='inline'>table-text</code> (59.6% → 70.8%).",
+        rows: [
+          ["Puntaje Neto", "+22.00", "+32.00", "+68.00", true],
+          ["Exactitud Global", "57.33%", "61.33%", "74.00%", true],
+          ["CORRECT (sobre 135)", "80 (59.3%)", "84 (62.2%)", "101 (74.8%)", false],
+          ["ABSTAIN_ON_UNSOLVABLE (15)", "6 (40.0%)", "8 (53.3%)", "10 (66.7%)", false],
+          ["ABSTAIN_CAUTIOUS", "6", "6", "6", false],
+          ["WRONG_VALUE", "43", "43", "26", false],
+          ["SCALE_MISMATCH", "6", "2", "2", false],
+          ["HALLUCINATION_ON_ABSTAIN", "9", "7", "5", false],
+          ["Rendimiento table (61)", "57.4%", "63.9%", "78.7%", false],
+          ["Rendimiento table-text (89)", "57.3%", "59.6%", "70.8%", false],
+          ["Latencia avg / p95 / max", "7.45 / 10.48 / 14.63s", "17.15 / 24.49 / 38.88s", "28.05 / 37.97 / 55.24s", false],
+          ["Tokens / Llamadas LLM", "184,034 / 150", "613,858 / 325", "794,538 / 474", false]
+        ]
+      },
+      cal: {
+        title: "Conjunto de Calibración (30 casos ciegos: 27 SOLVED + 3 ABSTAIN)",
+        maxScore: 27,
+        scores: [13.0, 16.0, 21.0],
+        accs: [70.0, 80.0, 86.7],
+        takeaway: "<strong>Generalización E2E vía cloudflared:</strong> +13.00 → +16.00 → <strong>+21.00 / +27.00</strong> con <strong>0 errores de esquema</strong>, <strong>0 casos &gt;45s</strong> y <strong>0 SCALE_MISMATCH</strong>. En <code class='inline'>table-text</code> sube de 61.9% (N1) a 85.7% (N3).",
+        rows: [
+          ["Puntaje Neto", "+13.00", "+16.00", "+21.00", true],
+          ["CORRECT (sobre 27)", "20 (74.1%)", "22 (81.5%)", "24 (88.9%)", true],
+          ["ABSTAIN_ON_UNSOLVABLE (3)", "1 (33.3%)", "2 (66.7%)", "2 (66.7%)", false],
+          ["ABSTAIN_CAUTIOUS", "2", "0", "1", false],
+          ["WRONG_VALUE", "5", "5", "2", false],
+          ["SCALE_MISMATCH", "0", "0", "0", false],
+          ["HALLUCINATION_ON_ABSTAIN", "2", "1", "1", false],
+          ["Rendimiento table (9)", "8/9 (88.9%)", "8/9 (88.9%)", "8/9 (88.9%)", false],
+          ["Rendimiento table-text (21)", "13/21 (61.9%)", "16/21 (76.2%)", "18/21 (85.7%)", false],
+          ["Latencia avg / p95 / max", "7.94 / 11.24 / 12.80s", "18.35 / 27.22 / 37.26s", "27.50 / 36.70 / 37.99s", false],
+          ["Tokens totales", "34,553", "122,931", "151,573", false]
+        ]
+      }
+    };
+
+    function buildBarChartSvg(labels, scores, maxScore, accs, colors) {
+      const w = 520, h = 235, barW = 68;
+      const chartBottom = 185, chartTop = 32, usableH = chartBottom - chartTop;
+      let bars = "";
+      labels.forEach((lbl, i) => {
+        const x = 68 + i * 150;
+        const barH = Math.max(6, (scores[i] / maxScore) * usableH);
+        const y = chartBottom - barH;
+        bars += `
+          <rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="8" fill="${colors[i]}"/>
+          <text x="${x + barW/2}" y="${y - 8}" text-anchor="middle" font-size="13" font-weight="800" fill="#0f172a">+${scores[i].toFixed(2)}</text>
+          <text x="${x + barW/2}" y="${y + 18}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#ffffff">${accs[i].toFixed(1)}%</text>
+          <text x="${x + barW/2}" y="${chartBottom + 18}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#334155">${lbl}</text>
+        `;
+      });
+      return `
+        <svg class="interactive-svg" viewBox="0 0 ${w} ${h}">
+          <line x1="35" y1="${chartBottom}" x2="${w - 20}" y2="${chartBottom}" stroke="#cbd5e1" stroke-width="1.5"/>
+          <line x1="35" y1="${chartTop}" x2="${w - 20}" y2="${chartTop}" stroke="#e2e8f0" stroke-dasharray="4 3"/>
+          <text x="40" y="${chartTop - 6}" font-size="10" fill="#64748b">Máx teórico: +${maxScore.toFixed(2)} pts (% interno = exactitud)</text>
+          ${bars}
+        </svg>
+      `;
+    }
+
+    function renderOpenWeight(mode, btn) {
+      if (btn) {
+        btn.parentElement.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      }
+      const d = OW_DATA[mode];
+      document.getElementById("owChartTitle").textContent = d.title;
+      document.getElementById("owChartBox").innerHTML = buildBarChartSvg(
+        ["Nivel 1", "Nivel 2", "Nivel 3"],
+        d.scores, d.maxScore, d.accs,
+        ["#94a3b8", "#2563eb", "#059669"]
+      );
+      document.getElementById("owTakeaway").innerHTML = `<span>📈</span><div>${d.takeaway}</div>`;
+      document.getElementById("owTableBox").innerHTML = `
+        <table class="data-table">
+          <thead><tr><th>Métrica</th><th class="num">N1</th><th class="num">N2</th><th class="num">N3</th></tr></thead>
+          <tbody>
+            ${d.rows.map(r => `<tr class="${r[4] ? "highlight-row" : ""}"><td>${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td><td class="num">${r[3]}</td></tr>`).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    const CLOUD_DATA = {
+      dev: {
+        title: "GPT-4.1-mini · dev_set.json (150 casos)",
+        maxScore: 135,
+        scores: [88.0, 97.0, 97.0],
+        accs: [81.33, 84.0, 84.67],
+        takeaway: "<strong>Techo de +97.00 / +135.00 en dev_set:</strong> Nivel 2 y Nivel 3 superan al Nivel 1 (+88.00), alcanzando <strong>90.2%</strong> en tablas y latencias de apenas <strong>1.55s–5.52s</strong> por caso.",
+        rows: [
+          ["Puntaje Neto", "+88.00", "+97.00", "+97.00", true],
+          ["Exactitud Global", "81.33%", "84.00%", "84.67%", true],
+          ["CORRECT (sobre 135)", "108 (80.0%)", "113 (83.7%)", "113 (83.7%)", false],
+          ["ABSTAIN_ON_UNSOLVABLE (15)", "14 (93.3%)", "13 (86.7%)", "14 (93.3%)", false],
+          ["ABSTAIN_CAUTIOUS", "8", "8", "7", false],
+          ["WRONG_VALUE / SCALE / HALLUC", "18 / 1 / 1", "12 / 2 / 2", "13 / 2 / 1", false],
+          ["table (61) / table-text (89)", "80.3% / 82.0%", "88.5% / 80.9%", "90.2% / 80.9%", false],
+          ["Latencia promedio", "1.55 s", "3.84 s", "5.52 s", false],
+          ["Tokens (in / out)", "148k / 13k", "487k / 40k", "634k / 52k", false],
+          ["Costo Real (USD)", "USD 0.0800", "USD 0.2581", "USD 0.3375", true]
+        ]
+      },
+      cal: {
+        title: "GPT-4.1-mini · Calibración (30 casos ciegos)",
+        maxScore: 27,
+        scores: [24.0, 21.0, 24.0],
+        accs: [93.33, 83.33, 93.33],
+        takeaway: "<strong>Nivel 3 rescata alucinaciones de ReAct:</strong> En calibración ciega, Nivel 3 alcanza <strong>+24.00 / +27.00 (93.33%)</strong>, con 3/3 ABSTAIN, 0 alucinaciones, 0 errores de escala y 100% en tablas (9/9) por apenas <strong>USD 0.0641</strong>.",
+        rows: [
+          ["Puntaje Neto", "+24.00", "+21.00", "+24.00", true],
+          ["Exactitud Global", "93.33%", "83.33%", "93.33%", true],
+          ["CORRECT (sobre 27)", "25 (92.6%)", "24 (88.9%)", "25 (92.6%)", false],
+          ["ABSTAIN_ON_UNSOLVABLE (3)", "3 (100%)", "1 (33.3%)", "3 (100%)", false],
+          ["ABSTAIN_CAUTIOUS", "1", "2", "1", false],
+          ["WRONG_VALUE / HALLUCINATION", "1 / 0", "1 / 2", "1 / 0", false],
+          ["table (9) / table-text (21)", "100% / 90.5%", "77.8% / 85.7%", "100% / 90.5%", false],
+          ["Latencia promedio", "2.05 s", "3.51 s", "5.15 s", false],
+          ["Tokens (in / out)", "27.8k / 2.6k", "92.5k / 7.6k", "119.7k / 10.1k", false],
+          ["Costo Real (USD)", "USD 0.0153", "USD 0.0491", "USD 0.0641", true]
+        ]
+      },
+      compare: {
+        title: "Contraste Directo en Nivel 3: Qwen 2.5 7B vs GPT-4.1-mini",
+        maxScore: 135,
+        scores: [68.0, 97.0],
+        accs: [74.0, 84.67],
+        takeaway: "<strong>Lección central:</strong> Con buena ingeniería de tools y auditoría, un modelo abierto 7B local en Colab T4 alcanza <strong>+68.00 en dev</strong> y <strong>+21.00/27.00 en calibración</strong> sin costo por API; y en Cloud, toda la experimentación costó <strong>USD 0.8041</strong>.",
+        rows: [
+          ["Puntaje dev_set (150)", "+68.00 (74.0%)", "+97.00 (84.7%)", "—", true],
+          ["Puntaje Calibración (30)", "+21.00 (86.7%)", "+24.00 (93.3%)", "—", true],
+          ["Latencia avg dev_set", "28.05 s", "5.52 s", "—", false],
+          ["Costo API total 6 corridas", "USD 0.00 (Colab T4)", "USD 0.8041", "—", false]
+        ]
+      }
+    };
+
+    function renderCloud(mode, btn) {
+      if (btn) {
+        btn.parentElement.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      }
+      const d = CLOUD_DATA[mode];
+      document.getElementById("clChartTitle").textContent = d.title;
+      const labels = mode === "compare" ? ["Qwen 2.5 7B (N3)", "GPT-4.1-mini (N3)"] : ["Nivel 1", "Nivel 2", "Nivel 3"];
+      const colors = mode === "compare" ? ["#0d9488", "#4f46e5"] : ["#6366f1", "#2563eb", "#0f2d5c"];
+      document.getElementById("clChartBox").innerHTML = buildBarChartSvg(labels, d.scores, d.maxScore, d.accs, colors);
+      document.getElementById("clTakeaway").innerHTML = `<span>💡</span><div>${d.takeaway}</div>`;
+
+      const hdr = mode === "compare"
+        ? `<thead><tr><th>Dimensión</th><th class="num">Qwen 2.5 7B</th><th class="num">GPT-4.1-mini</th></tr></thead>`
+        : `<thead><tr><th>Métrica</th><th class="num">N1</th><th class="num">N2</th><th class="num">N3</th></tr></thead>`;
+
+      document.getElementById("clTableBox").innerHTML = `
+        <table class="data-table">
+          ${hdr}
+          <tbody>
+            ${d.rows.map(r => mode === "compare"
+              ? `<tr class="${r[4] ? "highlight-row" : ""}"><td>${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td></tr>`
+              : `<tr class="${r[4] ? "highlight-row" : ""}"><td>${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td><td class="num">${r[3]}</td></tr>`
+            ).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    // ==============================
+    // 8. SLIDE 9: ERROR PATTERNS
+    // ==============================
+    const ERROR_PATTERNS = {
+      pct_vs_abs: {
+        badge: ["Semántica de Pregunta", "badge-guardrail"],
+        title: "Variación Absoluta vs. Porcentual y Escala 0–100",
+        cause: "Las preguntas con 'change' o 'difference' esperan una resta simple en la unidad de la tabla, mientras que 'percentage change', 'margin' o 'rate' exigen multiplicar por 100 y reportar scale='percent'.",
+        bad: `Pregunta: "What was the change in revenue?" (in millions)\nLLM responde: (150 - 120) / 120 = 0.25  | scale="percent"  ❌ (-1.0 pt)`,
+        good: `Si dice "change" -> 150 - 120 = 30.0 | scale="million" ✅ (+1.0 pt)\nSi dice "percentage change" -> (150 - 120) / 120 * 100 = 25.0 | scale="percent" ✅`,
+        fix: "Separar explícitamente en el prompt la regla: change/difference = resta simple; percentage/margin/rate = fórmula * 100 en escala 0–100."
+      },
+      magnitude: {
+        badge: ["Escala Dimensional", "badge-readonly"],
+        title: "No Re-escalar Valores ya Expresados en la Tabla (magnitude_10x)",
+        cause: "Cuando el encabezado indica '(in thousands)' y la celda muestra '4,500', el agente multiplica innecesariamente 4500 * 1000 = 4,500,000 y además declara scale='thousand', creando un desfase de 1,000x.",
+        bad: `Tabla (in thousands): celda "4,500"\nPredicción: primary_value=4500000.0, scale="thousand" ❌ (desfase 1000x)`,
+        good: `Opción A: primary_value=4500.0, scale="thousand" ✅\nOpción B: primary_value=4.5, scale="million" ✅ (evaluator.py normaliza ambos!)`,
+        fix: "Operar siempre con los números literales de la tabla/notas y asignar exactamente la escala detectada por detect_scale_hint."
+      },
+      sign: {
+        badge: ["Orden Temporal", "badge-remote"],
+        title: "Inversión de Signo Temporal (sign_error)",
+        cause: "Los formularios 10-K suelen ubicar el año más reciente a la izquierda ('| Rubro | 2019 | 2018 |'). Un modelo que lee izquierda-a-derecha como 'antes → después' calcula 2018 - 2019 o (2018 - 2019)/2019 e invierte el signo.",
+        bad: `Tabla: | Total emissions | 2019: 4,785.7 | 2018: 5,087.6 |\nResta invertida: (5087.6 - 4785.7) / 4785.7 * 100 = +6.31 ❌ (-1.0 pt)`,
+        good: `Regla invariante (Reciente - Base):\n(4785.7 - 5087.6) / 5087.6 * 100 = -5.934 ✅ (+1.0 pt)`,
+        fix: "Incluir en el prompt (o en un nodo Auditor) la verificación explícita de encabezados de año: siempre Valor_Año_Más_Reciente - Valor_Año_Más_Antiguo."
+      },
+      rounding: {
+        badge: ["Precisión Numérica", "badge-tool"],
+        title: "Redondeo Prematuro en Pasos Intermedios (near_miss_rounding)",
+        cause: "Cuando el LLM calcula primero una parte, la redondea a 1 decimal y luego realiza otra operación en un segundo paso, acumula un error superior al 0.1% relativo.",
+        bad: `Paso 1: 4785.7 / 5087.6 -> LLM anota 0.94\nPaso 2: (0.94 - 1) * 100 = -6.0 ❌ (GT = -5.934, error > 1%)`,
+        good: `Expresión única en safe_calculate:\n"(4785.7 - 5087.6) / 5087.6 * 100" -> -5.934036 ✅ (+1.0 pt)`,
+        fix: "Delegar la fórmula compuesta completa a safe_calculate en una sola expresión sin redondear operandos ni resultados intermedios."
+      }
+    };
+
+    function selectErrorPattern(key, btn) {
+      if (btn) {
+        document.querySelectorAll(".pattern-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      }
+      const d = ERROR_PATTERNS[key];
+      document.getElementById("errorInspector").innerHTML = `
+        <span class="inspector-badge ${d.badge[1]}">${d.badge[0]}</span>
+        <h3>${d.title}</h3>
+        <p>${d.cause}</p>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--rose);margin-bottom:4px;">❌ PATRÓN ERRÓNEO</div>
+          <pre class="code-block" style="background:#2b1215;color:#fecaca;">${d.bad}</pre>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--emerald);margin-bottom:4px;">✅ FORMA CORRECTA</div>
+          <pre class="code-block" style="background:#0a291e;color:#a7f3d0;">${d.good}</pre>
+        </div>
+        <div class="callout callout-ok" style="padding:11px 13px;font-size:13.5px;">
+          <span>🛠️</span><div><strong>Mitigación:</strong> ${d.fix}</div>
+        </div>
+      `;
+    }
+
+    // ==============================
+    // 9. SLIDE 10: AGENT TIPS
+    // ==============================
+    const AGENT_TIPS = {
+      turn0: {
+        title: "Bloqueo de cálculo o abstención en el Turno 0 (ReAct)",
+        body: "Si un agente ReAct tiene habilitada la herramienta <code class='inline'>safe_calculate</code> o el veredicto final desde el primer turno, los modelos pequeños suelen saltar a calcular con números parciales o declarar <code class='inline'>ABSTAIN</code> sin revisar las notas.",
+        action: "En la iteración 0, habilitá únicamente herramientas de exploración (<code class='inline'>inspect_table</code> y <code class='inline'>search_notes</code>) o pre-inyectá la vista alineada y los top-k párrafos antes del primer turno de decisión."
+      },
+      tabletext: {
+        title: "Prevenir ceguera contextual en casos table-text (89/150 en dev_set)",
+        body: "En arquitecturas Multi-Agente, si un planificador o extractor trabaja únicamente sobre la tabla sin visibilidad de los párrafos recuperados, falla sistemáticamente cuando un ajuste, definición o cifra base vive en una nota aclaratoria.",
+        action: "Asegurá que el contexto de extracción combine siempre la tabla formateada y los párrafos recuperados por <code class='inline'>search_notes</code>, e incluí una verificación de cobertura en <code class='inline'>by_answer_from</code>."
+      },
+      cautious: {
+        title: "Evitar sobre-abstención del Auditor (ABSTAIN_CAUTIOUS)",
+        body: "Un Auditor hiper-estricto puede rechazar casos perfectamente resolubles por dudas menores de redacción. Aunque <code class='inline'>ABSTAIN_CAUTIOUS</code> suma <code class='inline'>0.0</code> pts y evita <code class='inline'>-1.0</code>, deja <code class='inline'>+1.0</code> pt sobre la mesa por cada caso.",
+        action: "Calibrá el Auditor para emitir <code class='inline'>ABSTAIN</code> solo cuando falte un dato verificable en evidencia o haya inconsistencia aritmética real; si el grounding y la fórmula cierran, aprobá <code class='inline'>SOLVED</code>."
+      }
+    };
+
+    function selectAgentTip(key, btn) {
+      if (btn) {
+        btn.parentElement.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      }
+      const t = AGENT_TIPS[key];
+      document.getElementById("agentTipBox").innerHTML = `
+        <h4 style="margin:6px 0 0;font-size:17px;color:var(--navy);">${t.title}</h4>
+        <p style="margin:0;font-size:14.5px;color:var(--text-secondary);line-height:1.58;">${t.body}</p>
+        <div class="callout callout-ok" style="margin-top:auto;">
+          <span>✅</span><div><strong>Qué hacer:</strong> ${t.action}</div>
+        </div>
+      `;
+    }
+
+    // ==============================
+    // 10. SLIDE 11: REMOTE & CHECKLIST
+    // ==============================
+    const REMOTE_DATA = {
+      tunnel: {
+        badge: ["Paso 1 · Exposición", "badge-tool"],
+        title: "Túnel cloudflared o Servidor HTTPS",
+        desc: "En Google Colab usá el túnel automático de Colab_Starter_Template.ipynb (https://<id>.trycloudflare.com). En Track Cloud podés usar cloudflared local o un dominio HTTPS público apuntando al puerto 8000."
+      },
+      health: {
+        badge: ["Paso 2 · Pre-vuelo", "badge-editable"],
+        title: "Verificación GET /health (sin consumo de cuota)",
+        desc: "Antes de enviar casos, el Evaluador Remoto consulta GET {endpoint_url}/health (timeout 10s). Si el túnel está caído o devuelve error, aborta con HTTP 502 SIN descontar intento de tu cuota."
+      },
+      calibrate: {
+        badge: ["Paso 3 · Calibración", "badge-guardrail"],
+        title: "POST /calibrate · 30 Casos Ciegos",
+        desc: "Presupuesto máximo: 10 corridas por equipo. Cooldown: 300 segundos (5 min) entre corridas. Despacho secuencial (concurrencia=1), timeout 60s/caso con 1 reintento automático (backoff 3s) ante 502/503/504 o error transitorio."
+      },
+      diagnostics: {
+        badge: ["Paso 4 · Opacidad", "badge-tool"],
+        title: "Diagnóstico Ciego Agregado (/api/runs/{run_id}/diagnostics)",
+        desc: "No expone preguntas ni Ground Truth. Devuelve failure_patterns, by_answer_from (table vs table-text), latency_stats y actionable_recommendations. Incluye el botón 'Copiar JSON para IA' en el portal."
+      },
+      final: {
+        badge: ["Paso 5 · Cierre", "badge-remote"],
+        title: "Corte Final (100 casos) y Leaderboard por Track",
+        desc: "En la fecha de cierre la cátedra evalúa los 100 casos finales sobre el último endpoint activo. Ranking separado en Open-Weight y Cloud Propietario por Net Score DESC, Total Tokens ASC, Avg Latency ASC."
+      }
+    };
+
+    function selectRemoteNode(key, el) {
+      document.querySelectorAll("[data-rem]").forEach(n => n.classList.remove("selected"));
+      if (el) el.classList.add("selected");
+      const d = REMOTE_DATA[key];
+      document.getElementById("remoteInspector").innerHTML = `
+        <span class="inspector-badge ${d.badge[1]}">${d.badge[0]}</span>
+        <h3>${d.title}</h3>
+        <p>${d.desc}</p>
+      `;
+    }
+
+    function updateChecklist() {
+      const items = document.querySelectorAll("#preFlightChecklist .check-item");
+      let done = 0;
+      items.forEach(item => {
+        const cb = item.querySelector("input");
+        item.classList.toggle("checked", cb.checked);
+        if (cb.checked) done++;
+      });
+      const badge = document.getElementById("checkProgress");
+      badge.textContent = `${done} / ${items.length}`;
+      badge.className = "pill " + (done === items.length ? "pill-ok" : "pill-info");
+    }
+
+    // ==============================
+    // 11. SYNCHRONIZED SLIDE NOTES
+    // ==============================
+    const SLIDE_NOTES = [
+      {
+        intent: "Comprender qué se evalúa (un microservicio HTTP caja negra) y los 4 desafíos centrales del dominio financiero 10-K.",
+        detail: "El sistema recibe consultas cuantitativas sobre extractos reales de reportes 10-K (TAT-QA). A diferencia de un QA puramente textual, el 59.3% de los casos de dev_set.json (89/150) exige cruzar celdas de la tabla con párrafos narrativos. Además, 15 de los 150 casos tienen evidencia amputada a propósito para comprobar si tu agente sabe abstenerse (ABSTAIN) en lugar de inventar.",
+        action: "Recorré los 5 bloques con los botones inferiores o activá estas notas con la tecla N cada vez que consultes un tema durante el desarrollo."
+      },
+      {
+        intent: "Separar claramente los archivos intocables del contrato oficial de los módulos donde trabaja tu equipo.",
+        detail: "Todo tu código debe integrarse detrás de POST /solve en src/server.py (modularizando agente, prompts y tools en src/). Nunca modifiques src/schemas.py, src/evaluator.py ni data/dev_set.json: el Evaluador Remoto usa exactamente las mismas validaciones y tolerancias. El ciclo sano es 100% local primero: run_local_eval.py genera predictions_local.json y eval_report_local.json, y scripts/viewer.py te deja inspeccionar cada fallo visualmente.",
+        action: "Levantá uvicorn src.server:app --port 8000 y corré python scripts/run_local_eval.py --limit 20 --verbose para validar el entorno."
+      },
+      {
+        intent: "Evitar penalizaciones evitables de -1.5 pts (SCHEMA_ERROR) y -1.0 pt (SCALE_MISMATCH / percent_decimal).",
+        detail: "Cuando verdict == 'SOLVED', primary_value debe ser un float finito y execution_trace debe tener al menos 1 paso. Si scale == 'percent', expresá siempre el número en puntos porcentuales de 0 a 100 (ej. 15.4, nunca 0.154). Para magnitudes ('thousand', 'million', 'billion', null), evaluator.py normaliza automáticamente tu valor al marco del Ground Truth, siempre que valor y scale sean coherentes entre sí. Reportá tokens y llm_calls reales en usage.",
+        action: "Validá siempre tu respuesta con CaseOutput.model_validate(...) antes de retornarla en POST /solve y probá el simulador de esta diapositiva."
+      },
+      {
+        intent: "Entender por qué la función de puntuación asimétrica castiga el doble adivinar sin datos que abstenerse.",
+        detail: "Un acierto suma +1.0, abstenerse suma 0.0, equivocarse o alucinar en un caso ABSTAIN resta -1.0, y un fallo de esquema o timeout (>60s) resta -1.5. Por eso, detectar casos sin evidencia suficiente protege directamente tu puntaje neto. En el Leaderboard, los empates se resuelven por: 1) mayor net_score, 2) menor total_tokens y 3) menor avg_latency_ms.",
+        action: "Usá los sliders para ver cómo bajar alucinaciones y errores de esquema a 0 impacta mucho más rápido que forzar respuestas dudosas."
+      },
+      {
+        intent: "Incorporar herramientas deterministas para lectura tabular, búsqueda en notas, cálculo AST, escala y respaldo de evidencia.",
+        detail: "Los LLMs fallan cuando leen listas de listas crudas o hacen aritmética mental. Implementá: (1) inspect_table con detección de 1 o 2 filas de encabezado (sin confundir años 19xx/20xx con montos) y vista alineada col=valor; (2) search_notes ponderando años y términos contables, devolviendo en orden original; (3) safe_calculate por AST sin eval(); (4) detect_scale_hint por jerarquía; y (5) verify_operands_grounded_in_evidence para frenar cualquier número inventado.",
+        action: "Hacé clic en cada caja del diagrama para revisar su Contrato I/O, Invariantes y Pseudocódigo de alto nivel."
+      },
+      {
+        intent: "Elegir una estrategia de recuperación adecuada al tamaño real del CaseInput y reservar los embeddings para patrones externos.",
+        detail: "En dev_set.json cada caso promedia ~4.5 párrafos (~1,360 chars) y el 77.3% tiene <=5 párrafos: indexar esos pocos párrafos con embeddings por request no ahorra contexto y suma latencia. Usá Retrieval Adaptativo sin embeddings: fast-path directo en casos compactos (<=5 párrafos y <=20 filas) y, en casos largos (>5 párrafos, donde demasiados párrafos distraen: 79.4% con top_k=2 vs 61.8% con top_k=5), combiná BM25 ligero + Footnote Linking (~37% de casos) + preservación de notas de escala. Si usás embeddings, que sea offline sobre una base externa de plantillas simbólicas (Pattern RAG) en CPU.",
+        action: "Revisá las 5 pestañas del inspector derecho y evitá el Operand Leakage usando plantillas simbólicas + guardrail de evidencia."
+      },
+      {
+        intent: "Conocer la progresión didáctica de 3 niveles de la cátedra recordando que la evaluación es 100% caja negra.",
+        detail: "Esta progresión no es obligatoria ni se evalúa su estructura interna: podés usar el framework o arquitectura que prefieras detrás de POST /solve. La presentamos porque muestra qué resuelve cada capa: Nivel 1 (1-shot) minimiza latencia pero sufre en columnas y ABSTAIN; Nivel 2 (ReAct) agrega iteración y feedback cuando falla el grounding; Nivel 3 suma consenso y un Auditor final que verifica orden temporal (Reciente - Base) y respaldo real.",
+        action: "Hacé clic en los nodos internos de cada nivel para entender qué error específico mitiga cada componente."
+      },
+      {
+        intent: "Dimensionar el impacto real de la arquitectura agéntica cuando se trabaja con un modelo Open-Weight 7B en Colab T4.",
+        detail: "Con el mismo modelo Qwen2.5-7B-Instruct-Q4_K_M en GPU T4 (n_ctx=16384, temperature=0.0), pasar de 1-shot a ReAct y luego a Consenso + Auditor llevó el puntaje neto en dev_set de +22.00 a +32.00 y luego a +68.00 (74.0% de exactitud), y en calibración ciega de +13.00 a +21.00 / +27.00, con 0 errores de esquema y 0 casos >45s.",
+        action: "Alterná entre dev_set.json y Calibración para comparar cómo se reducen WRONG_VALUE, SCALE_MISMATCH y HALLUCINATION_ON_ABSTAIN."
+      },
+      {
+        intent: "Evaluar el comportamiento y costo real en el Track Cloud Propietario (GPT-4.1-mini) frente al Track Open-Weight.",
+        detail: "En GPT-4.1-mini el modelo base ya alcanza +88.00 en dev_set, y Nivel 2/3 empatan en +97.00 (90.2% en tablas). Lo clave aparece en calibración ciega: Nivel 2 sufrió 2 alucinaciones (+21.00) y el Auditor de Nivel 3 las rescató devolviendo +24.00 / +27.00 (93.33%, 3/3 en ABSTAIN y 100% en tablas). Las 6 corridas completas (540 evaluaciones) costaron solo USD 0.8041 totales.",
+        action: "Usá la pestaña 'Open-Weight vs Cloud' para contrastar latencia, puntaje y costo por corrida."
+      },
+      {
+        intent: "Diagnosticar y corregir los 4 errores numéricos más frecuentes que reporta run_local_eval.py.",
+        detail: "Cuando analices eval_report_local.json: (1) distinguí 'change/difference' (resta en unidad de tabla) de 'percentage change' (*100 con scale='percent'); (2) no multipliques por 1000 cifras ya expresadas en miles (magnitude_10x); (3) leé los encabezados de año de izquierda a derecha (2019 | 2018) para calcular siempre Reciente - Base (sign_error); y (4) delegá la fórmula completa a safe_calculate sin redondear intermedios.",
+        action: "Inspeccioná cada uno de los 4 patrones a la izquierda para ver el contraste exacto entre código/fórmula errónea y correcta."
+      },
+      {
+        intent: "Evitar bloqueos de flujo en agentes y configurar correctamente el runtime de Google Colab GPU T4.",
+        detail: "En agentes ReAct, bloqueá safe_calculate y ABSTAIN en el Turno 0 (o usá fast-path) para evitar decisiones sin leer tabla/notas. En Multi-Agente, no dejes al extractor ciego a los párrafos (89/150 casos son table-text) y calibrá el Auditor para no perder +1.0 pt por ABSTAIN_CAUTIOUS. En Colab T4: n_ctx=16384, temperature=0.0, max_tokens acotado y uvicorn en hilo daemon dentro del mismo kernel para compartir VRAM.",
+        action: "Revisá las 3 pestañas de flujo agéntico y verificá que tu p95 local esté holgadamente debajo de 45s."
+      },
+      {
+        intent: "Operar correctamente la Plataforma de Evaluación Remota cuidando la cuota de 10 corridas y evitando el sobreajuste.",
+        detail: "Exponé tu puerto 8000 con cloudflared o HTTPS y verificá GET /health antes de calibrar (el pre-vuelo remoto no descuenta cuota si falla). Tenés 10 corridas de calibración sobre 30 casos ciegos con 300s de cooldown. El diagnóstico remoto es agregado y ciego: usalo para identificar patrones débiles, reproducilos y corregilos en dev_set.json antes de gastar otro intento. Al cierre se evalúan los 100 casos finales por Track.",
+        action: "Completá los 5 ítems del Checklist Pre-Calibración de la derecha antes de ejecutar POST /calibrate."
+      }
+    ];
+
+    function renderSlideNotes(index) {
+      const n = SLIDE_NOTES[index];
+      if (!n) return;
+      document.getElementById("notesSlideBadge").textContent = `· Slide ${index + 1} / ${totalSlides}`;
+      const title = slides[index].dataset.title || `Diapositiva ${index + 1}`;
+      document.getElementById("notesBody").innerHTML = `
+        <h4>${title}</h4>
+        <div class="callout callout-important" style="padding:9px 11px;font-size:12.2px;">
+          <span>🎯</span>
+          <div><strong>Intención:</strong> ${n.intent}</div>
+        </div>
+        <div>
+          <div class="notes-section-lbl">Explicación detallada</div>
+          <p style="margin:0;">${n.detail}</p>
+        </div>
+        <div class="callout callout-ok" style="margin-top:auto;padding:9px 11px;font-size:12.2px;">
+          <span>🛠️</span>
+          <div><strong>Qué hacer ahora:</strong> ${n.action}</div>
+        </div>
+      `;
+      document.getElementById("notesBody").scrollTop = 0;
+    }
+
+    // ==============================
+    // INIT
+    // ==============================
+    buildNavigationUI();
+    renderSlideNotes(0);
+    selectKitNode("devset", document.querySelector("[data-kit='devset']"));
+    switchContractTab("output", document.querySelector("#contractCodeBox").previousElementSibling.querySelector(".tab-btn"));
+    runScaleSim();
+    updateScoreCalc();
+    renderToolInspector();
+    selectRagNode("no_vec");
+    selectLevel(1);
+    renderOpenWeight("dev");
+    renderCloud("dev");
+    selectErrorPattern("pct_vs_abs");
+    selectAgentTip("turn0");
+    selectRemoteNode("tunnel", document.querySelector("[data-rem='tunnel']"));
+
+    // Respect URL hash #slide-N and ?notes=1 if present
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("notes") === "1") toggleNotes(true);
+    const hashMatch = window.location.hash.match(/^#slide-(\d+)$/);
+    if (hashMatch) {
+      const target = parseInt(hashMatch[1], 10) - 1;
+      if (target >= 0 && target < totalSlides) goToSlide(target);
+    }
+  </script>
+</body>
+</html>

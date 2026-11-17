@@ -1,4 +1,4 @@
-# 🏆 Benchmark Challenge: Agentic Financial RAG & Deterministic Tool-Calling (UTN FRSR)
+# 🏆 Agent-Based Financial QA Challenge (UTN FRSR)
 
 Repositorio oficial del **Desafío Competitivo Integrador** de la materia electiva **Desarrollo de Aplicaciones con LLMs y Modelos Generativos** (Universidad Tecnológica Nacional · Facultad Regional San Rafael).
 
