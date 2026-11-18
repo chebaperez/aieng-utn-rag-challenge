@@ -2153,7 +2153,7 @@
                   <rect x="474" y="24" width="190" height="96" rx="12" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
                   <text x="569" y="56" text-anchor="middle" font-size="13.5" font-weight="800" fill="#78350f">3. Calibración (30)</text>
                   <text x="569" y="77" text-anchor="middle" font-size="11.5" fill="#92400e">Máx. 10 corridas</text>
-                  <text x="569" y="95" text-anchor="middle" font-size="11" fill="#b45309">Cooldown 300s · 90s/caso</text>
+                  <text x="569" y="95" text-anchor="middle" font-size="11" fill="#b45309">Cooldown 600s · 90s/caso</text>
                 </g>
 
                 <!-- Arrow 3 -> 4 (down & left) -->
@@ -2215,7 +2215,7 @@
             <div class="callout callout-warn" style="margin-top:auto;">
               <span>🛡️</span>
               <div>
-                <strong>Anti-Overfitting:</strong> Tenés solo <strong>10 intentos</strong> en Calibración (y 300s de espera entre cada uno). El set Final (100 casos) es completamente inédito.
+                <strong>Anti-Overfitting:</strong> Tenés solo <strong>10 intentos</strong> en Calibración (y 600s de espera desde que finaliza cada corrida). El set Final (100 casos) es completamente inédito.
               </div>
             </div>
           </div>
@@ -3376,7 +3376,7 @@
       calibrate: {
         badge: ["Paso 3 · Calibración", "badge-guardrail"],
         title: "Calibración en Vivo (UI o POST /api/runs/start) · 30 Casos",
-        desc: "Presupuesto máximo: 10 corridas por track registrado. Cooldown: 300 segundos (5 min). Ejecución asíncrona (202 Accepted) con despacho secuencial, timeout 90s/caso y 1 reintento automático (backoff 3s). Leaderboard público por mejor corrida."
+        desc: "Presupuesto máximo: 10 corridas por track registrado. Cooldown: 600 segundos (10 min) desde que finaliza cada corrida. Ejecución asíncrona (202 Accepted) con despacho secuencial, timeout 90s/caso y 1 reintento automático (backoff 3s). Leaderboard público por mejor corrida."
       },
       diagnostics: {
         badge: ["Paso 4 · Opacidad", "badge-tool"],
@@ -3485,7 +3485,7 @@
       },
       {
         intent: "Operar correctamente la Plataforma de Evaluación Remota cuidando la cuota de 10 corridas y evitando el sobreajuste.",
-        detail: "Auto-registrá tu equipo con el código de invitación, elegí tu track fijo (open_weight, cloud_proprietary o both) y guardá la api_key única. Luego cualquier integrante entra con email + api_key. Antes de lanzar una corrida en <URL_EVALUADOR_REMOTO>, verificá que GET <tu-tunel>/health devuelva 200 (el pre-vuelo no descuenta cuota si falla). Cada equipo cuenta con 10 corridas de calibración por track (cooldown 300s, Leaderboard público por mejor corrida, diagnósticos privados). En la ventana final habilitada por la cátedra se lanza 1 único intento oficial por track.",
+        detail: "Auto-registrá tu equipo con el código de invitación, elegí tu track fijo (open_weight, cloud_proprietary o both) y guardá la api_key única. Luego cualquier integrante entra con email + api_key. Antes de lanzar una corrida en <URL_EVALUADOR_REMOTO>, verificá que GET <tu-tunel>/health devuelva 200 (el pre-vuelo no descuenta cuota si falla). Cada equipo cuenta con 10 corridas de calibración por track (cooldown 600s desde el fin de cada corrida, Leaderboard público por mejor corrida, diagnósticos privados). En la ventana final habilitada por la cátedra se lanza 1 único intento oficial por track.",
         action: "Completá los 5 pasos del Checklist Pre-Calibración antes de consumir tu próximo intento en Mi Equipo o POST /api/runs/start."
       }
     ];

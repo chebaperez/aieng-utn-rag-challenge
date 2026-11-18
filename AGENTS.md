@@ -78,7 +78,7 @@ Antes de proponer cambios como terminados o consumir una corrida de calibración
    ```
    Revisar `failure_patterns`, `by_answer_from` (`table` vs `table-text`) y latencia `p95` / `max` (debe ser `< 90 s`).
 5. **Inspeccionar casos representativos en `scripts/viewer.py`**: confirmar que los cambios mejoran el razonamiento general y no introducen regresiones en otra modalidad.
-6. **Calibración remota controlada**: solo lanzar una corrida remota (desde **Mi Equipo** en el portal o `POST /api/runs/start`) cuando el cambio haya demostrado mejora neta en `dev_set.json`. Respetar el cooldown de `300 s` y no sobreajustar a métricas ciegas.
+6. **Calibración remota controlada**: solo lanzar una corrida remota (desde **Mi Equipo** en el portal o `POST /api/runs/start`) cuando el cambio haya demostrado mejora neta en `dev_set.json`. Respetar el cooldown de `600 s` (10 min desde que finaliza cada corrida) y no sobreajustar a métricas ciegas.
 
 ---
 

@@ -516,7 +516,7 @@ Podés disparar la calibración desde la pestaña **Mi Equipo** en `<URL_EVALUAD
 Reglas operativas del evaluador remoto:
 1. **Pre-vuelo gratuito:** antes de iniciar, verifica `GET /health`. Si el túnel está caído o responde error, devuelve HTTP `502` y **no descuenta intento** de tu cuota.
 2. **Cuota máxima:** cada equipo dispone de **`10` corridas** de calibración por cada track registrado (`open_weight` / `cloud_proprietary`).
-3. **Cooldown:** existe una ventana de enfriamiento de **`300` segundos (5 minutos)** entre corridas sucesivas por track (`HTTP 429` si intentás antes).
+3. **Cooldown:** existe una ventana de enfriamiento obligatoria de **`600` segundos (10 minutos)** contados **desde que finaliza** cada corrida de calibración por track (`HTTP 429` si intentás antes).
 4. **Progreso en vivo asíncrono:** `POST /api/runs/start` responde inmediatamente `202 Accepted` (evitando cortes por timeout en proxies) y el progreso se consulta en `GET /api/runs/status/{team_id}/{track}`.
 5. **Despacho secuencial y tolerancia de red:** los 30 casos se envían de a 1 por vez (`concurrencia = 1`) con timeout de `90 s` por caso y **1 reintento automático** (`backoff = 3 s`) ante errores transitorios de red/Cloudflare (`502`, `503`, `504` o timeout). Si tras el reintento persiste el *timeout*, se registra `TIMEOUT` (`0.0` pts); si falla el esquema o devuelve HTTP 5xx, se penaliza con `SCHEMA_ERROR` (`-1.5`).
 
