@@ -56,7 +56,7 @@ Todo código desarrollado o generado por agentes en este repositorio **debe resp
 5. **Determinismo aritmético**:
    - **Nunca** devolver resultados calculados mentalmente por el LLM ni usar `eval()` sin sanitización. Toda operación aritmética debe ejecutarse mediante una herramienta determinista segura (ej. evaluador AST) y quedar registrada en `execution_trace`.
 6. **Seguridad y secretos**:
-   - **Nunca** commitear archivos `.env`, claves de API (`OPENAI_API_KEY`, `GEMINI_API_KEY`, etc.), ni credenciales de equipo (`team_id` / `api_token`).
+   - **Nunca** commitear archivos `.env`, claves de API (`OPENAI_API_KEY`, `GEMINI_API_KEY`, etc.), ni credenciales de equipo (`api_key`, `team_id`, `session_token`).
    - Mantener los archivos generados localmente (`predictions_local.json`, `eval_report_local.json`) fuera de commits productivos si no corresponden.
 
 ---
@@ -78,7 +78,7 @@ Antes de proponer cambios como terminados o consumir una corrida de calibración
    ```
    Revisar `failure_patterns`, `by_answer_from` (`table` vs `table-text`) y latencia `p95` / `max` (debe ser `< 90 s`).
 5. **Inspeccionar casos representativos en `scripts/viewer.py`**: confirmar que los cambios mejoran el razonamiento general y no introducen regresiones en otra modalidad.
-6. **Calibración remota controlada**: solo lanzar `POST /calibrate` cuando el cambio haya demostrado mejora neta en `dev_set.json`. Respetar el cooldown de `300 s` y no sobreajustar a métricas ciegas.
+6. **Calibración remota controlada**: solo lanzar una corrida remota (desde **Mi Equipo** en el portal o `POST /api/runs/start`) cuando el cambio haya demostrado mejora neta en `dev_set.json`. Respetar el cooldown de `300 s` y no sobreajustar a métricas ciegas.
 
 ---
 

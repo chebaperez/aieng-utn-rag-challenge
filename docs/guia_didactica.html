@@ -2113,7 +2113,7 @@
           <div>
             <span class="slide-eyebrow eyebrow-emerald">6 · Evaluación Remota y Leaderboard Final</span>
             <h2 class="slide-title">Ciclo Remoto (<code class="inline">&lt;URL_EVALUADOR_REMOTO&gt;</code>) y Checklist Pre-Vuelo</h2>
-            <p class="slide-subtitle">La cátedra entrega URL, <code class="inline">team_id</code> y <code class="inline">api_token</code> al habilitar tu equipo. Hacé clic en los pasos del diagrama para ver reglas y cuotas.</p>
+            <p class="slide-subtitle">Auto-registro con código de invitación, track fijo, login <code class="inline">email + api_key</code> y ejecución en vivo. Hacé clic en los pasos para ver reglas.</p>
           </div>
         </div>
 
@@ -2428,7 +2428,7 @@
         title: "Evaluador Remoto (<URL_EVALUADOR_REMOTO>)",
         desc: "Evalúa tu microservicio en Fase de Calibración (30 casos ciegos, máx. 10 corridas) y en el Corte Final (100 casos ciegos) segregado por Track.",
         rule: "100% caja negra: nunca ve tu código ni tu arquitectura interna.",
-        cmd: "POST <URL_EVALUADOR_REMOTO>/calibrate\n{\"team_id\": \"...\", \"api_token\": \"...\", \"endpoint_url\": \"https://...\"}"
+        cmd: "POST <URL_EVALUADOR_REMOTO>/api/runs/start\n{\"phase\": \"calibration\", \"track\": \"open_weight\", \"endpoint_url\": \"https://...\"}"
       }
     };
 
@@ -2475,7 +2475,7 @@
       env_host: {
         badge: ["Secretos", "badge-readonly"],
         title: "Variables de Entorno (.env)",
-        desc: "Cargá tus credenciales con python-dotenv. Nunca hardcodees API keys ni api_token en el código ni los subas al repositorio.",
+        desc: "Cargá tus credenciales con python-dotenv. Nunca hardcodees API keys ni tu api_key del evaluador en el código ni los subas al repositorio.",
         cmd: "# .env (ignorado por .gitignore)\nOPENAI_API_KEY=sk-..."
       },
       cloud_llm: {
@@ -3375,18 +3375,18 @@
       },
       calibrate: {
         badge: ["Paso 3 · Calibración", "badge-guardrail"],
-        title: "POST /calibrate · 30 Casos Ciegos",
-        desc: "Presupuesto máximo: 10 corridas por equipo. Cooldown: 300 segundos (5 min) entre corridas. Despacho secuencial (concurrencia=1), timeout 90s/caso con 1 reintento automático (backoff 3s) ante 502/503/504 o error transitorio. El timeout (>90s) suma 0.0 pts; fallos de esquema o HTTP 5xx restan -1.5."
+        title: "Calibración en Vivo (UI o POST /api/runs/start) · 30 Casos",
+        desc: "Presupuesto máximo: 10 corridas por track registrado. Cooldown: 300 segundos (5 min). Ejecución asíncrona (202 Accepted) con despacho secuencial, timeout 90s/caso y 1 reintento automático (backoff 3s). Leaderboard público por mejor corrida."
       },
       diagnostics: {
         badge: ["Paso 4 · Opacidad", "badge-tool"],
-        title: "Diagnóstico Ciego Agregado (/api/runs/{run_id}/diagnostics)",
-        desc: "No expone preguntas ni Ground Truth. Devuelve failure_patterns, by_answer_from (table vs table-text), latency_stats y actionable_recommendations. Incluye el botón 'Copiar JSON para IA' en el portal."
+        title: "Diagnóstico Ciego Privado (/api/runs/{run_id}/diagnostics)",
+        desc: "Privado por equipo autenticado (email + api_key). No expone preguntas ni Ground Truth: devuelve failure_patterns, by_answer_from, latency_stats y actionable_recommendations con botón 'Copiar JSON para IA'."
       },
       final: {
         badge: ["Paso 5 · Cierre", "badge-remote"],
-        title: "Corte Final (100 casos) y Leaderboard por Track",
-        desc: "En la fecha de cierre la cátedra evalúa los 100 casos finales sobre el último endpoint activo. Ranking separado en Open-Weight y Cloud Propietario por Net Score DESC, Total Tokens ASC, Avg Latency ASC."
+        title: "Evaluación Final en Vivo (100 casos · 1 intento/track)",
+        desc: "Cuando la cátedra habilita la Fase Final, cada equipo lanza su único intento oficial en vivo por track. Ranking separado en Open-Weight y Cloud Propietario por Net Score DESC, Total Tokens ASC, Avg Latency ASC."
       }
     };
 
@@ -3485,8 +3485,8 @@
       },
       {
         intent: "Operar correctamente la Plataforma de Evaluación Remota cuidando la cuota de 10 corridas y evitando el sobreajuste.",
-        detail: "Antes de disparar una calibración en <URL_EVALUADOR_REMOTO>, verificá desde afuera que GET <tu-tunel>/health devuelva 200; de todas formas el pre-vuelo remoto (timeout 10s) no descuenta cuota si tu túnel está caído. Cada equipo cuenta con 10 corridas de calibración (30 casos ciegos) con 300s de cooldown y despacho secuencial (90s de timeout por caso con 1 reintento automático de 3s ante 502/503/504). El diagnóstico remoto es agregado y ciego: usá el botón 'Copiar JSON para IA' para detectar patrones generales débiles y corregirlos en dev_set.json sin sobreajustar. En el corte final se evalúan los 100 casos definitivos segregados por Track.",
-        action: "Completá los 5 pasos del Checklist Pre-Calibración antes de consumir tu próximo intento en POST /calibrate."
+        detail: "Auto-registrá tu equipo con el código de invitación, elegí tu track fijo (open_weight, cloud_proprietary o both) y guardá la api_key única. Luego cualquier integrante entra con email + api_key. Antes de lanzar una corrida en <URL_EVALUADOR_REMOTO>, verificá que GET <tu-tunel>/health devuelva 200 (el pre-vuelo no descuenta cuota si falla). Cada equipo cuenta con 10 corridas de calibración por track (cooldown 300s, Leaderboard público por mejor corrida, diagnósticos privados). En la ventana final habilitada por la cátedra se lanza 1 único intento oficial por track.",
+        action: "Completá los 5 pasos del Checklist Pre-Calibración antes de consumir tu próximo intento en Mi Equipo o POST /api/runs/start."
       }
     ];
 

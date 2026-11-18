@@ -107,8 +107,8 @@ sequenceDiagram
 | Aspecto | Evaluación Local (`run_local_eval.py`) | Evaluación Remota (`<URL_EVALUADOR_REMOTO>`) |
 | :--- | :--- | :--- |
 | **Dataset** | `data/dev_set.json` (150 casos públicos) | Calibración (30 casos ciegos) / Final (100 casos ciegos) |
-| **Acceso al *Ground Truth*** | Completo (en `eval_report_local.json` y `scripts/viewer.py`) | Opaco (solo métricas agregadas y patrones en `/api/runs/{run_id}/diagnostics`) |
-| **Cuota y Cooldown** | Ilimitada (local) | Calibración: máx. `10` corridas, `300 s` cooldown; Final: ejecutada por la cátedra |
+| **Acceso al *Ground Truth*** | Completo (en `eval_report_local.json` y `scripts/viewer.py`) | Opaco (Leaderboard público por mejor corrida; diagnóstico privado en `/api/runs/{run_id}/diagnostics`) |
+| **Cuota y Cooldown** | Ilimitada (local) | Calibración: máx. `10` corridas/track, `300 s` cooldown; Final: `1` intento/track habilitado por cátedra (`POST /api/runs/start`) |
 | **Reintento transitorio** | No (reporta error HTTP directo) | 1 reintento automático (`3 s` backoff) ante `502`/`503`/`504` o error de red |
 | **Concurrencia por equipo** | Secuencial (`1` caso por vez) | Secuencial (`1` caso por vez), `90 s` de timeout por caso |
 

@@ -462,7 +462,16 @@ flowchart LR
 
 ## 6. Uso de la Plataforma de Evaluación Remota (`Calibration` y `Final Leaderboard`)
 
-Una vez que tu sistema logra buenos resultados locales en `data/dev_set.json`, cero `SCHEMA_ERROR` y latencia segura (`< 45 s` en `p95`), podés pasar a la **Plataforma de Evaluación Remota** en `<URL_EVALUADOR_REMOTO>` (provista por la cátedra junto con tu `team_id` y `api_token`).
+Una vez que tu sistema logra buenos resultados locales en `data/dev_set.json`, cero `SCHEMA_ERROR` y latencia segura (`< 45 s` en `p95`), podés pasar a la **Plataforma de Evaluación Remota** en `<URL_EVALUADOR_REMOTO>`.
+
+### 6.0 Auto-registro del equipo e inicio de sesión
+
+1. En la pestaña **Registrar Equipo** de `<URL_EVALUADOR_REMOTO>`, ingresá:
+   - **Código de invitación** provisto por la cátedra.
+   - **Nombre del grupo** y **Track** (`Colab / Open-Weight`, `API Propietaria` o `Ambas`). **El track elegido queda fijo y no se puede cambiar luego.**
+   - **Integrantes** (nombre, apellido y email). Cada email puede pertenecer a **un único equipo en total**.
+2. Al confirmar, la plataforma genera el `team_id` y la **`api_key`** del equipo **una única vez**: copiala y resguardala en un lugar seguro.
+3. A partir de ese momento, cualquier integrante registrado puede iniciar sesión en **Mi Equipo** usando su **email + `api_key`** para publicar la URL del túnel y lanzar evaluaciones en vivo.
 
 ```mermaid
 sequenceDiagram
@@ -471,16 +480,17 @@ sequenceDiagram
     participant Eval as Evaluador Remoto (<URL_EVALUADOR_REMOTO>)
 
     Eq->>Tun: Exponer localhost:8000
-    Note over Eq,Eval: Equipo dispara calibración en Portal Web o POST /calibrate
+    Note over Eq,Eval: Integrante inicia sesión (email + api_key) y dispara en UI o POST /api/runs/start
     Eval->>Tun: 1. Pre-vuelo GET /health (timeout 10s)
     Tun->>Eq: GET /health
     Eq-->>Eval: 200 OK {"status": "ok"} (si falla, NO descuenta cuota)
+    Eval-->>Eq: 202 Accepted (run_id) + polling GET /api/runs/status/{team_id}/{track}
     loop Cada caso del lote ciego (concurrencia = 1, timeout = 90s)
         Eval->>Tun: POST /solve (CaseInput)
         Tun->>Eq: POST /solve
         Eq-->>Eval: CaseOutput (1 reintento si 502/503/504 o timeout)
     end
-    Eval-->>Eq: PublicRunSummary + Diagnóstico Ciego Agregado
+    Eval-->>Eq: Métricas en Historial + Diagnóstico Ciego Privado
 ```
 
 ### 6.1 Exposición del endpoint (`cloudflared` o servidor HTTPS)
@@ -491,38 +501,41 @@ sequenceDiagram
 
 ### 6.2 Ejecución y reglas de la Fase de Calibración (30 casos ciegos)
 
-Podés disparar la calibración desde el formulario web de `<URL_EVALUADOR_REMOTO>` o mediante `POST <URL_EVALUADOR_REMOTO>/calibrate` enviando:
+Podés disparar la calibración desde la pestaña **Mi Equipo** en `<URL_EVALUADOR_REMOTO>` o vía API en dos pasos:
+1. `POST <URL_EVALUADOR_REMOTO>/api/auth/login` con `{"email": "...", "api_key": "..."}` para obtener tu `session_token`.
+2. `POST <URL_EVALUADOR_REMOTO>/api/runs/start` (header `Authorization: Bearer <session_token>`) enviando:
 
 ```json
 {
-  "team_id": "tu_team_id",
-  "api_token": "tu_api_token",
+  "phase": "calibration",
+  "track": "open_weight",
   "endpoint_url": "https://tu-tunel.trycloudflare.com"
 }
 ```
 
 Reglas operativas del evaluador remoto:
 1. **Pre-vuelo gratuito:** antes de iniciar, verifica `GET /health`. Si el túnel está caído o responde error, devuelve HTTP `502` y **no descuenta intento** de tu cuota.
-2. **Cuota máxima:** cada equipo dispone de **`10` corridas** de calibración.
-3. **Cooldown:** existe una ventana de enfriamiento de **`300` segundos (5 minutos)** entre corridas sucesivas (`HTTP 429` si intentás antes).
-4. **Progreso en vivo:** mientras corre, el portal consulta `GET /calibrate/status/{team_id}` mostrando caso actual, latencia y errores HTTP.
+2. **Cuota máxima:** cada equipo dispone de **`10` corridas** de calibración por cada track registrado (`open_weight` / `cloud_proprietary`).
+3. **Cooldown:** existe una ventana de enfriamiento de **`300` segundos (5 minutos)** entre corridas sucesivas por track (`HTTP 429` si intentás antes).
+4. **Progreso en vivo asíncrono:** `POST /api/runs/start` responde inmediatamente `202 Accepted` (evitando cortes por timeout en proxies) y el progreso se consulta en `GET /api/runs/status/{team_id}/{track}`.
 5. **Despacho secuencial y tolerancia de red:** los 30 casos se envían de a 1 por vez (`concurrencia = 1`) con timeout de `90 s` por caso y **1 reintento automático** (`backoff = 3 s`) ante errores transitorios de red/Cloudflare (`502`, `503`, `504` o timeout). Si tras el reintento persiste el *timeout*, se registra `TIMEOUT` (`0.0` pts); si falla el esquema o devuelve HTTP 5xx, se penaliza con `SCHEMA_ERROR` (`-1.5`).
 
 ### 6.3 Interpretación del diagnóstico ciego y prevención de sobreajuste
 
-Por diseño del benchmark, el conjunto de calibración es **opaco**: el servidor devuelve métricas agregadas (`PublicRunSummary`) y un diagnóstico ciego en `GET /api/runs/{run_id}/diagnostics` (que podés copiar con el botón **"Copiar JSON para IA"** desde el modal del Leaderboard), incluyendo:
+Por diseño del benchmark, el conjunto de calibración es **opaco**: el Leaderboard público de Calibración muestra la **mejor corrida** de cada equipo, mientras que el diagnóstico detallado en `GET /api/runs/{run_id}/diagnostics` es **privado** (solo visible para el equipo autenticado desde **Mi Equipo** o **📊 Ver**):
 - `failure_patterns`: conteo e impacto por patrón (`percent_decimal`, `sign_error`, `magnitude_10x`, `hallucination_on_abstain`, `abstain_cautious`, etc.).
 - `by_answer_from`: exactitud discriminada entre `table` y `table-text`.
 - `actionable_recommendations` y `latency_stats` (`avg_ms`, `p50_ms`, `p95_ms`, `max_ms`, `slow_over_45s`, `http_or_timeout_errors`).
 
 **Reglas para no sobreajustar (*overfitting*):**
 - No intentes deducir ni memorizar casos de calibración: los casos finales son inéditos.
-- Usá el diagnóstico ciego para detectar debilidades estructurales (por ejemplo: *"fallo en `table-text`"* o *"errores de signo"*), reproducí y corregí esa clase de error en `data/dev_set.json`, y recién entonces consumí otro intento de calibración para verificar si la mejora generaliza.
+- Usá el diagnóstico ciego (botón **"Copiar JSON para IA"**) para detectar debilidades estructurales (por ejemplo: *"fallo en `table-text`"* o *"errores de signo"*), reproducí y corregí esa clase de error en `data/dev_set.json`, y recién entonces consumí otro intento de calibración para verificar si la mejora generaliza.
 
-### 6.4 Corte Final (100 casos) y Leaderboard por Track
+### 6.4 Evaluación Final en Vivo (100 casos) y Leaderboard por Track
 
-- En la fecha de cierre, la cátedra ejecuta la evaluación ciega definitiva sobre el **Final Leaderboard Set (100 casos)** contra el último `endpoint_url` activo registrado por cada equipo (manteniendo despacho secuencial por equipo).
+- Cuando la cátedra habilite la **Fase Final** en vivo, se destrabará el botón **Evaluación Final (100 casos)** en **Mi Equipo** (también disponible vía `POST /api/runs/start` con `"phase": "final"`).
+- Cada equipo dispone de **1 único intento oficial** por cada track registrado (con pre-vuelo `GET /health` previo que no quema el intento si el túnel está caído).
 - El ranking en `<URL_EVALUADOR_REMOTO>/?phase=final` (y vía API `GET <URL_EVALUADOR_REMOTO>/api/leaderboard?phase=final`) se muestra **segregado en dos Tracks independientes**:
   1. **Track Open-Weight** (modelos locales/abiertos, ej. Colab T4).
   2. **Track Cloud Propietario** (APIs gestionadas).
-- Para cada equipo cuenta su última corrida válida en la fase correspondiente, ordenada por `net_score` descendente -> `total_tokens` ascendente -> `avg_latency_ms` ascendente.
+- Ordenado por `net_score` descendente -> `total_tokens` ascendente -> `avg_latency_ms` ascendente.
