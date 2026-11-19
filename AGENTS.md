@@ -30,6 +30,9 @@ python scripts/run_local_eval.py
 
 # 4. Visualizador web interactivo de casos, Ground Truth y predicciones
 python scripts/viewer.py --open
+
+# 5. Exponer microservicio local al Evaluador Remoto (Terminal 3)
+python scripts/start_tunnel.py
 ```
 
 ---
@@ -79,6 +82,16 @@ Antes de proponer cambios como terminados o consumir una corrida de calibración
    Revisar `failure_patterns`, `by_answer_from` (`table` vs `table-text`) y latencia `p95` / `max` (debe ser `< 90 s`).
 5. **Inspeccionar casos representativos en `scripts/viewer.py`**: confirmar que los cambios mejoran el razonamiento general y no introducen regresiones en otra modalidad.
 6. **Calibración remota controlada**: solo lanzar una corrida remota (desde **Mi Equipo** en el portal o `POST /api/runs/start`) cuando el cambio haya demostrado mejora neta en `dev_set.json`. Respetar el cooldown de `600 s` (10 min desde que finaliza cada corrida) y no sobreajustar a métricas ciegas.
+
+### 3.1 Regla de Desarrollo para Track Open-Weight (`Host Local -> GitHub del Equipo -> Google Colab`)
+
+- **En Colab NO se desarrolla**: todo cambio de código, prompts o herramientas debe hacerse en el host local dentro del **repositorio propio del equipo** en GitHub (fork o copia del Starter Kit), nunca editando archivos directamente dentro de Google Colab.
+- **Visibilidad del repositorio**: para que Colab pueda clonar y actualizar por HTTPS sin autenticación interactiva, el repositorio del equipo en GitHub debe ser público (o accesible por HTTPS).
+- **Ciclo obligatorio**:
+  1. Editar, probar y validar contratos en tu PC/host local.
+  2. Hacer `git commit` y `git push` a la rama principal (`main`) del repositorio propio del equipo.
+  3. En `notebooks/Colab_Starter_Template.ipynb`, configurar `REPO_URL` con la URL del repo del equipo (Celda 1 hace `clone`/`pull`) y usar Colab únicamente como **runtime GPU T4**.
+- **Sincronización y recarga en Colab**: la **Celda 1** clona/actualiza el repo y define `sync_repo()` (`git pull --ff-only`), y la **Celda 3** lo ejecuta, detiene el servidor previo si existía, recarga los módulos `src/` y reinicia FastAPI automáticamente. Solo necesitás reiniciar la sesión de Colab (`Entorno de ejecución -> Reiniciar sesión`) si aparece un error de memoria VRAM/CUDA al recargar el modelo GGUF o si modificaste `requirements.txt`.
 
 ---
 

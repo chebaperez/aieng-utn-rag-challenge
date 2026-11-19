@@ -24,7 +24,7 @@ El objetivo del desafío es construir un sistema de **Agent-Based Financial QA**
 | `scripts/run_local_eval.py` | Cliente HTTP secuencial contra tu `POST /solve` local; genera `predictions_local.json` y `eval_report_local.json`. |
 | `scripts/start_tunnel.py` | Wrapper CLI recomendado para abrir Cloudflare Tunnel en Terminal 3 (con pre-chequeo `/health` e instrucciones por OS) y módulo reutilizado por Colab. |
 | `scripts/viewer.py` | Visualizador web (`http://127.0.0.1:8501`) para inspeccionar casos, tablas, párrafos, *Ground Truth* y predicciones en `scripts/viewer_ui/`. |
-| `notebooks/Colab_Starter_Template.ipynb` | Plantilla para el **Track Open-Weight** en Google Colab GPU T4 (CUDA 12, `llama-cpp-python`, `uvicorn` compartiendo VRAM y túnel `cloudflared` vía `scripts/start_tunnel.py`). |
+| `notebooks/Colab_Starter_Template.ipynb` | Plantilla en 5 celdas para el **Track Open-Weight** en Google Colab GPU T4: clona/actualiza el **repositorio propio del equipo** (`REPO_URL`) y define `sync_repo()` (Celda 1), prepara CUDA 12 (Celda 2), hace `pull` y levanta `uvicorn` en hilo daemon (Celda 3), evalúa en local (Celda 4) y abre/renueva túnel vía `scripts/start_tunnel.py` (Celda 5). |
 | `requirements.txt` | Dependencias base (`fastapi`, `uvicorn`, `pydantic`, `httpx`, `python-dotenv`). |
 
 ### 1.2 Flujo de desarrollo iterativo local
@@ -419,10 +419,12 @@ El evaluador (`src/evaluator.py`) clasifica automáticamente los errores en cate
    - **Sobre-abstención (`ABSTAIN_CAUTIOUS`):** un Auditor demasiado estricto puede rechazar casos válidos y dejar `+1.0` punto por caso sobre la mesa (en la tabla de `dev_set`, ~6–8 casos se perdieron por cautela excesiva). Calibrá el Auditor para rechazar solo ante falta real de evidencia o errores verificables de operando/signo/escala.
    - **No redondear intermedios (`near_miss_rounding`):** delegá toda la expresión compuesta a `safe_calculate` en una sola fórmula sin truncar pasos intermedios.
 6. **Configuración de runtime en Google Colab GPU T4:**
+   - **En Colab no se desarrolla (`Host Local -> GitHub del equipo -> Colab`):** trabajá localmente en tu PC sobre el **repositorio propio de tu equipo** (público o accesible por HTTPS para que Colab pueda clonar/actualizar sin prompts). Ante cada cambio en el código del agente, hacé `push` (o *merge*) hacia la rama en la que están trabajando (`main`, `develop` o la rama elegida en `BRANCH` en la Celda 1) y **volvé a ejecutar la Celda 3**: eso ejecuta `sync_repo()`, recarga `src/` y reinicia FastAPI resolviendo toda la sincronización de código automáticamente.
+   - **Tip de versionado por ramas:** como en la Celda 1 podés elegir la rama (`BRANCH`), pueden mantener distintas versiones o experimentos del agente en ramas separadas para evaluarlos en Colab sin pisarse cambios. Cuando encuentren la mejor versión, hagan *merge* de esa rama hacia `develop` o `main` para dejarla lista como candidata final.
    - Usar `n_ctx = 16384` para no truncar tablas largas junto con sus notas y trazas de tools.
    - Fijar `temperature = 0.0` para reproducibilidad y estabilidad en formato JSON.
    - Limitar `max_tokens` por respuesta y controlar la cantidad máxima de iteraciones del agente para que el peor caso (`max_latency`) quede holgadamente por debajo del timeout remoto de **`90 s`**.
-   - Verificar que el servidor corra en un hilo secundario dentro del mismo kernel (como muestra `notebooks/Colab_Starter_Template.ipynb`) cuando el modelo local usa la GPU, evitando duplicar procesos y quedar sin VRAM.
+   - Verificar que el servidor corra en un hilo secundario dentro del mismo kernel (como muestra la **Celda 3** de `notebooks/Colab_Starter_Template.ipynb`, que ejecuta `sync_repo()`, recarga `src/` y levanta o reinicia FastAPI) cuando el modelo local usa la GPU, evitando duplicar procesos y quedar sin VRAM. Si al reiniciar el servidor aparece un error de VRAM/CUDA con el modelo GGUF cargado, reiniciá la sesión de Colab.
 
 ### 5.1 Cómo usar RAG de forma efectiva en este Challenge
 
@@ -497,7 +499,7 @@ sequenceDiagram
 
 ### 6.1 Exposición del endpoint (`scripts/start_tunnel.py`, `cloudflared` o servidor HTTPS)
 
-- En **Track Open-Weight (Google Colab GPU T4)**, ejecutá las celdas de `notebooks/Colab_Starter_Template.ipynb`: prepara `llama-cpp-python` con CUDA 12, levanta `src/server.py` en el puerto `8000` compartiendo VRAM y abre el túnel público temporal `https://<id>.trycloudflare.com` reutilizando `start_tunnel()` de `scripts/start_tunnel.py`.
+- En **Track Open-Weight (Google Colab GPU T4)**, trabajá localmente sobre el repositorio propio de tu equipo y ejecutá `notebooks/Colab_Starter_Template.ipynb`: la **Celda 1** configura `REPO_URL` y `BRANCH` (ej. `main`, `develop` o una rama de experimento) para clonar/actualizar el repo y definir `sync_repo()` junto con dependencias y `cloudflared`; la **Celda 2** instala `llama-cpp-python` con CUDA 12; la **Celda 3** ejecuta `sync_repo()`, recarga `src/` y levanta (o reinicia automáticamente) `src/server.py` en hilo daemon —por lo que ante cada cambio local basta con hacer `push` o *merge* a tu rama y volver a correr la Celda 3—; la **Celda 4** corre `scripts/run_local_eval.py` en local; y la **Celda 5** abre o renueva el túnel `https://<id>.trycloudflare.com` reutilizando `start_tunnel()` de `scripts/start_tunnel.py`.
 - En **entorno local o servidor propio** (frecuente en Track Cloud Propietario), la forma recomendada en **Terminal 3** es ejecutar `python scripts/start_tunnel.py`: verifica `GET /health` local antes de abrir el túnel, acepta `--port`, `--host` y `--skip-healthcheck`, imprime los comandos de instalación por OS si falta `cloudflared` y muestra la URL pública lista para pegar en **Mi Equipo**. Como alternativa, podés correr `cloudflared tunnel --url http://127.0.0.1:8000` manualmente o usar un dominio HTTPS público propio.
 - Comprobá desde otra terminal o navegador que `GET https://<tu-url>/health` devuelva HTTP `200` antes de lanzar una corrida remota.
 

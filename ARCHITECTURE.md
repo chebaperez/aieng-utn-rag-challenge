@@ -73,7 +73,7 @@ flowchart TB
   - `evaluate_single_case` / `evaluate_dataset`: asignación de estados (`CORRECT`, `ABSTAIN_ON_UNSOLVABLE`, `ABSTAIN_CAUTIOUS`, `WRONG_VALUE`, `SCALE_MISMATCH`, `HALLUCINATION_ON_ABSTAIN`, `TIMEOUT`, `SCHEMA_ERROR`) y puntaje asimétrico (`+1.0`, `0.0`, `-1.0`, `-1.5`).
   - `aggregate_diagnostics` / `build_diagnostic_report`: cálculo de percentiles de latencia, desglose por `answer_from` (`table` vs `table-text`), clasificación de patrones de fallo (`classify_failure_hint`) y recomendaciones accionables.
 - **`scripts/run_local_eval.py`**: cliente HTTP síncrono que valida `GET /health`, envía secuencialmente los casos de `data/dev_set.json` a `POST /solve` (timeout configurable, por defecto `90.0 s`), guarda `predictions_local.json` y `eval_report_local.json` e imprime el diagnóstico en consola.
-- **`scripts/start_tunnel.py`**: utilidad de librería estándar con doble uso: CLI recomendado en local (Terminal 3: verifica `GET /health`, guía la instalación de `cloudflared` por sistema operativo si falta e imprime la URL `trycloudflare.com` hasta `Ctrl+C`) y módulo importable (`start_tunnel()`, `stop_tunnel()`) reutilizado por `notebooks/Colab_Starter_Template.ipynb`.
+- **`scripts/start_tunnel.py`**: utilidad de librería estándar con doble uso: CLI recomendado en local (Terminal 3: verifica `GET /health`, guía la instalación de `cloudflared` por sistema operativo si falta e imprime la URL `trycloudflare.com` hasta `Ctrl+C`) y módulo importable (`check_local_health()`, `start_tunnel()`, `stop_tunnel()`) reutilizado por la **Celda 5** de `notebooks/Colab_Starter_Template.ipynb`.
 - **`scripts/viewer.py`**: servidor web ligero (`uvicorn` en `127.0.0.1:8501`) que carga `data/dev_set.json` y `predictions_local.json` (o cualquier archivo subido desde el navegador) para inspeccionar tablas, notas, *Ground Truth*, traza de herramientas y pista diagnóstica caso por caso.
 
 ---
@@ -135,7 +135,8 @@ El motor `src/evaluator.py` aplica un pipeline determinista sobre cada predicci�
 
 ```mermaid
 flowchart LR
-    Colab["Google Colab GPU T4"]
+    DEV["PC Local (Desarrollo)"] -->|"git push"| GH["GitHub (Repo del Equipo)"]
+    GH -->|"git clone / pull"| Colab["Google Colab GPU T4"]
     subgraph Kernel["Mismo proceso Python (comparte VRAM)"]
         LLM["Motor LLM Local (ej. llama-cpp / vLLM)"]
         UV["Uvicorn en Thread Daemon (:8000)"]
@@ -146,7 +147,8 @@ flowchart LR
     CF <-->|"HTTPS público temporal"| REM["Evaluador Remoto"]
 ```
 
-- **Clave técnica**: levantar `uvicorn` dentro de un `threading.Thread(..., daemon=True)` en el mismo kernel que carga el modelo en GPU (tal como implementa `notebooks/Colab_Starter_Template.ipynb`, que luego reutiliza `start_tunnel()` de `scripts/start_tunnel.py`) evita duplicar la inicialización de CUDA o agotar la VRAM de la T4.
+- **Flujo de trabajo (en Colab no se desarrolla)**: cada equipo trabaja en su PC/host local sobre **su propio repositorio en GitHub** (fork/copia del Starter Kit, público/accesible por HTTPS para Colab) y hace `git push` a la rama principal (`main`). En Colab se ejecuta `notebooks/Colab_Starter_Template.ipynb` únicamente como runtime GPU: la **Celda 1** configura `REPO_URL` (`https://github.com/tu-usuario/el-repositorio.git`), clona o actualiza con `git pull` y define `sync_repo()`, la **Celda 2** prepara CUDA 12, y la **Celda 3** llama a `sync_repo()`, recarga los módulos `src/` y levanta (o reinicia) FastAPI automáticamente (solo reiniciá la sesión si aparece un error de VRAM/CUDA al recargar el GGUF).
+- **Clave técnica**: levantar `uvicorn` dentro de un `threading.Thread(..., daemon=True)` en el mismo kernel que carga el modelo en GPU (tal como implementa la **Celda 3** de `notebooks/Colab_Starter_Template.ipynb`) evita duplicar la inicialización de CUDA o agotar la VRAM de la T4. A continuación, la **Celda 4** ejecuta la evaluación local independiente (`scripts/run_local_eval.py`) y la **Celda 5** abre o renueva el túnel con `start_tunnel()` de `scripts/start_tunnel.py`.
 
 ### 5.2 Track Cloud Propietario (APIs Gestionadas)
 

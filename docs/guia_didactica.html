@@ -1428,7 +1428,7 @@
           <div>
             <span class="slide-eyebrow eyebrow-indigo">1 · Despliegue Camino B (Track Open-Weight en Colab)</span>
             <h2 class="slide-title">Cómo Implementar y Exponer en Google Colab GPU T4</h2>
-            <p class="slide-subtitle">El servidor FastAPI corre en un <strong>hilo daemon dentro del mismo kernel Python</strong> que carga el modelo en GPU, compartiendo la VRAM sin duplicar procesos.</p>
+            <p class="slide-subtitle"><strong>En Colab no se desarrolla:</strong> desarrollás en tu PC, hacés <code class="inline">push</code> al repo propio de tu equipo y Colab solo hace <code class="inline">clone</code>/<code class="inline">pull</code> para correr el servidor FastAPI en un <strong>hilo daemon dentro del mismo kernel</strong> compartiendo GPU VRAM.</p>
           </div>
         </div>
 
@@ -1457,7 +1457,7 @@
               <!-- Cloudflared subprocess -->
               <g class="svg-node" data-cb="cf_colab" onclick="selectPathBNode('cf_colab', this)">
                 <rect x="220" y="88" width="180" height="82" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-                <text x="310" y="114" text-anchor="middle" font-size="11.2" font-weight="700" fill="#312e81">scripts/start_tunnel.py</text>
+                <text x="310" y="114" text-anchor="middle" font-size="10.8" font-weight="700" fill="#312e81">Celda 5 · start_tunnel.py</text>
                 <text x="310" y="132" text-anchor="middle" font-size="9.6" fill="#4338ca">start_tunnel() → cloudflared</text>
                 <text x="310" y="148" text-anchor="middle" font-size="9.5" fill="#4f46e5">→ https://...trycloudflare.com</text>
               </g>
@@ -1465,7 +1465,7 @@
               <!-- Uvicorn Daemon Thread -->
               <g class="svg-node selected" data-cb="daemon_uv" onclick="selectPathBNode('daemon_uv', this)">
                 <rect x="440" y="74" width="202" height="106" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-                <text x="541" y="99" text-anchor="middle" font-size="11.2" font-weight="800" fill="#065f46">uvicorn en Thread Daemon</text>
+                <text x="541" y="99" text-anchor="middle" font-size="11" font-weight="800" fill="#065f46">Celda 3 · uvicorn (Daemon)</text>
                 <text x="541" y="117" text-anchor="middle" font-size="9.8" fill="#047857">from src.server import app</text>
                 <text x="541" y="133" text-anchor="middle" font-size="9.5" fill="#059669">Escucha en :8000 sin bloquear</text>
                 <text x="541" y="149" text-anchor="middle" font-size="9.5" fill="#059669">la celda del notebook</text>
@@ -1484,9 +1484,9 @@
               <!-- Local test inside Colab -->
               <g class="svg-node" data-cb="colab_eval" onclick="selectPathBNode('colab_eval', this)">
                 <rect x="220" y="236" width="180" height="88" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.6"/>
-                <text x="310" y="262" text-anchor="middle" font-size="11" font-weight="700" fill="#78350f">Prueba dentro de Colab</text>
+                <text x="310" y="262" text-anchor="middle" font-size="10.8" font-weight="700" fill="#78350f">Celda 4 · Evaluación Local</text>
                 <text x="310" y="280" text-anchor="middle" font-size="9.8" fill="#92400e">!python scripts/run_local_eval.py</text>
-                <text x="310" y="296" text-anchor="middle" font-size="9.5" fill="#b45309">antes de abrir el túnel</text>
+                <text x="310" y="296" text-anchor="middle" font-size="9.5" fill="#b45309">LIMIT y VERBOSE configurables</text>
               </g>
 
               <!-- Arrows -->
@@ -2422,9 +2422,9 @@
       colab: {
         badge: ["Runtime GPU", "badge-remote"],
         title: "notebooks/Colab_Starter_Template.ipynb",
-        desc: "Prepara el entorno en Google Colab GPU T4: clona el Starter Kit, levanta uvicorn en un hilo daemon (compartiendo VRAM con tu modelo local) y abre el túnel cloudflared reutilizando scripts/start_tunnel.py.",
-        rule: "Ideal para Track Open-Weight sin consumir procesos GPU duplicados.",
-        cmd: "# Dentro de Colab: ejecutá Celdas 1, 2 y 3 para obtener https://<id>.trycloudflare.com"
+        desc: "Runtime GPU T4 en 5 celdas: clona/sincroniza el repositorio propio del equipo y la rama elegida en BRANCH (Celda 1), prepara CUDA 12 (Celda 2), actualiza código y levanta o reinicia uvicorn en hilo daemon (Celda 3), evalúa en local (Celda 4) y abre/renueva el túnel (Celda 5).",
+        rule: "En Colab no se desarrolla: editá en tu PC, hacé push/merge a tu rama (main, develop o rama por versión) y re-ejecutá la Celda 3 para recargar el servidor.",
+        cmd: "# Celda 1: REPO_URL = 'https://github.com/tu-usuario/el-repositorio.git' · BRANCH = 'main'\n# Ante cambios locales: git push/merge -> re-ejecutar Celda 3"
       },
       remote: {
         badge: ["Plataforma Central", "badge-remote"],
@@ -2512,10 +2512,10 @@
 
     const PATH_B_DATA = {
       daemon_uv: {
-        badge: ["Clave en Colab", "badge-editable"],
-        title: "uvicorn en Hilo Daemon dentro del Kernel",
-        desc: "En Colab NO se lanza '!uvicorn ... &' como proceso aparte porque duplicaría procesos y agotaría la VRAM de la GPU T4. Colab_Starter_Template.ipynb importa 'app' en el mismo kernel Python y la corre en un threading.Thread(..., daemon=True).",
-        cmd: "config = uvicorn.Config(app, host='0.0.0.0', port=8000)\nserver = uvicorn.Server(config)\nthreading.Thread(target=server.run, daemon=True).start()"
+        badge: ["Celda 3 · Servidor", "badge-editable"],
+        title: "Celda 3: Sincronizar rama y levantar/reiniciar uvicorn",
+        desc: "Ante cualquier cambio local en tu agente, hacés push o merge hacia la rama en la que están trabajando (main, develop u otra configurada en BRANCH) y volvés a ejecutar la Celda 3: llama a sync_repo(), detiene el servidor anterior si existía, limpia caché de módulos src/ y reinicia uvicorn en hilo daemon resolviendo toda la sincronización automáticamente. Solo reiniciá la sesión si aparece un error de VRAM/CUDA al recargar el modelo GGUF.",
+        cmd: "sync_repo()\nconfig = uvicorn.Config(app, host='0.0.0.0', port=8000)\nthreading.Thread(target=uvicorn.Server(config).run, daemon=True).start()"
       },
       gpu_vram: {
         badge: ["Inferencia Local", "badge-tool"],
@@ -2524,16 +2524,16 @@
         cmd: "# Si usás Pattern RAG con embeddings en Colab:\n# corré el modelo de embeddings en CPU para no quitar VRAM al GGUF"
       },
       colab_eval: {
-        badge: ["Validación en Colab", "badge-guardrail"],
-        title: "Evaluación Offline dentro del Notebook",
-        desc: "Con el hilo daemon ya escuchando en 127.0.0.1:8000, podés correr run_local_eval.py directamente desde otra celda de Colab antes de exponer el túnel.",
-        cmd: "!python scripts/run_local_eval.py --limit 20 --verbose"
+        badge: ["Celda 4 · Validación", "badge-guardrail"],
+        title: "Celda 4: Evaluación Local Independiente",
+        desc: "Con la Celda 3 escuchando en 127.0.0.1:8000, la Celda 4 ejecuta scripts/run_local_eval.py con parámetros de formulario (LIMIT=5, 20 o 0 para los 150 casos, y VERBOSE) para probar tu agente en local sin tocar el túnel ni gastar cuota.",
+        cmd: "!python scripts/run_local_eval.py --limit 5\n# Configurá LIMIT = 0 en el formulario para correr los 150 casos"
       },
       cf_colab: {
-        badge: ["Exposición", "badge-remote"],
-        title: "Túnel cloudflared en Colab (vía scripts/start_tunnel.py)",
-        desc: "La Celda 3 del notebook reutiliza start_tunnel() y stop_tunnel() desde scripts/start_tunnel.py para cerrar cualquier túnel previo, abrir cloudflared hacia http://127.0.0.1:8000, drenar su salida en segundo plano e imprimir la URL pública https://<id>.trycloudflare.com.",
-        cmd: "from scripts.start_tunnel import start_tunnel, stop_tunnel\ntunnel_proc, public_url = start_tunnel(host='127.0.0.1', port=8000)"
+        badge: ["Celda 5 · Exposición", "badge-remote"],
+        title: "Celda 5: Abrir o Renovar Túnel (scripts/start_tunnel.py)",
+        desc: "La Celda 5 valida GET /health local, cierra cualquier túnel previo y llama a start_tunnel() desde scripts/start_tunnel.py para exponer https://<id>.trycloudflare.com. Si solo cayó el túnel, re-ejecutá únicamente esta celda sin reiniciar el servidor.",
+        cmd: "from scripts.start_tunnel import check_local_health, start_tunnel, stop_tunnel\ntunnel_proc, public_url = start_tunnel(host='127.0.0.1', port=8000)"
       },
       eval_rem: {
         badge: ["Caja Negra", "badge-remote"],
@@ -3369,7 +3369,7 @@
       tunnel: {
         badge: ["Paso 1 · Exposición", "badge-tool"],
         title: "scripts/start_tunnel.py, cloudflared o Servidor HTTPS",
-        desc: "En Google Colab usá la Celda 3 de Colab_Starter_Template.ipynb (reutiliza start_tunnel() de scripts/start_tunnel.py para publicar https://<id>.trycloudflare.com). En Track Cloud desde local, la forma recomendada en Terminal 3 es python scripts/start_tunnel.py (alternativas: cloudflared manual o un dominio HTTPS público propio apuntando al puerto 8000)."
+        desc: "En Google Colab, la Celda 1 clona/hace pull del repositorio propio del equipo y define sync_repo(), la Celda 3 actualiza el repo y levanta FastAPI en hilo daemon, la Celda 4 permite evaluar en local y la Celda 5 abre o renueva el túnel con start_tunnel(). En Track Cloud desde local, la forma recomendada en Terminal 3 es python scripts/start_tunnel.py (alternativas: cloudflared manual o un dominio HTTPS público propio apuntando al puerto 8000)."
       },
       health: {
         badge: ["Paso 2 · Pre-vuelo", "badge-editable"],
@@ -3437,9 +3437,9 @@
         action: "Guardá tu API key en .env (verificá .gitignore) y asegurate de acumular prompt_tokens, completion_tokens y llm_calls de todas las llamadas internas."
       },
       {
-        intent: "Comprender por qué en Google Colab GPU T4 el servidor FastAPI debe correr en un hilo daemon dentro del mismo kernel.",
-        detail: "En el Camino B trabajás 100% on-premise dentro de Colab T4. Un modelo 7B cuantizado (Q4_K_M) con n_ctx=16384 ocupa gran parte de los ~15-16 GB de VRAM disponibles. Si cargás el modelo en una celda y luego ejecutás '!uvicorn ... &' como subproceso aparte del sistema operativo, el nuevo proceso no comparte el modelo cargado en memoria o intenta duplicar la reserva CUDA y agota la VRAM. Por eso Colab_Starter_Template.ipynb instala llama-cpp-python con CUDA 12 (Celda 2) y luego importa app dentro del mismo kernel Python lanzando uvicorn en un threading.Thread(..., daemon=True) (Celda 3), permitiendo probar con run_local_eval.py y exponer cloudflared mediante start_tunnel() de scripts/start_tunnel.py sin bloquear la celda.",
-        action: "Usá n_gpu_layers=-1, n_ctx=16384 y temperature=0.0; corré run_local_eval.py dentro de Colab y mantené la pestaña activa durante la evaluación."
+        intent: "Comprender el workflow Host Local -> GitHub del equipo -> Colab T4 y por qué FastAPI corre en hilo daemon.",
+        detail: "En el Camino B trabajás 100% on-premise dentro de Colab T4, pero EN COLAB NO SE DESARROLLA: editás localmente en tu PC sobre el repositorio propio de tu equipo (público para clonar por HTTPS), hacés push o merge hacia la rama en la que están trabajando (main, develop u otra elegida en BRANCH en la Celda 1) y simplemente volvés a ejecutar la Celda 3, que llama a sync_repo(), limpia src/ y reinicia uvicorn en hilo daemon resolviendo toda la sincronización automáticamente. Tip de versionado: como la Celda 1 permite elegir la rama (BRANCH), pueden probar distintas versiones o experimentos del agente en ramas separadas sin pisarse cambios. Cuando identifiquen la mejor versión, hagan merge de esa rama hacia develop o main para dejarla lista como candidata final.",
+        action: "Editá en tu PC, hacé git push/merge a tu rama, re-ejecutá la Celda 3 para actualizar y reiniciar el servidor, y validá en Celda 4."
       },
       {
         intent: "Evitar penalizaciones evitables de -1.5 pts (SCHEMA_ERROR) y -1.0 pt (SCALE_MISMATCH / percent_decimal).",

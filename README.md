@@ -47,14 +47,14 @@ aieng-utn-rag-challenge/
 * **`scripts/start_tunnel.py`**: CLI recomendado (Terminal 3) para exponer tu servidor local vía Cloudflare Tunnel verificando `GET /health` previo (alternativas: `cloudflared` manual o dominio HTTPS propio); además exporta `start_tunnel()` reutilizado en Colab.
 * **`scripts/viewer.py`**: Visualizador web local para recorrer los 150 casos de `data/dev_set.json` y contrastar `predictions_local.json` contra el *Ground Truth*.
 * **`data/dev_set.json`**: Dataset Público de Desarrollo (**150 casos**: 135 resolubles `SOLVED` + 15 incompletos `ABSTAIN`).
-* **`notebooks/Colab_Starter_Template.ipynb`**: Plantilla para el **Track Open-Weight** en Google Colab GPU T4 (CUDA 12, `llama-cpp-python`, `src/server.py` en hilo secundario compartiendo VRAM y túnel `cloudflared` vía `scripts/start_tunnel.py`).
+* **`notebooks/Colab_Starter_Template.ipynb`**: Plantilla en 5 celdas para el **Track Open-Weight** en Google Colab GPU T4: clona/actualiza el **repositorio propio de tu equipo** (`REPO_URL`), define `sync_repo()` y descarga `cloudflared` (Celda 1), instala `llama-cpp-python` con CUDA 12 (Celda 2), hace `pull` y levanta `src/server.py` en hilo daemon (Celda 3), ejecuta la evaluación local configurable (Celda 4) y abre/renueva el túnel vía `scripts/start_tunnel.py` (Celda 5).
 
 ---
 
 ## 🚀 Inicio Rápido
 
 ```bash
-# 1. Clonar e instalar dependencias
+# 1. Clonar (o hacer fork hacia el repo propio de tu equipo) e instalar dependencias
 git clone https://github.com/chebaperez/aieng-utn-rag-challenge.git
 cd aieng-utn-rag-challenge
 python -m venv .venv && source .venv/bin/activate
@@ -73,6 +73,8 @@ python scripts/viewer.py --open
 python scripts/start_tunnel.py
 # Alternativas: `cloudflared tunnel --url http://127.0.0.1:8000` manual o un dominio HTTPS propio.
 ```
+
+> **💡 Flujo de trabajo en Track Open-Weight (Colab):** cada equipo debe trabajar sobre **su propio repositorio en GitHub** (fork o copia del Starter Kit, público/accesible por HTTPS para Colab). **En Colab no se desarrolla**: desarrollá en tu PC local, hacé `push` a la rama principal de tu repositorio y usá `notebooks/Colab_Starter_Template.ipynb` únicamente para clonar/hacer `pull` y ejecutar en GPU T4.
 
 ---
 
