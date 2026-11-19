@@ -19,6 +19,8 @@ try:
 except ImportError:
     from schemas import CaseInput, CaseOutput, TokenUsage, Verdict
 
+RUNTIME_ENV = os.getenv("RUNTIME_ENV", "local")
+
 app = FastAPI(
     title="UTN FRSR - Agentic Financial RAG Black-Box Endpoint",
     version="3.0.0",
@@ -32,6 +34,7 @@ def healthcheck() -> dict[str, Any]:
     return {
         "status": "ok",
         "service": "starter-kit-blackbox-endpoint",
+        "runtime": RUNTIME_ENV,
     }
 
 
