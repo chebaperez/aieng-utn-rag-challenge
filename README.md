@@ -17,8 +17,11 @@ aieng-utn-rag-challenge/
 ├── data/
 │   └── dev_set.json                   # Dataset Público de Desarrollo (150 casos)
 ├── docs/
+│   ├── assets/                        # Capturas reales de la plataforma y el visualizador
 │   ├── GUIA_DIDACTICA.md              # Guía de buenas prácticas, tools, RAG y referencia
-│   └── guia_didactica.html            # Presentación interactiva con notas de estudio
+│   ├── guia_didactica.html            # Presentación interactiva con notas de estudio
+│   ├── guia_plataforma.html           # Manual paso a paso de la Plataforma Cloud (con capturas)
+│   └── guia_viewer.html               # Manual paso a paso del Visualizador local (con capturas)
 ├── notebooks/
 │   └── Colab_Starter_Template.ipynb   # Plantilla para Google Colab + cloudflared
 ├── scripts/
@@ -137,6 +140,8 @@ python scripts/viewer.py --open
 ## 📚 Documentación Complementaria
 
 * [**Presentación Interactiva (`docs/guia_didactica.html`)**](./docs/guia_didactica.html): Versión web interactiva (abrir en el navegador) con diagramas clicables, simuladores de escala/puntaje y panel sincronizado de notas de estudio (`N`).
+* [**Guía del Visualizador Local (`docs/guia_viewer.html`)**](./docs/guia_viewer.html): Manual paso a paso con capturas reales de `scripts/viewer.py` para explorar `data/dev_set.json`, cargar `predictions_local.json`, filtrar errores (`WRONG_VALUE`, `SCALE_MISMATCH`, `HALLUCINATION_ON_ABSTAIN`, `ABSTAIN_CAUTIOUS`, `SCHEMA_ERROR`) y auditar `Execution Trace` y telemetría.
+* [**Guía de la Plataforma de Evaluación Cloud (`docs/guia_plataforma.html`)**](./docs/guia_plataforma.html): Manual paso a paso con capturas reales desde el registro del equipo y generación de la `API Key`, hasta las corridas de Calibración (30 casos), el Diagnóstico Ciego, la recuperación ante caídas de túnel (`Reanudar`) y la Evaluación Final (100 casos).
 * [**Guía Didáctica y de Buenas Prácticas (`docs/GUIA_DIDACTICA.md`)**](./docs/GUIA_DIDACTICA.md): Catálogo conceptual de tools recomendadas, estrategia efectiva de RAG (*Retrieval Adaptativo* vs. *Pattern RAG*), progresión didáctica de referencia en 3 niveles con resultados medidos, patrones de falla y uso del Evaluador Remoto.
 * [**Arquitectura del Starter Kit (`ARCHITECTURE.md`)**](./ARCHITECTURE.md): Mapa de componentes, contrato HTTP de caja negra, flujo de evaluación local/remota y topologías por Track.
 * [**Guía Operativa para Agentes y Desarrolladores (`AGENTS.md`)**](./AGENTS.md): Invariantes del contrato, flujo de verificación offline y checklist de diagnóstico.
