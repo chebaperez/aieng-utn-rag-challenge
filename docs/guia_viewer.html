@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guía Paso a Paso del Visualizador (Viewer) · UTN FRSR</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --bg-dots: #e2e8f2;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --surface-tint: #f1f5fd;
+      --border: #dce3ee;
+      --border-strong: #c4cfdf;
+      --text: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+
+      --navy: #0f2d5c;
+      --navy-light: #1e4282;
+      --cobalt: #2563eb;
+      --cobalt-soft: #eff6ff;
+      --cobalt-border: #bfdbfe;
+
+      --emerald: #059669;
+      --emerald-soft: #ecfdf5;
+      --emerald-border: #a7f3d0;
+
+      --amber: #d97706;
+      --amber-soft: #fffbeb;
+      --amber-border: #fde68a;
+
+      --rose: #dc2626;
+      --rose-soft: #fef2f2;
+      --rose-border: #fecaca;
+
+      --indigo: #4f46e5;
+      --indigo-soft: #eef2ff;
+      --indigo-border: #c7d2fe;
+
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 12px 32px -12px rgba(15, 45, 92, 0.14), 0 4px 12px -4px rgba(15, 23, 42, 0.06);
+      --radius: 14px;
+      --radius-sm: 9px;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      color: var(--text);
+      background-color: var(--bg);
+      background-image: radial-gradient(var(--bg-dots) 1px, transparent 1px);
+      background-size: 22px 22px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Topbar */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: rgba(15, 45, 92, 0.96);
+      backdrop-filter: blur(10px);
+      color: #ffffff;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 12px 24px;
+    }
+
+    .topbar-inner {
+      max-width: 1260px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      background: #2563eb;
+      color: #fff;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      padding: 5px 10px;
+      border-radius: 7px;
+      text-transform: uppercase;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: #cbd5e1;
+      margin: 0;
+    }
+
+    .topbar-links {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .topbar-link {
+      color: #e2e8f0;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      transition: background 0.15s ease;
+    }
+
+    .topbar-link:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    /* Layout */
+    .layout {
+      max-width: 1260px;
+      margin: 28px auto 64px;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* Sidebar TOC */
+    .sidebar {
+      position: sticky;
+      top: 84px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+      box-shadow: var(--shadow-sm);
+      max-height: calc(100vh - 108px);
+      overflow-y: auto;
+    }
+
+    .sidebar-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin: 0 0 12px 8px;
+    }
+
+    .toc-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .toc-link {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 7px 10px;
+      border-radius: 8px;
+      transition: all 0.15s ease;
+    }
+
+    .toc-link:hover {
+      background: var(--cobalt-soft);
+      color: var(--cobalt);
+    }
+
+    .toc-link.active {
+      background: var(--cobalt-soft);
+      color: var(--navy);
+      font-weight: 700;
+      border-left: 3px solid var(--cobalt);
+    }
+
+    .toc-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: var(--surface-tint);
+      color: var(--navy);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* Content */
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #0f2d5c 0%, #1e4282 100%);
+      color: #ffffff;
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .hero-kicker {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(255, 255, 255, 0.14);
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      line-height: 1.2;
+      font-weight: 800;
+    }
+
+    .hero p {
+      margin: 0 0 18px;
+      color: #dbeafe;
+      font-size: 15px;
+      max-width: 780px;
+    }
+
+    .hero-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .hero-pill {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 6px 12px;
+      border-radius: 9px;
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+
+    /* Step Cards */
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+      scroll-margin-top: 84px;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: var(--cobalt-soft);
+      color: var(--cobalt);
+      border: 1px solid var(--cobalt-border);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .step-card h2 {
+      margin: 0;
+      font-size: 21px;
+      font-weight: 800;
+      color: var(--navy);
+    }
+
+    .step-card p {
+      color: var(--text-secondary);
+      margin: 0 0 14px;
+      font-size: 15px;
+    }
+
+    .step-card ul, .step-card ol {
+      color: var(--text-secondary);
+      margin: 0 0 16px;
+      padding-left: 22px;
+      font-size: 14.5px;
+    }
+
+    .step-card li {
+      margin-bottom: 6px;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      padding: 2px 6px;
+      border-radius: 5px;
+      color: var(--navy);
+    }
+
+    pre {
+      margin: 14px 0;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.55;
+      overflow-x: auto;
+      border: 1px solid #1e293b;
+    }
+
+    /* Callouts */
+    .callout {
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin: 16px 0;
+      font-size: 14px;
+      border: 1px solid;
+    }
+
+    .callout > strong:first-child { display: block; margin-bottom: 4px; }
+
+    .callout-info {
+      background: var(--cobalt-soft);
+      border-color: var(--cobalt-border);
+      color: #1e3a8a;
+    }
+
+    .callout-success {
+      background: var(--emerald-soft);
+      border-color: var(--emerald-border);
+      color: #065f46;
+    }
+
+    .callout-warn {
+      background: var(--amber-soft);
+      border-color: var(--amber-border);
+      color: #92400e;
+    }
+
+    .callout-danger {
+      background: var(--rose-soft);
+      border-color: var(--rose-border);
+      color: #991b1b;
+    }
+
+    /* Screenshots */
+    .shot-figure {
+      margin: 18px 0 6px;
+      background: #0b1120;
+      border: 1px solid var(--border-strong);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    .shot-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: #1e293b;
+      color: #cbd5e1;
+      font-size: 12px;
+      font-family: var(--font-mono);
+    }
+
+    .shot-dots {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .shot-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #475569;
+    }
+
+    .shot-zoom-hint {
+      font-family: var(--font-sans);
+      font-size: 11.5px;
+      color: #94a3b8;
+    }
+
+    .shot-figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      cursor: zoom-in;
+      transition: transform 0.2s ease;
+    }
+
+    .shot-caption {
+      background: var(--surface-alt);
+      color: var(--text-secondary);
+      padding: 10px 14px;
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Grids & Tables */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin: 14px 0;
+    }
+
+    .mini-card {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+
+    .mini-card h3 {
+      margin: 0 0 6px;
+      font-size: 14.5px;
+      color: var(--navy);
+    }
+
+    .mini-card p {
+      margin: 0;
+      font-size: 13.5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 13.5px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--surface-tint);
+      color: var(--navy);
+      font-weight: 700;
+    }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.88);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      cursor: zoom-out;
+    }
+
+    .lightbox.open {
+      display: flex;
+    }
+
+    .lightbox img {
+      max-width: 96vw;
+      max-height: 92vh;
+      border-radius: 10px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .lightbox-close {
+      position: fixed;
+      top: 16px;
+      right: 22px;
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    @media (max-width: 960px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        position: static;
+        max-height: none;
+      }
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-badge">UTN FRSR</span>
+        <div>
+          <p class="brand-title">Guía de Uso · Benchmark Viewer Local</p>
+          <p class="brand-sub">Exploración de dev_set.json y diagnóstico caso por caso con predicciones</p>
+        </div>
+      </div>
+      <nav class="topbar-links">
+        <a class="topbar-link" href="guia_didactica.html">📘 Guía Didáctica</a>
+        <a class="topbar-link" href="guia_plataforma.html">☁️ Guía Plataforma Cloud</a>
+        <a class="topbar-link" href="#checklist">✅ Checklist Pre-Calibración</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <p class="sidebar-title">Contenido paso a paso</p>
+      <ul class="toc-list">
+        <li><a class="toc-link" href="#para-que-sirve"><span class="toc-num">0</span> Para qué sirve y cómo abrirlo</a></li>
+        <li><a class="toc-link" href="#paso-1"><span class="toc-num">1</span> Vista inicial (dev_set.json)</a></li>
+        <li><a class="toc-link" href="#paso-2"><span class="toc-num">2</span> Cargar dataset y casos ABSTAIN</a></li>
+        <li><a class="toc-link" href="#paso-3"><span class="toc-num">3</span> Resaltador en Tabla y Párrafos</a></li>
+        <li><a class="toc-link" href="#paso-4"><span class="toc-num">4</span> Cargar predicciones (.json)</a></li>
+        <li><a class="toc-link" href="#paso-5"><span class="toc-num">5</span> Filtrar errores y WRONG_VALUE</a></li>
+        <li><a class="toc-link" href="#paso-6"><span class="toc-num">6</span> Escalas y SCALE_MISMATCH</a></li>
+        <li><a class="toc-link" href="#paso-7"><span class="toc-num">7</span> HALLUCINATION_ON_ABSTAIN</a></li>
+        <li><a class="toc-link" href="#paso-8"><span class="toc-num">8</span> ABSTAIN_CAUTIOUS (0.0)</a></li>
+        <li><a class="toc-link" href="#paso-9"><span class="toc-num">9</span> Contrato y SCHEMA_ERROR (-1.5)</a></li>
+        <li><a class="toc-link" href="#paso-10"><span class="toc-num">10</span> Execution Trace y Telemetría</a></li>
+        <li><a class="toc-link" href="#paso-11"><span class="toc-num">11</span> Ayuda, atajos y flujo</a></li>
+      </ul>
+    </aside>
+
+    <main class="content">
+      <section class="hero">
+        <span class="hero-kicker">Herramienta de Desarrollo y Diagnóstico Local</span>
+        <h1>Cómo usar <code>scripts/viewer.py</code> para depurar tu agente</h1>
+        <p>
+          El <strong>Benchmark Viewer</strong> te permite inspeccionar los 150 casos públicos de
+          <code>data/dev_set.json</code> (tablas 10-K, párrafos narrativos y Ground Truth) y contrastarlos
+          lado a lado contra tu archivo de predicciones locales (<code>predictions_local.json</code>) antes
+          de gastar cualquiera de tus 10 corridas de Calibración Cloud.
+        </p>
+        <div class="hero-pills">
+          <span class="hero-pill">📊 150 casos públicos (135 SOLVED · 15 ABSTAIN)</span>
+          <span class="hero-pill">🔍 Filtros por origen, veredicto y estado</span>
+          <span class="hero-pill">⚖️ Diagnóstico lado a lado GT vs Predicción</span>
+          <span class="hero-pill">🛠️ Auditoría de Execution Trace y Tokens</span>
+        </div>
+      </section>
+
+      <!-- SECCIÓN 0 -->
+      <section class="step-card" id="para-que-sirve">
+        <div class="step-header">
+          <span class="step-badge">Antes de empezar</span>
+          <h2>¿Para qué sirve el Viewer y cómo levantarlo?</h2>
+        </div>
+        <p>
+          Cuando corrés <code>python scripts/run_local_eval.py</code> en consola obtenés un resumen numérico agregado.
+          El <strong>Viewer</strong> resuelve la pregunta siguiente: <em>"¿Por qué exactamente falló mi agente en estos casos, qué leyó de la tabla/párrafos y qué herramienta ejecutó?"</em>
+        </p>
+
+        <div class="grid-2">
+          <div class="mini-card">
+            <h3>Ciclo de trabajo recomendado</h3>
+            <p>
+              1) Levantá tu servidor: <code>uvicorn src.server:app --port 8000</code><br />
+              2) Generá <code>predictions_local.json</code>: <code>python scripts/run_local_eval.py</code><br />
+              3) Abrí el visualizador: <code>python scripts/viewer.py --open</code><br />
+              4) Filtrá errores, corregí la lógica general de tu agente y volvé a medir antes de ir a Calibración Cloud.
+            </p>
+          </div>
+          <div class="mini-card">
+            <h3>Opciones CLI disponibles</h3>
+            <p>
+              • <code>--dataset</code>: ruta al JSON de casos (default: <code>data/dev_set.json</code>).<br />
+              • <code>--predictions</code>: ruta a un JSON de predicciones (por defecto auto-detecta <code>predictions_local.json</code> en la raíz si existe).<br />
+              • <code>--host</code> / <code>--port</code>: dirección y puerto (default: <code>127.0.0.1:8501</code>).<br />
+              • <code>--open</code>: abre el navegador automáticamente al iniciar.
+            </p>
+          </div>
+        </div>
+
+        <pre># Levantar el visualizador cargando automáticamente data/dev_set.json (y predictions_local.json si existe)
+python scripts/viewer.py --open
+
+# O especificando un archivo de predicciones y puerto propio:
+python scripts/viewer.py --dataset data/dev_set.json --predictions mis_preds.json --port 8501 --open</pre>
+
+        <div class="callout callout-info">
+          <strong>Formatos de archivo de predicciones aceptados</strong>
+          El backend normaliza automáticamente tres estructuras válidas al cargar un <code>.json</code>:
+          (1) una <strong>lista</strong> de objetos <code>CaseOutput</code> (<code>[...]</code>, formato nativo de <code>predictions_local.json</code>),
+          (2) un objeto con clave <code>{"predictions": [...]}</code>, o
+          (3) un <strong>diccionario</strong> indexado por <code>case_id</code> (<code>{"dev_001": {...}}</code>). Además limpia claves internas de checkpoint como <code>_latency_ms</code>.
+        </div>
+      </section>
+
+      <!-- PASO 1 -->
+      <section class="step-card" id="paso-1">
+        <div class="step-header">
+          <span class="step-badge">Paso 1</span>
+          <h2>Explorar el dataset público inicial (<code>data/dev_set.json</code>)</h2>
+        </div>
+        <p>
+          Al abrir <code>http://127.0.0.1:8501</code>, el visualizador carga <code>data/dev_set.json</code> automáticamente.
+          Incluso sin predicciones cargadas, ya podés estudiar los <strong>150 casos</strong> (<strong>135 SOLVED</strong> y <strong>15 ABSTAIN</strong>):
+        </p>
+        <ul>
+          <li><strong>Barra superior:</strong> muestra el archivo activo, el desglose <code>Casos: 150</code> / <code>SOLVED: 135</code> / <code>ABSTAIN: 15</code> y los botones para cargar otro dataset o un archivo de predicciones.</li>
+          <li><strong>Panel izquierdo:</strong> buscador libre (busca en ID, pregunta, tabla y párrafos) más filtros por <code>Origen</code> (<code>table</code>, <code>text</code>, <code>table-text</code>) y <code>Ground Truth</code> (<code>SOLVED</code> / <code>ABSTAIN</code>).</li>
+          <li><strong>Panel derecho:</strong> tarjeta <strong>Ground Truth</strong> oficial (con fórmula exacta en <code>derivation</code>), tarjeta <strong>Predicción</strong> en espera y el contexto exacto del reporte 10-K (<strong>Tabla Financiera</strong> + <strong>Párrafos Narrativos</strong>).</li>
+        </ul>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Vista inicial · data/dev_set.json (150 casos)</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/viewer/01_viewer_inicial_dev_set.png" alt="Vista inicial del visualizador con dev_set.json cargado" />
+          <figcaption class="shot-caption">Exploración del primer caso (dev_001) con su Ground Truth, tabla financiera en columnas por año y párrafos numerados.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 2 -->
+      <section class="step-card" id="paso-2">
+        <div class="step-header">
+          <span class="step-badge">Paso 2</span>
+          <h2>Cargar un dataset alternativo y analizar casos <code>ABSTAIN</code></h2>
+        </div>
+        <p>
+          Si querés inspeccionar un subconjunto de prueba (por ejemplo un <code>dev_sample.json</code> o recargar otro archivo),
+          hacé clic en <strong>Cargar dataset (.json)</strong> en la barra superior o seleccioná un archivo que cumpla el esquema <code>DatasetCase</code>
+          (lista de casos o <code>{"cases": [...]}</code>).
+        </p>
+        <p>
+          Además, filtrar <strong>Ground Truth = ABSTAIN</strong> te muestra los <strong>15 casos irresolubles</strong> del dataset público:
+          por ejemplo en <code>dev_003</code> podés ver en <code>derivation</code> exactamente qué dato faltaba (se amputó la columna 2019 de la tabla) para diseñar tus guardrails anti-alucinación.
+        </p>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Cargar dataset (.json) + Filtro GROUND TRUTH = ABSTAIN</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/viewer/02_cargar_dataset_y_explorar_abstain.png" alt="Filtro por casos Ground Truth ABSTAIN mostrando dev_003" />
+          <figcaption class="shot-caption">Al filtrar por ABSTAIN ves los 15 casos no resolubles (1 / 15) y la razón exacta de por qué falta evidencia en la tabla.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 3 -->
+      <section class="step-card" id="paso-3">
+        <div class="step-header">
+          <span class="step-badge">Paso 3</span>
+          <h2>Buscar evidencia en Tabla y Párrafos con el resaltador local</h2>
+        </div>
+        <p>
+          Muchos casos requieren cruzar un rubro de la <strong>Tabla Financiera</strong> con una nota aclaratoria al pie (origen <code>table-text</code>, que representa 89 de los 150 casos).
+          Usando el filtro <code>Origen = table-text</code> y el campo <strong>Resaltar término o número...</strong> en el encabezado de la tabla:
+        </p>
+        <ul>
+          <li>El visualizador resalta en amarillo cada coincidencia <strong>simultáneamente</strong> dentro de las celdas de la tabla y dentro de los párrafos narrativos.</li>
+          <li>Esto te ayuda a entender qué palabras clave o notas al pie (<code>(1)</code>, <code>Note 16</code>, años, unidades) debería recuperar tu herramienta <code>search_notes</code>.</li>
+        </ul>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Filtro table-text + Resaltador local "Assets"</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/viewer/03_buscador_contexto_resaltado.png" alt="Resaltador simultáneo de términos en Tabla Financiera y Párrafos Narrativos" />
+          <figcaption class="shot-caption">Búsqueda local sincronizada ("Assets") iluminando las ocurrencias tanto en la tabla como en los párrafos [1] y [2].</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 4 -->
+      <section class="step-card" id="paso-4">
+        <div class="step-header">
+          <span class="step-badge">Paso 4</span>
+          <h2>Cargar predicciones (<code>predictions_local.json</code>) y leer métricas</h2>
+        </div>
+        <p>
+          Tenés <strong>tres formas</strong> de cargar las salidas de tu agente en el visualizador:
+        </p>
+        <ol>
+          <li><strong>Automática al iniciar:</strong> si existe <code>predictions_local.json</code> en la raíz del proyecto al correr <code>python scripts/viewer.py</code> (o pasando <code>--predictions ruta.json</code>).</li>
+          <li><strong>Botón azul superior:</strong> clic en <strong>Cargar predicciones (.json)</strong>. Podés ir recargando versiones nuevas sin reiniciar el servidor.</li>
+          <li><strong>Arrastrar y soltar (Drag &amp; Drop):</strong> arrastrá cualquier archivo <code>.json</code> directamente sobre la ventana del navegador.</li>
+        </ol>
+        <p>
+          Al instante, el visualizador ejecuta <code>evaluate_dataset()</code> oficial en memoria y actualiza la barra superior con:
+          <strong>Score neto</strong> (sobre el máximo resoluble, ej. <code>120.5 / 135</code>), <strong>Accuracy</strong> (% óptimos = <code>OK + Abst. OK</code>),
+          conteos por badge y <strong>Tokens</strong> totales consumidos.
+        </p>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Predicciones cargadas · Vista global y caso CORRECT (+1.0)</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/viewer/04_predicciones_cargadas_resumen.png" alt="Resumen superior con métricas globales y comparación CORRECT en dev_001" />
+          <figcaption class="shot-caption">Barra de resumen con Score, Accuracy, conteos por estado, badge del archivo cargado y comparación lado a lado en dev_001.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 5 -->
+      <section class="step-card" id="paso-5">
+        <div class="step-header">
+          <span class="step-badge">Paso 5</span>
+          <h2>Filtrar errores y diagnosticar <code>WRONG_VALUE (-1.0)</code></h2>
+        </div>
+        <p>
+          Con las predicciones cargadas se habilita el selector <strong>RESULTADO EVALUACIÓN</strong> en el panel izquierdo.
+          Para ir directo a lo que más puntos te está restando, seleccioná <strong><code>Solo errores (-1.0 / -1.5)</code></strong>:
+        </p>
+        <ul>
+          <li>En <code>dev_004</code> se observa un caso clásico de falla: el evaluador muestra el banner rojo <strong>WRONG_VALUE</strong>, el puntaje (<code>-1.0</code>), y una <strong>pista diagnóstica específica</strong> (<em>"Porcentaje en base 0-1 en vez de 0-100 (falta multiplicar por 100)"</em>).</li>
+          <li>La celda <code>primary_value</code> queda resaltada en naranja comparando <code>23.233</code> (GT) vs <code>0.23233</code> (Predicción), junto al error absoluto y relativo en <code>error num.</code>.</li>
+          <li>Revisá también las pistas de <code>sign_error</code> (resta temporal invertida: año base menos año reciente) y <code>magnitude_10x</code> (factor ×1000 mal aplicado).</li>
+        </ul>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>RESULTADO EVALUACIÓN = Solo errores (-1.0 / -1.5) · WRONG_VALUE</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/viewer/05_filtro_solo_errores_wrong_value.png" alt="Filtro Solo errores mostrando WRONG_VALUE por porcentaje en decimal" />
+          <figcaption class="shot-caption">El filtro Solo errores aísla los 6 casos negativos; dev_004 muestra la pista percent_decimal con el valor en 0-1 vs 0-100.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 6 -->
+      <section class="step-card" id="paso-6">
+        <div class="step-header">
+          <span class="step-badge">Paso 6</span>
+          <h2>Detectar incompatibilidad dimensional: <code>SCALE_MISMATCH (-1.0)</code></h2>
+        </div>
+        <p>
+          Un error silencioso muy común ocurre cuando el cálculo numérico es correcto (<code>abs=0 | rel=0.000%</code>), pero el agente etiquetó mal la unidad en <code>scale</code>:
+        </p>
+        <ul>
+          <li>El evaluador convierte magnitudes entre <code>null</code>, <code>thousand</code>, <code>million</code> y <code>billion</code> automáticamente, pero <strong>nunca</strong> permite mezclar una magnitud monetaria con <code>percent</code> (o viceversa).</li>
+          <li>Al filtrar por <strong><code>SCALE_MISMATCH (-1.0)</code></strong>, el visualizador resalta la fila <code>scale</code> comparando <code>million</code> (esperado por el encabezado <em>"(in millions of €)"</em> de la tabla) contra <code>percent</code> (devuelto por error).</li>
+        </ul>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>RESULTADO EVALUACIÓN = SCALE_MISMATCH (-1.0)</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/viewer/06_error_scale_mismatch.png" alt="Caso dev_002 con error SCALE_MISMATCH" />
+          <figcaption class="shot-caption">Aunque el número 19213 es exacto (error 0%), el campo scale incompatible ("percent" vs "million") penaliza con -1.0 pt.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 7 -->
+      <section class="step-card" id="paso-7">
+        <div class="step-header">
+          <span class="step-badge">Paso 7</span>
+          <h2>Auditar alucinaciones: <code>HALLUCINATION_ON_ABSTAIN (-1.0)</code></h2>
+        </div>
+        <p>
+          Cuando un caso tiene <code>GT = ABSTAIN</code> y tu agente igual responde <code>SOLVED</code> con un número inventado o asumido, recibe la penalización <strong><code>HALLUCINATION_ON_ABSTAIN (-1.0)</code></strong>:
+        </p>
+        <ul>
+          <li>Filtrá por <code>HALLUCINATION_ON_ABSTAIN (-1.0)</code> para ver qué evidencia faltaba en la tabla o párrafos y por qué el verificador de tu agente no frenó el cálculo.</li>
+          <li>Comparar tu <code>derivation</code> contra la razón de abstención del Ground Truth es la forma más rápida de ajustar las reglas del verificador previo a <code>compute_math</code>.</li>
+        </ul>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>RESULTADO EVALUACIÓN = HALLUCINATION_ON_ABSTAIN (-1.0)</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/viewer/07_error_hallucination_on_abstain.png" alt="Caso dev_003 con error HALLUCINATION_ON_ABSTAIN" />
+          <figcaption class="shot-caption">El agente devolvió SOLVED (142.5 million) en un caso donde la columna 2019 estaba ausente en la tabla.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 8 -->
+      <section class="step-card" id="paso-8">
+        <div class="step-header">
+          <span class="step-badge">Paso 8</span>
+          <h2>Recuperar puntos perdidos: <code>ABSTAIN_CAUTIOUS (0.0)</code></h2>
+        </div>
+        <p>
+          La abstención prudente protege de perder <code>-1.0</code>, pero si tu agente se abstiene demasiado pierde <code>+1.0</code> posible por cada caso resoluble.
+          Usá el filtro <strong><code>ABSTAIN_CAUTIOUS (0.0)</code></strong> (o <code>No óptimos</code> para ver errores + cautelosos juntos):
+        </p>
+        <ul>
+          <li>Vas a ver el valor exacto y la derivación del Ground Truth junto a los motivos por los que tu agente desistió.</li>
+          <li>En general indican fallas de recuperación en <code>search_notes</code>, etiquetas de filas con formato distinto al esperado o un guardrail demasiado restrictivo.</li>
+        </ul>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>RESULTADO EVALUACIÓN = ABSTAIN_CAUTIOUS (0.0)</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/viewer/08_abstain_cautious_oportunidad.png" alt="Filtro ABSTAIN_CAUTIOUS mostrando oportunidad de mejora" />
+          <figcaption class="shot-caption">Casos válidos donde el agente devolvió ABSTAIN (0.0 pt) dejando +1.0 pt sobre la mesa en cada uno.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 9 -->
+      <section class="step-card" id="paso-9">
+        <div class="step-header">
+          <span class="step-badge">Paso 9</span>
+          <h2>Eliminar la penalización más grave: <code>SCHEMA_ERROR (-1.5)</code></h2>
+        </div>
+        <p>
+          El filtro <strong><code>SCHEMA_ERROR (-1.5)</code></strong> detecta cualquier incumplimiento al contrato Pydantic <code>CaseOutput</code> (la penalización más dura del benchmark).
+          Uno de los errores más frecuentes se ve en <code>dev_010</code>:
+        </p>
+        <div class="callout callout-danger">
+          <strong>Violación típica: <code>SOLVED</code> sin <code>execution_trace</code> o con <code>total_tokens</code> inconsistente</strong>
+          Si <code>verdict == "SOLVED"</code>, <code>execution_trace</code> debe tener <strong>al menos 1 paso</strong> de herramienta determinista y <code>primary_value</code> no puede ser <code>null</code>.
+          Validá siempre tu respuesta en <code>src/server.py</code> con <code>CaseOutput.model_validate(...)</code> antes de responder <code>POST /solve</code>.
+        </div>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>RESULTADO EVALUACIÓN = SCHEMA_ERROR (-1.5)</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/viewer/09_error_schema_error.png" alt="Error SCHEMA_ERROR por execution_trace vacío con verdict SOLVED" />
+          <figcaption class="shot-caption">El banner rojo detalla el motivo exacto de Pydantic y la sección Telemetría evidencia además una anomalía de conteo.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 10 -->
+      <section class="step-card" id="paso-10">
+        <div class="step-header">
+          <span class="step-badge">Paso 10</span>
+          <h2>Auditar <code>Execution Trace</code> y <code>Telemetría (usage)</code></h2>
+        </div>
+        <p>
+          Debajo de las tarjetas de comparación (columna derecha) tenés el registro completo de cómo razonó el agente en cada caso:
+        </p>
+        <ul>
+          <li><strong>Execution Trace:</strong> cada paso muestra <code>step_index</code>, <code>tool_name</code>, los argumentos en <code>INPUT</code> y el resultado devuelto en <code>OUTPUT</code>. Verificá que el cálculo final provenga siempre de una herramienta determinista (AST) y no de texto libre del LLM.</li>
+          <li><strong>Telemetría (<code>usage</code>):</strong> desglosa <code>Prompt</code>, <code>Completion</code>, <code>Total</code> y <code>LLM calls</code>. Recordá que en el Leaderboard oficial los empates en puntaje neto se definen por <strong>menor Total Tokens</strong> y <strong>menor latencia</strong>, y que contadores irreales (<code>total_tokens &lt; 50</code>, <code>llm_calls &lt; 1</code> o suma incorrecta) disparan <em>Anomalía telemetría</em>.</li>
+        </ul>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Auditoría de Execution Trace y Telemetría (dev_001)</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/viewer/10_execution_trace_y_telemetria.png" alt="Panel inferior derecho mostrando pasos de Execution Trace y tarjeta de Telemetría" />
+          <figcaption class="shot-caption">Detalle completo de los pasos de herramientas (search_notes, compute_math) y contadores de tokens/llamadas LLM.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 11 -->
+      <section class="step-card" id="paso-11">
+        <div class="step-header">
+          <span class="step-badge">Paso 11</span>
+          <h2>Ayuda integrada (<code>/help</code>), atajos y checklist</h2>
+        </div>
+        <p>
+          En cualquier momento podés hacer clic en el botón <strong><code>? Ayuda</code></strong> de la barra superior para abrir <code>/help</code> en una nueva pestaña
+          con la tabla completa de puntuaciones, normalización de escalas, tolerancias (<code>abs &le; 0.01</code> o <code>rel &le; 0.001</code>) y ejemplos de referencia.
+        </p>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Página de referencia integrada · /help</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/viewer/11_pagina_ayuda_integrada.png" alt="Página integrada de ayuda en /help" />
+          <figcaption class="shot-caption">Documentación rápida dentro del propio visualizador sobre contratos, escalas y tabla de puntajes.</figcaption>
+        </figure>
+
+        <h3 id="checklist" style="color: var(--navy); margin-top: 22px;">Atajos de teclado y Checklist antes de ir a Calibración Cloud</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Atajo / Control</th>
+              <th>Acción en el Visualizador</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>&larr;</code> / <code>K</code> &nbsp;y&nbsp; <code>&rarr;</code> / <code>J</code></td>
+              <td>Navegar rápidamente al caso anterior o siguiente dentro de la lista filtrada.</td>
+            </tr>
+            <tr>
+              <td><code>S</code> o botón <code>&#9776; Casos</code></td>
+              <td>Ocultar o volver a mostrar el panel lateral de casos para ganar ancho de lectura.</td>
+            </tr>
+            <tr>
+              <td>Borde vertical divisor</td>
+              <td>Arrastrar con el mouse para ajustar el ancho del panel izquierdo (hasta 30% de la pantalla).</td>
+            </tr>
+            <tr>
+              <td>Botón <code>&times;</code> en badge del archivo</td>
+              <td>Descargar el archivo de predicciones actual para volver al modo exploración pura del dataset.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout-success">
+          <strong>✅ Checklist antes de consumir un intento de Calibración Cloud (cuota limitada a 10)</strong>
+          1) <code>SCHEMA_ERROR (-1.5)</code> = <strong>0</strong> casos en los 150 de <code>dev_set.json</code>.<br />
+          2) Ninguna anomalía de telemetría (<code>prompt + completion == total_tokens</code> reales).<br />
+          3) Errores <code>percent_decimal</code> y <code>SCALE_MISMATCH</code> resueltos de forma general en código (sin reglas por <code>case_id</code>).<br />
+          4) Latencia <code>p95 &lt; 45s</code> y <code>max &lt; 90s</code> para evitar <code>TIMEOUT</code> en los datasets ciegos.
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <button class="lightbox-close" type="button" onclick="closeLightbox()">✕ Cerrar (Esc)</button>
+    <img id="lightboxImg" src="" alt="Vista ampliada" onclick="event.stopPropagation()" />
+  </div>
+
+  <script>
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+
+    document.querySelectorAll('.shot-figure img').forEach((img) => {
+      img.addEventListener('click', () => {
+        lightboxImg.src = img.src;
+        lightboxImg.alt = img.alt;
+        lightbox.classList.add('open');
+      });
+    });
+
+    function closeLightbox() {
+      lightbox.classList.remove('open');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
+    });
+
+    const tocLinks = Array.from(document.querySelectorAll('.toc-link'));
+    const sections = tocLinks
+      .map((a) => document.querySelector(a.getAttribute('href')))
+      .filter(Boolean);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            tocLinks.forEach((l) => l.classList.remove('active'));
+            const active = tocLinks.find((l) => l.getAttribute('href') === '#' + entry.target.id);
+            if (active) active.classList.add('active');
+          }
+        });
+      },
+      { rootMargin: '-20% 0px -65% 0px' }
+    );
+
+    sections.forEach((s) => observer.observe(s));
+  </script>
+</body>
+</html>
