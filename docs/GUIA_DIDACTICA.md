@@ -22,8 +22,9 @@ El objetivo del desafío es construir un sistema de **Agent-Based Financial QA**
 | `src/server.py` | Plantilla FastAPI con `GET /health` y `POST /solve`. Punto de integración de tu sistema. |
 | `data/dev_set.json` | Dataset público de desarrollo con **150 casos** (`135 SOLVED` + `15 ABSTAIN`; `61 table` + `89 table-text`; escalas: `56 percent`, `42 thousand`, `33 null`, `19 million`). |
 | `scripts/run_local_eval.py` | Cliente HTTP secuencial contra tu `POST /solve` local; genera `predictions_local.json` y `eval_report_local.json`. |
+| `scripts/start_tunnel.py` | Wrapper CLI recomendado para abrir Cloudflare Tunnel en Terminal 3 (con pre-chequeo `/health` e instrucciones por OS) y módulo reutilizado por Colab. |
 | `scripts/viewer.py` | Visualizador web (`http://127.0.0.1:8501`) para inspeccionar casos, tablas, párrafos, *Ground Truth* y predicciones en `scripts/viewer_ui/`. |
-| `notebooks/Colab_Starter_Template.ipynb` | Plantilla para el **Track Open-Weight** en Google Colab GPU T4 (CUDA 12, `llama-cpp-python`, `uvicorn` compartiendo VRAM y túnel `cloudflared`). |
+| `notebooks/Colab_Starter_Template.ipynb` | Plantilla para el **Track Open-Weight** en Google Colab GPU T4 (CUDA 12, `llama-cpp-python`, `uvicorn` compartiendo VRAM y túnel `cloudflared` vía `scripts/start_tunnel.py`). |
 | `requirements.txt` | Dependencias base (`fastapi`, `uvicorn`, `pydantic`, `httpx`, `python-dotenv`). |
 
 ### 1.2 Flujo de desarrollo iterativo local
@@ -44,12 +45,13 @@ Comandos base del ciclo local:
 # Terminal 1: levantar el microservicio
 uvicorn src.server:app --host 0.0.0.0 --port 8000
 
-# Terminal 2: prueba rápida (20 casos) y luego corrida completa (150 casos)
+# Terminal 2: prueba rápida (20 casos), corrida completa (150 casos) e inspección visual
 python scripts/run_local_eval.py --limit 20 --verbose
 python scripts/run_local_eval.py
-
-# Terminal 3 (opcional): explorar casos y fallos en el navegador
 python scripts/viewer.py --open
+
+# Terminal 3 (al pasar a Evaluación Remota): exponer el servidor local (recomendado)
+python scripts/start_tunnel.py
 ```
 
 ---
@@ -493,10 +495,10 @@ sequenceDiagram
     Eval-->>Eq: Métricas en Historial + Diagnóstico Ciego Privado
 ```
 
-### 6.1 Exposición del endpoint (`cloudflared` o servidor HTTPS)
+### 6.1 Exposición del endpoint (`scripts/start_tunnel.py`, `cloudflared` o servidor HTTPS)
 
-- En **Track Open-Weight (Google Colab GPU T4)**, ejecutá las celdas de `notebooks/Colab_Starter_Template.ipynb`: prepara `llama-cpp-python` con CUDA 12, levanta `src/server.py` en el puerto `8000` compartiendo VRAM y abre un túnel público temporal `https://<id>.trycloudflare.com`.
-- En **entorno local o servidor propio** (frecuente en Track Cloud Propietario), podés usar `cloudflared tunnel --url http://127.0.0.1:8000` o un dominio HTTPS público propio.
+- En **Track Open-Weight (Google Colab GPU T4)**, ejecutá las celdas de `notebooks/Colab_Starter_Template.ipynb`: prepara `llama-cpp-python` con CUDA 12, levanta `src/server.py` en el puerto `8000` compartiendo VRAM y abre el túnel público temporal `https://<id>.trycloudflare.com` reutilizando `start_tunnel()` de `scripts/start_tunnel.py`.
+- En **entorno local o servidor propio** (frecuente en Track Cloud Propietario), la forma recomendada en **Terminal 3** es ejecutar `python scripts/start_tunnel.py`: verifica `GET /health` local antes de abrir el túnel, acepta `--port`, `--host` y `--skip-healthcheck`, imprime los comandos de instalación por OS si falta `cloudflared` y muestra la URL pública lista para pegar en **Mi Equipo**. Como alternativa, podés correr `cloudflared tunnel --url http://127.0.0.1:8000` manualmente o usar un dominio HTTPS público propio.
 - Comprobá desde otra terminal o navegador que `GET https://<tu-url>/health` devuelva HTTP `200` antes de lanzar una corrida remota.
 
 ### 6.2 Ejecución y reglas de la Fase de Calibración (30 casos ciegos)

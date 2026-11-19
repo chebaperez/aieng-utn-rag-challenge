@@ -27,6 +27,7 @@ aieng-utn-rag-challenge/
 │   └── Colab_Starter_Template.ipynb   # Entorno Colab GPU + servidor en hilo + cloudflared
 ├── scripts/
 │   ├── run_local_eval.py              # Cliente HTTP de evaluación + reporte diagnóstico local
+│   ├── start_tunnel.py                # Túnel Cloudflare hacia localhost (CLI y Colab)
 │   ├── viewer.py                      # Backend FastAPI del visualizador web (:8501)
 │   └── viewer_ui/                     # Interfaz estática (HTML/CSS/JS) del visualizador
 ├── src/
@@ -72,6 +73,7 @@ flowchart TB
   - `evaluate_single_case` / `evaluate_dataset`: asignación de estados (`CORRECT`, `ABSTAIN_ON_UNSOLVABLE`, `ABSTAIN_CAUTIOUS`, `WRONG_VALUE`, `SCALE_MISMATCH`, `HALLUCINATION_ON_ABSTAIN`, `TIMEOUT`, `SCHEMA_ERROR`) y puntaje asimétrico (`+1.0`, `0.0`, `-1.0`, `-1.5`).
   - `aggregate_diagnostics` / `build_diagnostic_report`: cálculo de percentiles de latencia, desglose por `answer_from` (`table` vs `table-text`), clasificación de patrones de fallo (`classify_failure_hint`) y recomendaciones accionables.
 - **`scripts/run_local_eval.py`**: cliente HTTP síncrono que valida `GET /health`, envía secuencialmente los casos de `data/dev_set.json` a `POST /solve` (timeout configurable, por defecto `90.0 s`), guarda `predictions_local.json` y `eval_report_local.json` e imprime el diagnóstico en consola.
+- **`scripts/start_tunnel.py`**: utilidad de librería estándar con doble uso: CLI recomendado en local (Terminal 3: verifica `GET /health`, guía la instalación de `cloudflared` por sistema operativo si falta e imprime la URL `trycloudflare.com` hasta `Ctrl+C`) y módulo importable (`start_tunnel()`, `stop_tunnel()`) reutilizado por `notebooks/Colab_Starter_Template.ipynb`.
 - **`scripts/viewer.py`**: servidor web ligero (`uvicorn` en `127.0.0.1:8501`) que carga `data/dev_set.json` y `predictions_local.json` (o cualquier archivo subido desde el navegador) para inspeccionar tablas, notas, *Ground Truth*, traza de herramientas y pista diagnóstica caso por caso.
 
 ---
@@ -140,11 +142,11 @@ flowchart LR
         UV <--> LLM
     end
     Colab --> Kernel
-    UV <--> CF["cloudflared tunnel (--url http://127.0.0.1:8000)"]
+    UV <--> CF["scripts/start_tunnel.py → cloudflared (:8000)"]
     CF <-->|"HTTPS público temporal"| REM["Evaluador Remoto"]
 ```
 
-- **Clave técnica**: levantar `uvicorn` dentro de un `threading.Thread(..., daemon=True)` en el mismo kernel que carga el modelo en GPU (tal como implementa `notebooks/Colab_Starter_Template.ipynb`) evita duplicar la inicialización de CUDA o agotar la VRAM de la T4.
+- **Clave técnica**: levantar `uvicorn` dentro de un `threading.Thread(..., daemon=True)` en el mismo kernel que carga el modelo en GPU (tal como implementa `notebooks/Colab_Starter_Template.ipynb`, que luego reutiliza `start_tunnel()` de `scripts/start_tunnel.py`) evita duplicar la inicialización de CUDA o agotar la VRAM de la T4.
 
 ### 5.2 Track Cloud Propietario (APIs Gestionadas)
 
@@ -152,8 +154,9 @@ flowchart LR
 flowchart LR
     HOST["Servidor Local / VM Cloud"] --> UV["Uvicorn src.server:app (:8000)"]
     UV <-->|"HTTPS API"| PROV["Proveedor LLM Cloud (OpenAI / Gemini / Anthropic / etc.)"]
-    UV <--> PUB["Túnel cloudflared o Reverse Proxy HTTPS"]
+    UV <--> PUB["scripts/start_tunnel.py (cloudflared) o Reverse Proxy HTTPS"]
     PUB <--> REM["Evaluador Remoto"]
 ```
 
+- **Exposición recomendada (Terminal 3)**: ejecutá `python scripts/start_tunnel.py` para verificar `GET /health`, abrir el túnel hacia `http://127.0.0.1:8000` e imprimir la URL pública; como alternativa podés invocar `cloudflared tunnel --url http://127.0.0.1:8000` manualmente o exponer un dominio HTTPS propio.
 - **Clave técnica**: al delegar la inferencia a una API externa, no hay restricción de VRAM local, pero es crítico controlar latencia de red, *rate limits* del proveedor y consumo total de tokens (segundo criterio de desempate en el Leaderboard).

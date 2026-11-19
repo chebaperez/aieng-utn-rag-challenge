@@ -1310,7 +1310,7 @@
                 <rect x="24" y="250" width="270" height="70" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
                 <text x="159" y="272" text-anchor="middle" font-size="11.2" font-weight="800" fill="#1e3a8a">Camino A · Cloud (Host / VM)</text>
                 <text x="159" y="289" text-anchor="middle" font-size="9.8" fill="#1d4ed8">uvicorn local → API LLM Cloud (HTTPS)</text>
-                <text x="159" y="305" text-anchor="middle" font-size="9.5" fill="#3b82f6">+ túnel cloudflared desde el Host (Slide 3)</text>
+                <text x="159" y="305" text-anchor="middle" font-size="9.5" fill="#3b82f6">+ scripts/start_tunnel.py en Host (Slide 3)</text>
               </g>
 
               <g class="svg-node" data-kit="colab" onclick="selectKitNode('colab', this)">
@@ -1343,7 +1343,7 @@
           <div>
             <span class="slide-eyebrow eyebrow-cobalt">1 · Despliegue Camino A (Track Cloud Propietario)</span>
             <h2 class="slide-title">Cómo Implementar y Exponer vía API Cloud desde tu Host o VM</h2>
-            <p class="slide-subtitle">Tu máquina (o una VM sin GPU) corre <code class="inline">uvicorn</code> como proceso estándar, consulta una API LLM externa por HTTPS y se expone con <code class="inline">cloudflared</code>.</p>
+            <p class="slide-subtitle">Tu máquina (o una VM sin GPU) corre <code class="inline">uvicorn</code> como proceso estándar, consulta una API LLM externa por HTTPS y se expone con <code class="inline">scripts/start_tunnel.py</code> (<code class="inline">cloudflared</code>).</p>
           </div>
         </div>
 
@@ -1380,7 +1380,7 @@
               <!-- Tunnel inside Host -->
               <g class="svg-node selected" data-ca="tunnel_host" onclick="selectPathANode('tunnel_host', this)">
                 <rect x="215" y="75" width="245" height="68" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-                <text x="337" y="101" text-anchor="middle" font-size="11.5" font-weight="700" fill="#312e81">Terminal 3: cloudflared tunnel</text>
+                <text x="337" y="101" text-anchor="middle" font-size="11.5" font-weight="700" fill="#312e81">Terminal 3: scripts/start_tunnel.py</text>
                 <text x="337" y="119" text-anchor="middle" font-size="9.8" fill="#4338ca">https://&lt;id&gt;.trycloudflare.com → :8000</text>
               </g>
 
@@ -1457,8 +1457,8 @@
               <!-- Cloudflared subprocess -->
               <g class="svg-node" data-cb="cf_colab" onclick="selectPathBNode('cf_colab', this)">
                 <rect x="220" y="88" width="180" height="82" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-                <text x="310" y="114" text-anchor="middle" font-size="11.2" font-weight="700" fill="#312e81">cloudflared (Subproceso)</text>
-                <text x="310" y="132" text-anchor="middle" font-size="9.8" fill="#4338ca">Expone 127.0.0.1:8000</text>
+                <text x="310" y="114" text-anchor="middle" font-size="11.2" font-weight="700" fill="#312e81">scripts/start_tunnel.py</text>
+                <text x="310" y="132" text-anchor="middle" font-size="9.6" fill="#4338ca">start_tunnel() → cloudflared</text>
                 <text x="310" y="148" text-anchor="middle" font-size="9.5" fill="#4f46e5">→ https://...trycloudflare.com</text>
               </g>
 
@@ -2394,9 +2394,9 @@
       host_cloud: {
         badge: ["Camino A · Slide 3", "badge-tool"],
         title: "Camino A: Track Cloud (Host / VM)",
-        desc: "Corrés uvicorn en tu PC o VM, tu agente consulta por HTTPS a OpenAI/Gemini/Anthropic y exponés el puerto 8000 con cloudflared (o HTTPS propio).",
+        desc: "Corrés uvicorn en tu PC o VM, tu agente consulta por HTTPS a OpenAI/Gemini/Anthropic y exponés el puerto 8000 con scripts/start_tunnel.py (o cloudflared manual / dominio HTTPS propio).",
         rule: "No requiere GPU local. Guardá tus API keys en .env (nunca en git).",
-        cmd: "# Terminal 1: uvicorn src.server:app --port 8000\n# Terminal 2: cloudflared tunnel --url http://127.0.0.1:8000"
+        cmd: "# Terminal 1: uvicorn src.server:app --port 8000\n# Terminal 3 (recomendado): python scripts/start_tunnel.py\n# Alternativa manual: cloudflared tunnel --url http://127.0.0.1:8000"
       },
       schemas: {
         badge: ["Intocable", "badge-readonly"],
@@ -2422,9 +2422,9 @@
       colab: {
         badge: ["Runtime GPU", "badge-remote"],
         title: "notebooks/Colab_Starter_Template.ipynb",
-        desc: "Prepara el entorno en Google Colab GPU T4: clona el Starter Kit, levanta uvicorn en un hilo daemon (compartiendo VRAM con tu modelo local) y abre el túnel cloudflared.",
+        desc: "Prepara el entorno en Google Colab GPU T4: clona el Starter Kit, levanta uvicorn en un hilo daemon (compartiendo VRAM con tu modelo local) y abre el túnel cloudflared reutilizando scripts/start_tunnel.py.",
         rule: "Ideal para Track Open-Weight sin consumir procesos GPU duplicados.",
-        cmd: "# Dentro de Colab: ejecuta Celdas 1 y 2 para obtener https://<id>.trycloudflare.com"
+        cmd: "# Dentro de Colab: ejecutá Celdas 1, 2 y 3 para obtener https://<id>.trycloudflare.com"
       },
       remote: {
         badge: ["Plataforma Central", "badge-remote"],
@@ -2459,9 +2459,9 @@
     const PATH_A_DATA = {
       tunnel_host: {
         badge: ["Paso 3 · Exposición", "badge-remote"],
-        title: "Túnel cloudflared desde tu Host",
-        desc: "Una vez que tu servidor responde bien en local, abrís una tercera terminal y lanzás cloudflared apuntando al puerto 8000. Te genera una URL pública HTTPS temporal para registrar en el Evaluador Remoto.",
-        cmd: "cloudflared tunnel --url http://127.0.0.1:8000\n# Copiá la URL https://<id>.trycloudflare.com"
+        title: "Terminal 3: scripts/start_tunnel.py (Recomendado)",
+        desc: "Una vez que tu servidor responde bien en local, abrís una tercera terminal y ejecutás scripts/start_tunnel.py: verifica GET /health, soporta --port/--host/--skip-healthcheck, guía la instalación por OS si falta cloudflared, imprime la URL pública y cierra limpio con Ctrl+C. Como alternativa podés usar cloudflared manual o un dominio HTTPS propio.",
+        cmd: "# Recomendado:\npython scripts/start_tunnel.py --port 8000\n# Alternativa manual: cloudflared tunnel --url http://127.0.0.1:8000"
       },
       uvicorn_host: {
         badge: ["Paso 1 · Servidor", "badge-editable"],
@@ -2531,9 +2531,9 @@
       },
       cf_colab: {
         badge: ["Exposición", "badge-remote"],
-        title: "Subproceso cloudflared en Colab",
-        desc: "La celda del notebook descarga cloudflared, abre el túnel hacia http://127.0.0.1:8000 e imprime la URL pública https://<id>.trycloudflare.com.",
-        cmd: "cloudflared tunnel --url http://127.0.0.1:8000"
+        title: "Túnel cloudflared en Colab (vía scripts/start_tunnel.py)",
+        desc: "La Celda 3 del notebook reutiliza start_tunnel() y stop_tunnel() desde scripts/start_tunnel.py para cerrar cualquier túnel previo, abrir cloudflared hacia http://127.0.0.1:8000, drenar su salida en segundo plano e imprimir la URL pública https://<id>.trycloudflare.com.",
+        cmd: "from scripts.start_tunnel import start_tunnel, stop_tunnel\ntunnel_proc, public_url = start_tunnel(host='127.0.0.1', port=8000)"
       },
       eval_rem: {
         badge: ["Caja Negra", "badge-remote"],
@@ -3368,8 +3368,8 @@
     const REMOTE_DATA = {
       tunnel: {
         badge: ["Paso 1 · Exposición", "badge-tool"],
-        title: "Túnel cloudflared o Servidor HTTPS",
-        desc: "En Google Colab usá el túnel automático de Colab_Starter_Template.ipynb (https://<id>.trycloudflare.com). En Track Cloud podés usar cloudflared local o un dominio HTTPS público apuntando al puerto 8000."
+        title: "scripts/start_tunnel.py, cloudflared o Servidor HTTPS",
+        desc: "En Google Colab usá la Celda 3 de Colab_Starter_Template.ipynb (reutiliza start_tunnel() de scripts/start_tunnel.py para publicar https://<id>.trycloudflare.com). En Track Cloud desde local, la forma recomendada en Terminal 3 es python scripts/start_tunnel.py (alternativas: cloudflared manual o un dominio HTTPS público propio apuntando al puerto 8000)."
       },
       health: {
         badge: ["Paso 2 · Pre-vuelo", "badge-editable"],
@@ -3433,12 +3433,12 @@
       },
       {
         intent: "Entender paso a paso cómo desarrollar, probar y exponer tu agente usando una API LLM Cloud desde tu PC o VM.",
-        detail: "En el Camino A no necesitás GPU local: corrés uvicorn src.server:app en Terminal 1 (puerto 8000) como un proceso estándar. Durante el desarrollo, Terminal 2 ejecuta run_local_eval.py directamente contra 127.0.0.1:8000 sin necesitar túnel ni tráfico entrante, mientras tu agente realiza llamadas HTTPS salientes hacia OpenAI, Gemini o Anthropic usando las claves de .env (que nunca debe subirse a git). Cuando querés correr Calibración Remota, Terminal 3 abre cloudflared tunnel --url http://127.0.0.1:8000 (o usás un dominio HTTPS en tu VM) para darle una URL pública al Evaluador Remoto.",
+        detail: "En el Camino A no necesitás GPU local: corrés uvicorn src.server:app en Terminal 1 (puerto 8000) como un proceso estándar. Durante el desarrollo, Terminal 2 ejecuta run_local_eval.py directamente contra 127.0.0.1:8000 sin necesitar túnel ni tráfico entrante, mientras tu agente realiza llamadas HTTPS salientes hacia OpenAI, Gemini o Anthropic usando las claves de .env (que nunca debe subirse a git). Cuando querés correr Calibración Remota, Terminal 3 ejecuta python scripts/start_tunnel.py (recomendado: verifica GET /health y abre el túnel) o bien cloudflared tunnel --url http://127.0.0.1:8000 manual / un dominio HTTPS propio para darle una URL pública al Evaluador Remoto.",
         action: "Guardá tu API key en .env (verificá .gitignore) y asegurate de acumular prompt_tokens, completion_tokens y llm_calls de todas las llamadas internas."
       },
       {
         intent: "Comprender por qué en Google Colab GPU T4 el servidor FastAPI debe correr en un hilo daemon dentro del mismo kernel.",
-        detail: "En el Camino B trabajás 100% on-premise dentro de Colab T4. Un modelo 7B cuantizado (Q4_K_M) con n_ctx=16384 ocupa gran parte de los ~15-16 GB de VRAM disponibles. Si cargás el modelo en una celda y luego ejecutás '!uvicorn ... &' como subproceso aparte del sistema operativo, el nuevo proceso no comparte el modelo cargado en memoria o intenta duplicar la reserva CUDA y agota la VRAM. Por eso Colab_Starter_Template.ipynb instala llama-cpp-python con CUDA 12 (Celda 2) y luego importa app dentro del mismo kernel Python lanzando uvicorn en un threading.Thread(..., daemon=True) (Celda 3), permitiendo probar con run_local_eval.py y exponer cloudflared sin bloquear la celda.",
+        detail: "En el Camino B trabajás 100% on-premise dentro de Colab T4. Un modelo 7B cuantizado (Q4_K_M) con n_ctx=16384 ocupa gran parte de los ~15-16 GB de VRAM disponibles. Si cargás el modelo en una celda y luego ejecutás '!uvicorn ... &' como subproceso aparte del sistema operativo, el nuevo proceso no comparte el modelo cargado en memoria o intenta duplicar la reserva CUDA y agota la VRAM. Por eso Colab_Starter_Template.ipynb instala llama-cpp-python con CUDA 12 (Celda 2) y luego importa app dentro del mismo kernel Python lanzando uvicorn en un threading.Thread(..., daemon=True) (Celda 3), permitiendo probar con run_local_eval.py y exponer cloudflared mediante start_tunnel() de scripts/start_tunnel.py sin bloquear la celda.",
         action: "Usá n_gpu_layers=-1, n_ctx=16384 y temperature=0.0; corré run_local_eval.py dentro de Colab y mantené la pestaña activa durante la evaluación."
       },
       {

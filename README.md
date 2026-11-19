@@ -26,6 +26,7 @@ aieng-utn-rag-challenge/
 │   └── Colab_Starter_Template.ipynb   # Plantilla para Google Colab + cloudflared
 ├── scripts/
 │   ├── run_local_eval.py              # Cliente HTTP para evaluación local
+│   ├── start_tunnel.py                # Túnel Cloudflare hacia localhost (CLI y Colab)
 │   ├── viewer.py                      # Visualizador web de casos y predicciones
 │   └── viewer_ui/                     # Interfaz web estática (HTML/CSS/JS)
 ├── src/
@@ -43,9 +44,10 @@ aieng-utn-rag-challenge/
 * **`src/evaluator.py`**: Arnés de evaluación local offline (idéntico al motor del servidor central).
 * **`src/server.py`**: Plantilla base del microservicio FastAPI (`GET /health` y `POST /solve`).
 * **`scripts/run_local_eval.py`**: Cliente HTTP que envía `data/dev_set.json` a tu `POST /solve` local y ejecuta `src/evaluator.py`.
+* **`scripts/start_tunnel.py`**: CLI recomendado (Terminal 3) para exponer tu servidor local vía Cloudflare Tunnel verificando `GET /health` previo (alternativas: `cloudflared` manual o dominio HTTPS propio); además exporta `start_tunnel()` reutilizado en Colab.
 * **`scripts/viewer.py`**: Visualizador web local para recorrer los 150 casos de `data/dev_set.json` y contrastar `predictions_local.json` contra el *Ground Truth*.
 * **`data/dev_set.json`**: Dataset Público de Desarrollo (**150 casos**: 135 resolubles `SOLVED` + 15 incompletos `ABSTAIN`).
-* **`notebooks/Colab_Starter_Template.ipynb`**: Plantilla para el **Track Open-Weight** en Google Colab GPU T4 (CUDA 12, `llama-cpp-python`, `src/server.py` en hilo secundario compartiendo VRAM y túnel `cloudflared`).
+* **`notebooks/Colab_Starter_Template.ipynb`**: Plantilla para el **Track Open-Weight** en Google Colab GPU T4 (CUDA 12, `llama-cpp-python`, `src/server.py` en hilo secundario compartiendo VRAM y túnel `cloudflared` vía `scripts/start_tunnel.py`).
 
 ---
 
@@ -66,6 +68,10 @@ python scripts/run_local_eval.py --limit 20 --verbose
 
 # 4. Explorar visualmente los 150 casos y contrastar predicciones vs Ground Truth
 python scripts/viewer.py --open
+
+# 5. Exponer el servidor al Evaluador Remoto vía Cloudflare Tunnel (Terminal 3, recomendado)
+python scripts/start_tunnel.py
+# Alternativas: `cloudflared tunnel --url http://127.0.0.1:8000` manual o un dominio HTTPS propio.
 ```
 
 ---
