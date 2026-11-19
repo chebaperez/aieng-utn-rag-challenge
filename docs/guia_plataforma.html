@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guía Paso a Paso de la Plataforma de Evaluación · UTN FRSR</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --bg-dots: #e2e8f2;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --surface-tint: #f1f5fd;
+      --border: #dce3ee;
+      --border-strong: #c4cfdf;
+      --text: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+
+      --navy: #0f2d5c;
+      --navy-light: #1e4282;
+      --cobalt: #2563eb;
+      --cobalt-soft: #eff6ff;
+      --cobalt-border: #bfdbfe;
+
+      --emerald: #059669;
+      --emerald-soft: #ecfdf5;
+      --emerald-border: #a7f3d0;
+
+      --amber: #d97706;
+      --amber-soft: #fffbeb;
+      --amber-border: #fde68a;
+
+      --rose: #dc2626;
+      --rose-soft: #fef2f2;
+      --rose-border: #fecaca;
+
+      --indigo: #4f46e5;
+      --indigo-soft: #eef2ff;
+      --indigo-border: #c7d2fe;
+
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 12px 32px -12px rgba(15, 45, 92, 0.14), 0 4px 12px -4px rgba(15, 23, 42, 0.06);
+      --radius: 14px;
+      --radius-sm: 9px;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      color: var(--text);
+      background-color: var(--bg);
+      background-image: radial-gradient(var(--bg-dots) 1px, transparent 1px);
+      background-size: 22px 22px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: rgba(15, 45, 92, 0.96);
+      backdrop-filter: blur(10px);
+      color: #ffffff;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 12px 24px;
+    }
+
+    .topbar-inner {
+      max-width: 1260px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      background: #2563eb;
+      color: #fff;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      padding: 5px 10px;
+      border-radius: 7px;
+      text-transform: uppercase;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: #cbd5e1;
+      margin: 0;
+    }
+
+    .topbar-links {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .topbar-link {
+      color: #e2e8f0;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      transition: background 0.15s ease;
+    }
+
+    .topbar-link:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    /* Layout */
+    .layout {
+      max-width: 1260px;
+      margin: 28px auto 64px;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* Sidebar TOC */
+    .sidebar {
+      position: sticky;
+      top: 84px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+      box-shadow: var(--shadow-sm);
+      max-height: calc(100vh - 108px);
+      overflow-y: auto;
+    }
+
+    .sidebar-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin: 0 0 12px 8px;
+    }
+
+    .toc-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .toc-link {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 7px 10px;
+      border-radius: 8px;
+      transition: all 0.15s ease;
+    }
+
+    .toc-link:hover {
+      background: var(--cobalt-soft);
+      color: var(--cobalt);
+    }
+
+    .toc-link.active {
+      background: var(--cobalt-soft);
+      color: var(--navy);
+      font-weight: 700;
+      border-left: 3px solid var(--cobalt);
+    }
+
+    .toc-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: var(--surface-tint);
+      color: var(--navy);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* Main content */
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #0f2d5c 0%, #1e4282 100%);
+      color: #ffffff;
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .hero-kicker {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(255, 255, 255, 0.14);
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      line-height: 1.2;
+      font-weight: 800;
+    }
+
+    .hero p {
+      margin: 0 0 18px;
+      color: #dbeafe;
+      font-size: 15px;
+      max-width: 760px;
+    }
+
+    .hero-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .hero-pill {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 6px 12px;
+      border-radius: 9px;
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+
+    /* Step cards */
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+      scroll-margin-top: 84px;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: var(--cobalt-soft);
+      color: var(--cobalt);
+      border: 1px solid var(--cobalt-border);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .step-card h2 {
+      margin: 0;
+      font-size: 21px;
+      font-weight: 800;
+      color: var(--navy);
+    }
+
+    .step-card p {
+      color: var(--text-secondary);
+      margin: 0 0 14px;
+      font-size: 15px;
+    }
+
+    .step-card ul, .step-card ol {
+      color: var(--text-secondary);
+      margin: 0 0 16px;
+      padding-left: 22px;
+      font-size: 14.5px;
+    }
+
+    .step-card li {
+      margin-bottom: 6px;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      padding: 2px 6px;
+      border-radius: 5px;
+      color: var(--navy);
+    }
+
+    /* Callouts */
+    .callout {
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin: 16px 0;
+      font-size: 14px;
+      border: 1px solid;
+    }
+
+    .callout strong { display: block; margin-bottom: 4px; }
+
+    .callout-info {
+      background: var(--cobalt-soft);
+      border-color: var(--cobalt-border);
+      color: #1e3a8a;
+    }
+
+    .callout-success {
+      background: var(--emerald-soft);
+      border-color: var(--emerald-border);
+      color: #065f46;
+    }
+
+    .callout-warn {
+      background: var(--amber-soft);
+      border-color: var(--amber-border);
+      color: #92400e;
+    }
+
+    .callout-danger {
+      background: var(--rose-soft);
+      border-color: var(--rose-border);
+      color: #991b1b;
+    }
+
+    /* Screenshots */
+    .shot-figure {
+      margin: 18px 0 6px;
+      background: #0b1120;
+      border: 1px solid var(--border-strong);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    .shot-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: #1e293b;
+      color: #cbd5e1;
+      font-size: 12px;
+      font-family: var(--font-mono);
+    }
+
+    .shot-dots {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .shot-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #475569;
+    }
+
+    .shot-zoom-hint {
+      font-family: var(--font-sans);
+      font-size: 11.5px;
+      color: #94a3b8;
+    }
+
+    .shot-figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      cursor: zoom-in;
+      transition: transform 0.2s ease;
+    }
+
+    .shot-caption {
+      background: var(--surface-alt);
+      color: var(--text-secondary);
+      padding: 10px 14px;
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Grid for tables/cards */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin: 14px 0;
+    }
+
+    .mini-card {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+
+    .mini-card h3 {
+      margin: 0 0 6px;
+      font-size: 14.5px;
+      color: var(--navy);
+    }
+
+    .mini-card p {
+      margin: 0;
+      font-size: 13.5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 13.5px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--surface-tint);
+      color: var(--navy);
+      font-weight: 700;
+    }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.88);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      cursor: zoom-out;
+    }
+
+    .lightbox.open {
+      display: flex;
+    }
+
+    .lightbox img {
+      max-width: 96vw;
+      max-height: 92vh;
+      border-radius: 10px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .lightbox-close {
+      position: fixed;
+      top: 16px;
+      right: 22px;
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    @media (max-width: 960px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        position: static;
+        max-height: none;
+      }
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-badge">UTN FRSR</span>
+        <div>
+          <p class="brand-title">Guía de Uso · Plataforma de Evaluación Cloud</p>
+          <p class="brand-sub">Agent-Based Financial QA Challenge · Manual completo para alumnos</p>
+        </div>
+      </div>
+      <nav class="topbar-links">
+        <a class="topbar-link" href="guia_didactica.html">📘 Guía Didáctica</a>
+        <a class="topbar-link" href="#faq">🛠️ Solución de Problemas</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <p class="sidebar-title">Contenido paso a paso</p>
+      <ul class="toc-list">
+        <li><a class="toc-link" href="#requisitos"><span class="toc-num">0</span> Requisitos previos</a></li>
+        <li><a class="toc-link" href="#paso-1"><span class="toc-num">1</span> Leaderboard público</a></li>
+        <li><a class="toc-link" href="#paso-2"><span class="toc-num">2</span> Registrar equipo</a></li>
+        <li><a class="toc-link" href="#paso-3"><span class="toc-num">3</span> Guardar API Key</a></li>
+        <li><a class="toc-link" href="#paso-4"><span class="toc-num">4</span> Ingresar (Login)</a></li>
+        <li><a class="toc-link" href="#paso-5"><span class="toc-num">5</span> Panel Mi Equipo</a></li>
+        <li><a class="toc-link" href="#paso-6"><span class="toc-num">6</span> Correr Calibración</a></li>
+        <li><a class="toc-link" href="#paso-7"><span class="toc-num">7</span> Diagnóstico Ciego</a></li>
+        <li><a class="toc-link" href="#paso-8"><span class="toc-num">8</span> Caída de túnel / Reanudar</a></li>
+        <li><a class="toc-link" href="#paso-9"><span class="toc-num">9</span> Ranking de Calibración</a></li>
+        <li><a class="toc-link" href="#paso-10"><span class="toc-num">10</span> Evaluación Final y Suspenso</a></li>
+        <li><a class="toc-link" href="#paso-11"><span class="toc-num">11</span> Podio y Revelado Final</a></li>
+        <li><a class="toc-link" href="#faq"><span class="toc-num">?</span> Problemas frecuentes</a></li>
+      </ul>
+    </aside>
+
+    <main class="content">
+      <section class="hero">
+        <span class="hero-kicker">Manual Operativo para Equipos</span>
+        <h1>Cómo usar la Plataforma de Evaluación de punta a punta</h1>
+        <p>
+          Esta guía recorre cada pantalla real de la plataforma: desde el registro del grupo y la obtención de la
+          <code>API Key</code>, hasta las corridas de <strong>Calibración (30 casos)</strong>, la lectura del
+          <strong>Diagnóstico Ciego</strong>, la recuperación ante cortes de túnel y la entrega en la
+          <strong>Evaluación Final (100 casos)</strong>.
+        </p>
+        <div class="hero-pills">
+          <span class="hero-pill">📝 1 a 6 integrantes por grupo</span>
+          <span class="hero-pill">🧪 Hasta 10 calibraciones (30 casos c/u)</span>
+          <span class="hero-pill">▶️ Recuperación automática ante caídas de túnel</span>
+          <span class="hero-pill">🏁 1 intento oficial en Fase Final (100 casos)</span>
+        </div>
+      </section>
+
+      <!-- PASO 0 -->
+      <section class="step-card" id="requisitos">
+        <div class="step-header">
+          <span class="step-badge">Antes de empezar</span>
+          <h2>Qué necesitás tener listo</h2>
+        </div>
+        <div class="grid-2">
+          <div class="mini-card">
+            <h3>1. Código de invitación y URL</h3>
+            <p>La cátedra te entrega la URL de la plataforma web y el <strong>código de invitación</strong> para registrar tu grupo.</p>
+          </div>
+          <div class="mini-card">
+            <h3>2. Tu servidor activo con URL pública</h3>
+            <p>Tu agente debe estar escuchando en <code>GET /health</code> y <code>POST /solve</code>, expuesto por túnel (ej. Cloudflare Tunnel / ngrok en Colab) o servidor propio.</p>
+          </div>
+          <div class="mini-card">
+            <h3>3. Validación previa en <code>dev_set.json</code></h3>
+            <p>Antes de gastar intentos de calibración, verificá <code>0</code> errores de esquema en local con <code>python scripts/run_local_eval.py</code>.</p>
+          </div>
+          <div class="mini-card">
+            <h3>4. Datos de todos los integrantes</h3>
+            <p>Nombre, apellido y correo electrónico de cada integrante (1 a 6 por grupo). Cada correo puede pertenecer a un único equipo.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- PASO 1 -->
+      <section class="step-card" id="paso-1">
+        <div class="step-header">
+          <span class="step-badge">Paso 1</span>
+          <h2>Explorar el Leaderboard Público</h2>
+        </div>
+        <p>
+          Al abrir la plataforma ves el <strong>Leaderboard</strong> público dividido en los dos tracks oficiales:
+          <strong>Track Open-Weight (Google Colab GPU T4 + Túnel)</strong> y <strong>Track Cloud Propietario (APIs Gestionadas)</strong>.
+        </p>
+        <ul>
+          <li>En la barra superior derecha aparecen dos indicadores globales en vivo: si la <strong>Fase Final</strong> está cerrada o abierta, y si los resultados finales están <strong>en suspenso</strong> o revelados.</li>
+          <li>Podés alternar la vista entre <code>Calibración (30 casos)</code> y <code>Final (100 casos)</code>.</li>
+          <li>El orden de desempate es siempre: <strong>1° Puntaje Neto</strong>, <strong>2° Menor Total Tokens</strong>, <strong>3° Menor Latencia Promedio</strong>.</li>
+        </ul>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Vista inicial · /?phase=calibration</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/plataforma/01_leaderboard_inicial.png" alt="Leaderboard público inicial de la plataforma" />
+          <figcaption class="shot-caption">Pantalla principal con las pestañas Leaderboard, Ingresar y Registrar Equipo, y las tablas por track.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 2 -->
+      <section class="step-card" id="paso-2">
+        <div class="step-header">
+          <span class="step-badge">Paso 2</span>
+          <h2>Registrar tu Equipo (1 a 6 integrantes)</h2>
+        </div>
+        <p>
+          Hacé clic en la pestaña <strong>📝 Registrar Equipo</strong>. Solo <strong>una persona del grupo</strong> debe completar este formulario una única vez:
+        </p>
+        <ol>
+          <li>Ingresá el <strong>Código de invitación</strong> provisto por la cátedra y elegí el <strong>Nombre del grupo</strong>.</li>
+          <li>Seleccioná el <strong>Track</strong> que van a implementar: <em>Colab / Open-Weight</em>, <em>Cloud Propietario</em> o <em>Ambos Tracks</em>.</li>
+          <li>Cargá a cada integrante (de 1 a 6) con su <strong>Nombre</strong>, <strong>Apellido</strong> y <strong>Email</strong> usando el botón <code>+ Agregar integrante</code>.</li>
+          <li>Presioná <strong>Crear Equipo y Generar API Key</strong>.</li>
+        </ol>
+        <div class="callout callout-warn">
+          <strong>⚠️ El Track queda fijo tras el registro</strong>
+          Verificá bien el track antes de confirmar. Cada correo electrónico puede estar registrado en un solo equipo.
+        </div>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Pestaña 📝 Registrar Equipo</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/plataforma/02_registro_formulario.png" alt="Formulario de registro de equipo con 3 integrantes" />
+          <figcaption class="shot-caption">Carga del código de invitación, nombre del equipo, track y lista dinámica de integrantes.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 3 -->
+      <section class="step-card" id="paso-3">
+        <div class="step-header">
+          <span class="step-badge">Paso 3</span>
+          <h2>Guardar la API Key del Grupo</h2>
+        </div>
+        <p>
+          Al confirmar el registro, la plataforma muestra un recuadro verde con las credenciales del grupo, incluyendo el
+          <code>Team ID</code> y la <code>API Key</code> (con prefijo <code>utn_...</code>).
+        </p>
+        <div class="callout callout-danger">
+          <strong>🔐 Se muestra una sola vez</strong>
+          Por seguridad, el servidor no vuelve a mostrar la <code>API Key</code> en texto plano. Usá <strong>Copiar credenciales</strong> o
+          <strong>Descargar .txt</strong> y compartila con todo tu grupo antes de cerrar esa pantalla. Si la pierden, deberán pedirle a la cátedra que genere una nueva.
+        </div>
+        <p>Luego podés hacer clic directo en <strong>➡️ Ir a Ingresar</strong> para precargar el formulario de login.</p>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Credenciales generadas</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/plataforma/03_registro_credenciales.png" alt="Pantalla de confirmación con API Key generada" />
+          <figcaption class="shot-caption">Credenciales emitidas una única vez con botones para copiar, descargar en .txt o pasar directo al login.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 4 -->
+      <section class="step-card" id="paso-4">
+        <div class="step-header">
+          <span class="step-badge">Paso 4</span>
+          <h2>Ingresar a la Plataforma (Login)</h2>
+        </div>
+        <p>
+          En la pestaña <strong>🔐 Ingresar</strong>, dejá seleccionado <strong>Rol Equipo</strong> e ingresá:
+        </p>
+        <ul>
+          <li><strong>Email del integrante:</strong> el correo de cualquiera de los integrantes registrados en el grupo.</li>
+          <li><strong>API Key del equipo:</strong> la clave <code>utn_...</code> compartida del grupo.</li>
+        </ul>
+        <p>De esta forma, la plataforma sabe exactamente qué integrante lanzó cada evaluación en el historial.</p>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Pestaña 🔐 Ingresar</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/plataforma/04_login_equipo.png" alt="Formulario de ingreso como equipo" />
+          <figcaption class="shot-caption">Acceso como integrante del equipo usando correo individual + API Key grupal.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 5 -->
+      <section class="step-card" id="paso-5">
+        <div class="step-header">
+          <span class="step-badge">Paso 5</span>
+          <h2>Conocer el Panel <code>🚀 Mi Equipo</code></h2>
+        </div>
+        <p>
+          Una vez logueado, accedés al panel privado de tu grupo. Allí vas a encontrar tres bloques principales:
+        </p>
+        <ul>
+          <li><strong>Cabecera del equipo:</strong> nombre, <code>team_id</code>, track(s) habilitado(s) y lista de integrantes.</li>
+          <li><strong>Lanzar Evaluación en Vivo:</strong> selector de track, campo para pegar la <strong>URL pública del agente</strong> (sin barra final ni ruta <code>/solve</code>, ej. <code>https://tu-tunel.trycloudflare.com</code>), cupos restantes y estado del <strong>Cooldown</strong>.</li>
+          <li><strong>Historial de Corridas del Equipo:</strong> tabla con todas las ejecuciones lanzadas por cualquier integrante.</li>
+        </ul>
+        <div class="callout callout-success">
+          <strong>✅ Pre-vuelo gratuito (<code>GET /health</code>)</strong>
+          Antes de iniciar cada evaluación, la plataforma verifica que tu endpoint responda HTTP <code>200</code> en <code>/health</code>.
+          Si tu túnel está caído o mal copiado en ese momento, <strong>no se descuenta ningún intento</strong>.
+        </div>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Panel 🚀 Mi Equipo (estado inicial)</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/plataforma/05_mi_equipo_panel.png" alt="Panel Mi Equipo recién logueado" />
+          <figcaption class="shot-caption">Vista general del panel del equipo antes de lanzar la primera calibración.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 6 -->
+      <section class="step-card" id="paso-6">
+        <div class="step-header">
+          <span class="step-badge">Paso 6</span>
+          <h2>Ejecutar una Calibración (30 casos ciegos)</h2>
+        </div>
+        <p>
+          Con tu servidor corriendo y la URL pegada, hacé clic en <strong>🧪 Ejecutar Calibración (30 casos)</strong>.
+          Vas a ver el progreso en tiempo real caso por caso (<code>Evaluando X/30...</code>) mientras el evaluador consulta tu endpoint <code>POST /solve</code>.
+        </p>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Calibración en curso</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/plataforma/06_calibracion_en_progreso.png" alt="Calibración en progreso caso por caso" />
+          <figcaption class="shot-caption">Seguimiento en vivo del avance sobre los 30 casos de calibración.</figcaption>
+        </figure>
+        <p style="margin-top: 16px;">
+          Al finalizar los 30 casos, la corrida pasa a estado <code>completed</code> en el historial, muestra el puntaje neto, tokens totales, latencia promedio, quién la lanzó, y habilita el botón <strong>📊 Ver</strong>. La mejor calibración de tu equipo se marca con <code>⭐ Mejor</code> y es la que figura en el Leaderboard público.
+        </p>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Calibración completada</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/plataforma/07_calibracion_completada.png" alt="Historial con calibración completada" />
+          <figcaption class="shot-caption">Corrida finalizada con puntaje neto, tokens, latencia y acceso al diagnóstico privado.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 7 -->
+      <section class="step-card" id="paso-7">
+        <div class="step-header">
+          <span class="step-badge">Paso 7</span>
+          <h2>Analizar el Diagnóstico Ciego</h2>
+        </div>
+        <p>
+          Haciendo clic en <strong>📊 Ver</strong> se abre el modal de <strong>Diagnóstico Ciego</strong> (privado para tu equipo).
+          Sin revelar preguntas ni respuestas de los casos ciegos, te entrega información accionable para iterar tu agente:
+        </p>
+        <ul>
+          <li><strong>Latencia detallada:</strong> promedio, <code>p50</code>, <code>p95</code>, máximo, cantidad de casos <code>&gt;45s</code> y errores HTTP.</li>
+          <li><strong>Recomendaciones automáticas:</strong> sugerencias concretas según los fallos detectados.</li>
+          <li><strong>Patrones de falla agregados:</strong> identifica cuántos casos fallaron por <code>magnitude_10x</code> / <code>scale_mismatch</code>, <code>sign_error</code>, <code>percent_decimal</code>, <code>hallucination_on_abstain</code>, <code>abstain_cautious</code> o <code>schema_error</code>, junto con su impacto en puntos.</li>
+          <li><strong>Rendimiento por origen de evidencia:</strong> compara tu tasa de acierto entre casos de solo tabla (<code>table</code>) y casos mixtos tabla + notas (<code>table-text</code>).</li>
+          <li><strong>📋 Copiar JSON para IA:</strong> copia el resumen estructurado del diagnóstico para pegarlo directo en tu asistente de código y planificar mejoras.</li>
+        </ul>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Modal de Diagnóstico Ciego</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/plataforma/08_diagnostico_ciego.png" alt="Modal de Diagnóstico Ciego con patrones de falla" />
+          <figcaption class="shot-caption">Diagnóstico agregado privado: latencias, recomendaciones, patrones de falla y desglose table vs table-text.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 8 -->
+      <section class="step-card" id="paso-8">
+        <div class="step-header">
+          <span class="step-badge">Paso 8</span>
+          <h2>Recuperación ante Caída de Túnel o Colab (<code>interrupted</code>)</h2>
+        </div>
+        <p>
+          Si durante una evaluación (tanto en Calibración como en Final) se corta el túnel de Cloudflare/ngrok o se desconecta Google Colab,
+          la plataforma reintenta automáticamente y, si confirma que el servicio cayó:
+        </p>
+        <ul>
+          <li><strong>Pausa la corrida</strong> en estado <code>⚠️ interrupted</code> y guarda todos los casos ya evaluados hasta ese punto.</li>
+          <li><strong>No penaliza con <code>-1.5</code></strong> los casos que faltaban ni te obliga a gastar un nuevo intento.</li>
+          <li>Te muestra en qué caso se cortó (por ejemplo, <code>caso 8/30</code>).</li>
+        </ul>
+        <div class="callout callout-info">
+          <strong>▶️ Cómo reanudar con una URL nueva</strong>
+          1) Volvé a levantar tu notebook/servidor y obtené el nuevo túnel.<br />
+          2) Pegá la <strong>nueva URL</strong> en el campo <code>URL pública del agente (túnel o servidor)</code> del panel.<br />
+          3) Hacé clic en el botón amarillo <strong>▶️ Reanudar</strong> en la fila de la corrida interrumpida.<br />
+          La evaluación continúa exactamente desde el caso pendiente hasta completar el 100% (se permiten hasta <strong>2 reanudaciones</strong> por corrida).
+        </div>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Estado ⚠️ interrupted y botón ▶️ Reanudar</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/plataforma/09_tunel_caido_reanudar.png" alt="Corrida interrumpida por caída de túnel con botón Reanudar" />
+          <figcaption class="shot-caption">Cuando se detecta caída de túnel/Colab, la corrida queda pausada sin penalización y habilita el botón Reanudar.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 9 -->
+      <section class="step-card" id="paso-9">
+        <div class="step-header">
+          <span class="step-badge">Paso 9</span>
+          <h2>Seguir tu Posición en el Leaderboard de Calibración</h2>
+        </div>
+        <p>
+          Cada vez que mejorás tu agente y completás una nueva calibración (respetando el cooldown obligatorio entre corridas),
+          si superás tu marca anterior la tabla pública se actualiza automáticamente con tu nueva mejor corrida.
+          Desde la propia tabla también podés hacer clic en <strong>📊 Ver</strong> en la fila de tu equipo.
+        </p>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Leaderboard público de Calibración</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/plataforma/10_leaderboard_calibracion.png" alt="Leaderboard de calibración con equipos posicionados" />
+          <figcaption class="shot-caption">Ranking público en vivo con los equipos ordenados por puntaje neto, menor consumo de tokens y menor latencia.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 10 -->
+      <section class="step-card" id="paso-10">
+        <div class="step-header">
+          <span class="step-badge">Paso 10</span>
+          <h2>Evaluación Final (100 casos) y Modo Suspenso</h2>
+        </div>
+        <p>
+          Cuando la cátedra habilita la ventana de cierre, el indicador superior cambia a <strong>🟢 Fase Final Abierta</strong> y se activa el botón
+          <strong>🏁 Ejecutar Evaluación Final (100 casos)</strong> en <code>Mi Equipo</code>.
+        </p>
+        <ul>
+          <li>Tenés <strong>1 único intento oficial</strong> por track habilitado. Al presionar el botón, el sistema pide confirmación explícita.</li>
+          <li>Al completarse los 100 casos, mientras el modo suspenso esté activo, la entrega figura como <strong>✅ Entregado</strong> con las métricas y el diagnóstico bloqueados (<code>🔒 Suspenso</code>) para mantener la expectativa hasta la presentación final.</li>
+        </ul>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Fase Final Abierta · Entrega en Suspenso</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/plataforma/11_fase_final_en_suspenso.png" alt="Evaluación Final entregada en modo suspenso" />
+          <figcaption class="shot-caption">Confirmación de entrega final completa (100/100 casos) con métricas ocultas hasta el revelado oficial.</figcaption>
+        </figure>
+      </section>
+
+      <!-- PASO 11 -->
+      <section class="step-card" id="paso-11">
+        <div class="step-header">
+          <span class="step-badge">Paso 11</span>
+          <h2>Ceremonia de Podio y Leaderboard Final Revelado</h2>
+        </div>
+        <p>
+          Cuando la cátedra revela los resultados en vivo, se proyecta el podio oficial de cada track y el Leaderboard de
+          <strong>Final (100 casos)</strong> desbloquea todos los puntajes, desgloses (<code>OK</code>, <code>ABSTAIN</code>, <code>ERROR</code>, <code>ESQUEMA</code>),
+          tokens y latencias. También podés volver a ver la animación con el botón <strong>🎬 Ver Podio</strong> y revisar tu diagnóstico final.
+        </p>
+        <figure class="shot-figure">
+          <div class="shot-toolbar">
+            <div class="shot-dots"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div>
+            <span>Leaderboard Final Revelado</span>
+            <span class="shot-zoom-hint">Clic en la imagen para ampliar</span>
+          </div>
+          <img src="assets/plataforma/12_leaderboard_final_revelado.png" alt="Leaderboard final revelado con posiciones oficiales" />
+          <figcaption class="shot-caption">Resultados oficiales revelados sobre los 100 casos ciegos de la Fase Final.</figcaption>
+        </figure>
+      </section>
+
+      <!-- FAQ -->
+      <section class="step-card" id="faq">
+        <div class="step-header">
+          <span class="step-badge">Referencia Rápida</span>
+          <h2>Solución de Problemas Frecuentes</h2>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Situación</th>
+              <th>Qué significa</th>
+              <th>Qué hacer</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Falla el pre-vuelo <code>GET /health</code></td>
+              <td>El evaluador no pudo alcanzar tu túnel o recibió un código distinto de <code>200</code>.</td>
+              <td><strong>No perdiste ningún intento.</strong> Verificá que el servidor esté levantado, que la URL no termine en <code>/solve</code> y que el túnel responda desde afuera.</td>
+            </tr>
+            <tr>
+              <td>Botón de Calibración deshabilitado por Cooldown</td>
+              <td>Hay un tiempo de espera obligatorio desde que finalizó la última calibración.</td>
+              <td>Esperá a que el contador llegue a <code>Listo</code>. Usá ese tiempo para revisar el <strong>Diagnóstico Ciego</strong> y probar mejoras en local.</td>
+            </tr>
+            <tr>
+              <td>Muchos errores <code>ESQUEMA (-1.5)</code></td>
+              <td>Tu endpoint devolvió HTTP 5xx, un JSON inválido o incumplió <code>CaseOutput</code>.</td>
+              <td>Validá siempre con <code>CaseOutput.model_validate(...)</code> en <code>src/server.py</code> antes de responder y probá primero con <code>run_local_eval.py</code>.</td>
+            </tr>
+            <tr>
+              <td>Corrida en estado <code>⚠️ interrupted</code></td>
+              <td>Se cayó Colab o el túnel a mitad de la corrida.</td>
+              <td>Levantá un túnel nuevo, pegá la nueva URL en el panel y presioná <strong>▶️ Reanudar</strong>.</td>
+            </tr>
+            <tr>
+              <td>Perdimos la <code>API Key</code> del equipo</td>
+              <td>La clave no se vuelve a mostrar por seguridad después del registro.</td>
+              <td>Soliciten a la cátedra una rotación/reenvío de credencial desde la consola administrativa.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <button class="lightbox-close" type="button" onclick="closeLightbox()">✕ Cerrar (Esc)</button>
+    <img id="lightboxImg" src="" alt="Vista ampliada" onclick="event.stopPropagation()" />
+  </div>
+
+  <script>
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+
+    document.querySelectorAll('.shot-figure img').forEach((img) => {
+      img.addEventListener('click', () => {
+        lightboxImg.src = img.src;
+        lightboxImg.alt = img.alt;
+        lightbox.classList.add('open');
+      });
+    });
+
+    function closeLightbox() {
+      lightbox.classList.remove('open');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
+    });
+
+    // Highlight active section in sidebar TOC
+    const tocLinks = Array.from(document.querySelectorAll('.toc-link'));
+    const sections = tocLinks
+      .map((a) => document.querySelector(a.getAttribute('href')))
+      .filter(Boolean);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            tocLinks.forEach((l) => l.classList.remove('active'));
+            const active = tocLinks.find((l) => l.getAttribute('href') === '#' + entry.target.id);
+            if (active) active.classList.add('active');
+          }
+        });
+      },
+      { rootMargin: '-20% 0px -65% 0px' }
+    );
+
+    sections.forEach((s) => observer.observe(s));
+  </script>
+</body>
+</html>
