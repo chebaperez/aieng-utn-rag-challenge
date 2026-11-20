@@ -598,7 +598,7 @@
           </div>
           <div class="mini-card">
             <h3>2. Tu servidor activo con URL pública</h3>
-            <p>Tu agente debe estar escuchando en <code>GET /health</code> y <code>POST /solve</code>, expuesto por túnel (<code>python scripts/start_tunnel.py</code> en local, <strong>Celda 5</strong> de <code>Colab_Starter_Template.ipynb</code> en Colab) o servidor HTTPS propio.</p>
+            <p>Tu agente debe estar escuchando en <code>GET /health</code> y <code>POST /solve</code>, expuesto por túnel (<code>python scripts/start_tunnel.py</code> en local, <strong>Celda 6</strong> de <code>Colab_Starter_Template.ipynb</code> en Colab) o servidor HTTPS propio.</p>
           </div>
           <div class="mini-card">
             <h3>3. Validación previa en <code>dev_set.json</code></h3>
@@ -827,7 +827,7 @@
         </ul>
         <div class="callout callout-info">
           <strong>▶️ Cómo reanudar con una URL nueva</strong>
-          1) Si solo se cayó el túnel en Colab (runtime vivo y sin cambios de código), re-ejecutá únicamente la <strong>Celda 5</strong>; si se reinició el runtime o subiste cambios nuevos desde tu PC al repo de tu equipo, ejecutá <strong>Celda 1 (<code>git pull</code>) → Celda 2 → Celda 3 → Celda 5</strong>. En local, relanzá <code>python scripts/start_tunnel.py</code>.<br />
+          1) Si solo se cayó el túnel en Colab (runtime vivo y sin cambios de código), re-ejecutá únicamente la <strong>Celda 6</strong>; si subiste cambios nuevos desde tu PC al repo de tu equipo (con el modelo ya descargado), ejecutá <strong>Celda 4 → Celda 6</strong>; si se reinició el runtime completo, ejecutá <strong>Celda 1 → Celda 2 → Celda 3 → Celda 4 → Celda 6</strong>. En local, relanzá <code>python scripts/start_tunnel.py</code>.<br />
           2) Pegá la <strong>nueva URL</strong> en el campo <code>URL pública del agente (túnel o servidor)</code> del panel.<br />
           3) Hacé clic en el botón amarillo <strong>▶️ Reanudar</strong> en la fila de la corrida interrumpida.<br />
           La evaluación continúa exactamente desde el caso pendiente hasta completar el 100% (se permiten hasta <strong>2 reanudaciones</strong> por corrida).
@@ -945,7 +945,7 @@
             <tr>
               <td>Corrida en estado <code>⚠️ interrupted</code></td>
               <td>Se cayó Colab o el túnel a mitad de la corrida.</td>
-              <td>Re-ejecutá la <strong>Celda 5</strong> en Colab (si el runtime sigue vivo) o relanzá <code>python scripts/start_tunnel.py</code> en local, pegá la nueva URL en el panel y presioná <strong>▶️ Reanudar</strong>.</td>
+              <td>Re-ejecutá la <strong>Celda 6</strong> en Colab (si el runtime sigue vivo) o relanzá <code>python scripts/start_tunnel.py</code> en local, pegá la nueva URL en el panel y presioná <strong>▶️ Reanudar</strong>.</td>
             </tr>
             <tr>
               <td>Perdimos la <code>API Key</code> del equipo</td>

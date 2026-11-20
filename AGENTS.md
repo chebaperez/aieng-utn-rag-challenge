@@ -86,12 +86,12 @@ Antes de proponer cambios como terminados o consumir una corrida de calibración
 ### 3.1 Regla de Desarrollo para Track Open-Weight (`Host Local -> GitHub del Equipo -> Google Colab`)
 
 - **En Colab NO se desarrolla**: todo cambio de código, prompts o herramientas debe hacerse en el host local dentro del **repositorio propio del equipo** en GitHub (fork o copia del Starter Kit), nunca editando archivos directamente dentro de Google Colab.
-- **Visibilidad del repositorio**: para que Colab pueda clonar y actualizar por HTTPS sin autenticación interactiva, el repositorio del equipo en GitHub debe ser público (o accesible por HTTPS).
+- **Visibilidad del repositorio**: el repositorio del equipo en GitHub puede ser público o **privado** (recomendado; en Colab se autentica mediante un Fine-grained PAT `Contents: Read-only` guardado en Colab Secrets como `GITHUB_TOKEN` con `USE_PRIVATE_REPO = True`).
 - **Ciclo obligatorio**:
   1. Editar, probar y validar contratos en tu PC/host local.
   2. Hacer `git commit` y `git push` a la rama principal (`main`) del repositorio propio del equipo.
   3. En `notebooks/Colab_Starter_Template.ipynb`, configurar `REPO_URL` con la URL del repo del equipo (Celda 1 hace `clone`/`pull`) y usar Colab únicamente como **runtime GPU T4**.
-- **Sincronización y recarga en Colab**: la **Celda 1** clona/actualiza el repo y define `sync_repo()` (`git pull --ff-only`), y la **Celda 3** lo ejecuta, detiene el servidor previo si existía, recarga los módulos `src/` y reinicia FastAPI automáticamente. Solo necesitás reiniciar la sesión de Colab (`Entorno de ejecución -> Reiniciar sesión`) si aparece un error de memoria VRAM/CUDA al recargar el modelo GGUF o si modificaste `requirements.txt`.
+- **Sincronización y recarga en Colab**: la **Celda 1** clona/actualiza el repo y define `sync_repo()`, la **Celda 3** descarga el GGUF y exporta `LOCAL_MODEL_PATH`, y la **Celda 4** ejecuta `sync_repo()`, fija `RUNTIME_ENV="colab"`, detiene el servidor previo si existía, recarga los módulos `src/` y reinicia FastAPI automáticamente. Solo necesitás reiniciar la sesión de Colab (`Entorno de ejecución -> Reiniciar sesión`) si aparece un error de memoria VRAM/CUDA al recargar el modelo GGUF o si modificaste `requirements.txt`.
 
 ---
 

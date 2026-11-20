@@ -47,7 +47,7 @@ aieng-utn-rag-challenge/
 * **`scripts/start_tunnel.py`**: CLI recomendado (Terminal 3) para exponer tu servidor local vía Cloudflare Tunnel verificando `GET /health` previo (alternativas: `cloudflared` manual o dominio HTTPS propio); además exporta `start_tunnel()` reutilizado en Colab.
 * **`scripts/viewer.py`**: Visualizador web local para recorrer los 150 casos de `data/dev_set.json` y contrastar `predictions_local.json` contra el *Ground Truth*.
 * **`data/dev_set.json`**: Dataset Público de Desarrollo (**150 casos**: 135 resolubles `SOLVED` + 15 incompletos `ABSTAIN`).
-* **`notebooks/Colab_Starter_Template.ipynb`**: Plantilla en 5 celdas para el **Track Open-Weight** en Google Colab GPU T4: clona/actualiza el **repositorio propio de tu equipo** (`REPO_URL`), define `sync_repo()` y descarga `cloudflared` (Celda 1), instala `llama-cpp-python` con CUDA 12 (Celda 2), hace `pull` y levanta `src/server.py` en hilo daemon (Celda 3), ejecuta la evaluación local configurable (Celda 4) y abre/renueva el túnel vía `scripts/start_tunnel.py` (Celda 5).
+* **`notebooks/Colab_Starter_Template.ipynb`**: Plantilla en 6 celdas para el **Track Open-Weight** en Google Colab GPU T4: clona/actualiza el **repositorio propio de tu equipo** (`REPO_URL`, público o privado con `GITHUB_TOKEN`), define `sync_repo()` y descarga `cloudflared` (Celda 1), instala `llama-cpp-python` con CUDA 12 (Celda 2), descarga el modelo GGUF y exporta `LOCAL_MODEL_PATH` (Celda 3), hace `pull`, fija `RUNTIME_ENV=colab` y levanta `src/server.py` en hilo daemon (Celda 4), ejecuta la evaluación local configurable (Celda 5) y abre/renueva el túnel vía `scripts/start_tunnel.py` (Celda 6).
 
 ---
 

@@ -1457,7 +1457,7 @@
               <!-- Cloudflared subprocess -->
               <g class="svg-node" data-cb="cf_colab" onclick="selectPathBNode('cf_colab', this)">
                 <rect x="220" y="88" width="180" height="82" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-                <text x="310" y="114" text-anchor="middle" font-size="10.8" font-weight="700" fill="#312e81">Celda 5 · start_tunnel.py</text>
+                <text x="310" y="114" text-anchor="middle" font-size="10.8" font-weight="700" fill="#312e81">Celda 6 · start_tunnel.py</text>
                 <text x="310" y="132" text-anchor="middle" font-size="9.6" fill="#4338ca">start_tunnel() → cloudflared</text>
                 <text x="310" y="148" text-anchor="middle" font-size="9.5" fill="#4f46e5">→ https://...trycloudflare.com</text>
               </g>
@@ -1465,7 +1465,7 @@
               <!-- Uvicorn Daemon Thread -->
               <g class="svg-node selected" data-cb="daemon_uv" onclick="selectPathBNode('daemon_uv', this)">
                 <rect x="440" y="74" width="202" height="106" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-                <text x="541" y="99" text-anchor="middle" font-size="11" font-weight="800" fill="#065f46">Celda 3 · uvicorn (Daemon)</text>
+                <text x="541" y="99" text-anchor="middle" font-size="11" font-weight="800" fill="#065f46">Celda 4 · uvicorn (Daemon)</text>
                 <text x="541" y="117" text-anchor="middle" font-size="9.8" fill="#047857">from src.server import app</text>
                 <text x="541" y="133" text-anchor="middle" font-size="9.5" fill="#059669">Escucha en :8000 sin bloquear</text>
                 <text x="541" y="149" text-anchor="middle" font-size="9.5" fill="#059669">la celda del notebook</text>
@@ -2422,7 +2422,7 @@
       colab: {
         badge: ["Runtime GPU", "badge-remote"],
         title: "notebooks/Colab_Starter_Template.ipynb",
-        desc: "Runtime GPU T4 en 5 celdas: clona/sincroniza el repositorio propio del equipo y la rama elegida en BRANCH (Celda 1), prepara CUDA 12 (Celda 2), actualiza código y levanta o reinicia uvicorn en hilo daemon (Celda 3), evalúa en local (Celda 4) y abre/renueva el túnel (Celda 5).",
+        desc: "Runtime GPU T4 en 6 celdas: clona/sincroniza el repositorio propio del equipo y la rama elegida en BRANCH (Celda 1), prepara CUDA 12 (Celda 2), descarga el modelo GGUF y exporta LOCAL_MODEL_PATH (Celda 3), actualiza código y levanta o reinicia uvicorn en hilo daemon (Celda 4), evalúa en local (Celda 5) y abre/renueva el túnel (Celda 6).",
         rule: "En Colab no se desarrolla: editá en tu PC, hacé push/merge a tu rama (main, develop o rama por versión) y re-ejecutá la Celda 3 para recargar el servidor.",
         cmd: "# Celda 1: REPO_URL = 'https://github.com/tu-usuario/el-repositorio.git' · BRANCH = 'main'\n# Ante cambios locales: git push/merge -> re-ejecutar Celda 3"
       },
@@ -3438,8 +3438,8 @@
       },
       {
         intent: "Comprender el workflow Host Local -> GitHub del equipo -> Colab T4 y por qué FastAPI corre en hilo daemon.",
-        detail: "En el Camino B trabajás 100% on-premise dentro de Colab T4, pero EN COLAB NO SE DESARROLLA: editás localmente en tu PC sobre el repositorio propio de tu equipo (público para clonar por HTTPS), hacés push o merge hacia la rama en la que están trabajando (main, develop u otra elegida en BRANCH en la Celda 1) y simplemente volvés a ejecutar la Celda 3, que llama a sync_repo(), limpia src/ y reinicia uvicorn en hilo daemon resolviendo toda la sincronización automáticamente. Tip de versionado: como la Celda 1 permite elegir la rama (BRANCH), pueden probar distintas versiones o experimentos del agente en ramas separadas sin pisarse cambios. Cuando identifiquen la mejor versión, hagan merge de esa rama hacia develop o main para dejarla lista como candidata final.",
-        action: "Editá en tu PC, hacé git push/merge a tu rama, re-ejecutá la Celda 3 para actualizar y reiniciar el servidor, y validá en Celda 4."
+        detail: "En el Camino B trabajás 100% on-premise dentro de Colab T4, pero EN COLAB NO SE DESARROLLA: editás localmente en tu PC sobre el repositorio propio de tu equipo (público o privado con GITHUB_TOKEN), hacés push o merge hacia la rama en la que están trabajando (main, develop u otra elegida en BRANCH en la Celda 1) y simplemente volvés a ejecutar la Celda 4, que llama a sync_repo(), fija RUNTIME_ENV='colab', limpia src/ y reinicia uvicorn en hilo daemon sin volver a descargar el modelo GGUF de la Celda 3. Tip de versionado: como la Celda 1 permite elegir la rama (BRANCH), pueden probar distintas versiones o experimentos del agente en ramas separadas sin pisarse cambios. Cuando identifiquen la mejor versión, hagan merge de esa rama hacia develop o main para dejarla lista como candidata final.",
+        action: "Editá en tu PC, hacé git push/merge a tu rama, re-ejecutá la Celda 4 para actualizar y reiniciar el servidor, y validá en Celda 5."
       },
       {
         intent: "Evitar penalizaciones evitables de -1.5 pts (SCHEMA_ERROR) y -1.0 pt (SCALE_MISMATCH / percent_decimal).",
